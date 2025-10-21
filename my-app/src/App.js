@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import "./App.css";
 import Info from "./Info";
 import Tracking from "./Tracking";
-
-
+import StudentManagementPage from "./pages/maincontent/Student_management/StudentManagementPage";
+import MapComponent from "./components/MapComponent";
 function App() {
   const [showModal, setShowModal] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
@@ -24,6 +24,8 @@ function App() {
         <ul>
           <li onClick={() => setActivePage("TRANG CHỦ")}>Trang chủ</li>
           <li onClick={() => setActivePage("THEO DÕI XE BUÝT")}>Theo dõi xe buýt</li>
+          <li onClick={() => setActivePage("QUẢN LÝ HỌC SINH")}>Quản lý học sinh</li>
+          <li onClick={() => setActivePage("QUẢN LÝ TUYẾN XE")}>Quản lý tuyến xe</li>
         </ul>
       </div>
 
@@ -63,13 +65,16 @@ function App() {
 
             {/* Bản đồ */}
             <div className="map">
-              <p>Bản đồ Api</p>
+              
+              <MapComponent />
             </div>
           </>
         )}
 
         {/* component Tracking */}
         {activePage === "THEO DÕI XE BUÝT" && <Tracking />}
+        {activePage === "QUẢN LÝ HỌC SINH" && <StudentManagementPage />}
+        {activePage === "QUẢN LÝ TUYẾN XE" && (<div><h2>Route Management Page</h2></div>)}
       </div>
     </div>
   );

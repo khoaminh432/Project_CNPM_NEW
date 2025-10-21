@@ -1,0 +1,106 @@
+/* Tiêu đề chính */
+h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 24px;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Nút chức năng trên góc phải */
+.header-actions {
+  display: flex;
+  gap: 10px;
+}
+
+button {
+  background-color: #2563eb;
+  border: none;
+  color: white;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #1d4ed8;
+}
+
+/* Grid chứa các card */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+/* Card nhân viên */
+.card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  padding: 20px;
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid #e2e8f0;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 18px rgba(0,0,0,0.1);
+}
+
+/* Ảnh avatar */
+.card img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #2563eb;
+  margin-bottom: 12px;
+}
+
+/* Thông tin trong card */
+.card h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 4px 0;
+}
+
+.card p {
+  font-size: 0.9rem;
+  color: #64748b;
+  margin: 4px 0;
+}
+
+/* Icon + thông tin */
+.card .info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: #475569;
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+/* Nút xem chi tiết */
+.card .btn-detail {
+  display: inline-block;
+  margin-top: 12px;
+  background-color: #2563eb;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background 0.3s ease;
+}
+
+.card .btn-detail:hover {
+  background-color: #1d4ed8;
+}

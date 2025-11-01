@@ -56,141 +56,137 @@ export default function ThongBao() {
     };
 
     const removeFile = (index) => {
-        // Xóa file trong mảng files
         setFiles(prev => {
             const newFiles = [...prev];
             newFiles.splice(index, 1);
             return newFiles;
         });
 
-        // Xóa input tương ứng
         setFileInputs(prev => {
             const newInputs = [...prev];
             if (newInputs.length > 1) {
                 newInputs.splice(index, 1);
             } else {
-                // luôn giữ ít nhất 1 input trống
                 newInputs[0] = 0;
             }
             return newInputs;
         });
     };
 
-
     return (
-        <div className="thongbao-container">
-            {/* Top Navbar */}
-            <div className="navbar">
-                <span className="logo">THÔNG BÁO</span>
-                <div className="profile">
-                    <span className="icon">👤</span>
-                    <span>Profile</span>
-                    <span className="arrow">▼</span>
-                </div>
-            </div>
+        <div className="dashboard">
+            {/* Sidebar giống QuanLyXeBuyt */}
+            <aside className="sidebar">
+                <h2>DASHBOARD</h2>
+            </aside>
 
-            <div className="main">
-                {/* Sidebar */}
-                <div className="sidebar">
-                    <button
-                        className="btn-create"
-                        onClick={() => setShowPopup(true)}
-                    >
-                        + Tạo thông báo
-                    </button>
-                    <select className="filter-select">
-                        <option>Chọn lọc</option>
-                        <option>Xe buýt</option>
-                        <option>Tài xế</option>
-                        <option>Phụ huynh</option>
-                    </select>
-                </div>
+            {/* Nội dung chính */}
+            <main className="content">
+                {/* Header xanh */}
+                <header className="header">
+                    <h1>THÔNG BÁO</h1>
+                    <div className="profile">👤 Profile ▼</div>
+                </header>
 
-                {/* Content */}
-                <div className="content">
-                    <div className="tabs">
-                        <button onClick={() => setActiveTab("all")} className={`tab ${activeTab === "all" ? "active" : ""}`}>Tất cả</button>
-                        <button onClick={() => setActiveTab("bus")} className={`tab ${activeTab === "bus" ? "active" : ""}`}>Xe buýt</button>
-                        <button onClick={() => setActiveTab("driver")} className={`tab ${activeTab === "driver" ? "active" : ""}`}>Tài xế</button>
-                        <button onClick={() => setActiveTab("parent")} className={`tab ${activeTab === "parent" ? "active" : ""}`}>Phụ huynh</button>
-                    </div>
-                    <div className="content-box">Nội dung {activeTab}</div>
-                </div>
-            </div>
-
-            {/* Popup tạo thông báo */}
-            {showPopup && (
-                <div className="popup-overlay">
-                    <div className="popup large-popup">
-                        <h2>Tạo thông báo mới</h2>
-                        <label>
-                            Gửi đến:
-                            <select
-                                name="recipient"
-                                value={newNotice.recipient}
-                                onChange={handleChange}
+                {/* Phần code cũ của bạn */}
+                <div className="thongbao-container">
+                    <div className="main">
+                        {/* Sidebar nhỏ bên trong */}
+                        <div className="sidebar">
+                            <button
+                                className="btn-create"
+                                onClick={() => setShowPopup(true)}
                             >
-                                <option value="">Chọn</option>
-                                <option value="driver">Tài xế</option>
-                                <option value="system">Hệ thống</option>
-                                <option value="parent">Phụ huynh</option>
+                                + Tạo thông báo
+                            </button>
+                            <select className="filter-select">
+                                <option>Chọn lọc</option>
+                                <option>Chưa xem</option>
+                                <option>Đã xem</option>
+                                <option>Đã gửi</option>
                             </select>
-                        </label>
-                        <label>
-                            Tiêu đề:
-                            <input
-                                type="text"
-                                name="title"
-                                value={newNotice.title}
-                                onChange={handleChange}
-                            />
-                        </label>
-                        <label>
-                            Nội dung:
-                            <textarea
-                                name="content"
-                                value={newNotice.content}
-                                onChange={handleChange}
-                                rows={8}
-                            />
-                        </label>
+                        </div>
 
-                        <label>Thêm tệp:</label>
-                        {fileInputs.map((key, index) => {
-                            const file = files[index];
-                            return (
-                                <div key={key} className="file-input-wrapper">
-                                    <input
-                                        type="file"
-                                        onChange={(e) => handleFileChange(e, index)}
-                                    />
-                                    {file && (
-                                        <button
-                                            type="button"
-                                            className="remove-file-btn"
-                                            onClick={() => removeFile(index)}
-                                        >
-                                            ✖
-                                        </button>
-                                    )}
-                                </div>
-                            );
-                        })}
-
-
-
-
-
-
-                        
-
-                        <div className="popup-buttons">
-                            <button className="btn-send" onClick={handleSend}>Gửi</button>
-                            <button className="btn-cancel" onClick={handleCancel}>Hủy</button>
+                        {/* Content */}
+                        <div className="content">
+                            <div className="tabs">
+                                <button onClick={() => setActiveTab("all")} className={`tab ${activeTab === "all" ? "active" : ""}`}>Tất cả</button>
+                                <button onClick={() => setActiveTab("bus")} className={`tab ${activeTab === "bus" ? "active" : ""}`}>Xe buýt</button>
+                                <button onClick={() => setActiveTab("driver")} className={`tab ${activeTab === "driver" ? "active" : ""}`}>Tài xế</button>
+                                <button onClick={() => setActiveTab("parent")} className={`tab ${activeTab === "parent" ? "active" : ""}`}>Phụ huynh</button>
+                            </div>
+                            <div className="content-box">Nội dung {activeTab}</div>
                         </div>
                     </div>
+
+                    {/* Popup tạo thông báo */}
+                    {showPopup && (
+                        <div className="popup-overlay">
+                            <div className="popup large-popup">
+                                <h2>Tạo thông báo mới</h2>
+                                <label>
+                                    Gửi đến:
+                                    <select
+                                        name="recipient"
+                                        value={newNotice.recipient}
+                                        onChange={handleChange}
+                                    >
+                                        <option value="">Chọn</option>
+                                        <option value="driver">Tài xế</option>
+                                        <option value="system">Hệ thống</option>
+                                        <option value="parent">Phụ huynh</option>
+                                    </select>
+                                </label>
+                                <label>
+                                    Tiêu đề:
+                                    <input
+                                        type="text"
+                                        name="title"
+                                        value={newNotice.title}
+                                        onChange={handleChange}
+                                    />
+                                </label>
+                                <label>
+                                    Nội dung:
+                                    <textarea
+                                        name="content"
+                                        value={newNotice.content}
+                                        onChange={handleChange}
+                                        rows={8}
+                                    />
+                                </label>
+
+                                <label>Thêm tệp:</label>
+                                {fileInputs.map((key, index) => {
+                                    const file = files[index];
+                                    return (
+                                        <div key={key} className="file-input-wrapper">
+                                            <input
+                                                type="file"
+                                                onChange={(e) => handleFileChange(e, index)}
+                                            />
+                                            {file && (
+                                                <button
+                                                    type="button"
+                                                    className="remove-file-btn"
+                                                    onClick={() => removeFile(index)}
+                                                >
+                                                    ✖
+                                                </button>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+
+                                <div className="popup-buttons">
+                                    <button className="btn-send" onClick={handleSend}>Gửi</button>
+                                    <button className="btn-cancel" onClick={handleCancel}>Hủy</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
-            )}
+            </main>
         </div>
     );
 }

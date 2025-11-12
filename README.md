@@ -27,4 +27,3 @@ my-app/
 ├── package.json
 ├── vite.config.js (hoặc webpack.config.js)
 └── README.md
-API KEY google map: AIzaSyCGw-UAp-Jx5DEGDCtIXdI1N5ScdU1q7Q8

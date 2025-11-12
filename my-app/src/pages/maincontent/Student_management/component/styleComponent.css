@@ -1,144 +1,132 @@
-/*/ ...existing code...*/
-.icon-wrapper{
-  font-size: 0.1em;
-}
 
-/* fluid, non‑overflowing card suitable for table cells */
-.passenger-card {
-  box-sizing: border-box;
-  width: 100%;           /* fill the cell width but not exceed it */
-  max-width: 100%;
-  min-width: 0;
-  height: 100%;         /* allow shrinking inside flex/grid/table */
+/* container must be shrinkable inside grid/flex */
+.container-student-card {
+  width: 100%;
+  min-width: 0; /* allow shrinking in flex/grid */
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  background: #fff;
-  border-radius: 12px;
-  border: 1px solid #e6e9ee;
-  padding: 20px;
-       /* prevent child overflow */
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  height: 100%; /* stretch to fill grid cell */
+  font-size: 0.7em;
 }
 
-/* avatar + image responsive */
-.avatar {
-  width: clamp(40px, 12vw, 60px); /* fluid avatar size */
-  height: clamp(40px, 12vw, 60px);
-  border-radius: 50%;
-  
+/* card fills container and uses flex column so footer/button sticks to bottom */
+.container-student-card .card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.12);
   overflow: hidden;
-  margin: 0 auto;
-  flex: 0 0 auto;
-  background: #f7f8fa;
-  border: max(1px, calc(clamp(40px,12vw,96px)*0.04)) solid #f0f2f5;
-}
-.avatar img {
-  width: 100%;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
   height: 100%;
-  object-fit: cover;
-  display: block;
+  min-height: 280px; /* consistent, adjust as needed */
 }
 
-/* name: allow wrapping and clamp lines to avoid breaking table layout */
-.passenger-name {
-  margin: 0.35rem 0 0;
+/* hover */
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.18);
+}
+
+/* header stays compact */
+.card-header {
+  background: linear-gradient(135deg, #4776e6 0%, #8e54e9 100%);
+  color: white;
+  padding: 20px 16px;
   text-align: center;
-  font-weight: 600;
-  font-size: clamp(13px, 2.4vw, 20px);
-  line-height: 1.1;
+  position: relative;
   overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;      /* at most 2 lines */
-  -webkit-box-orient: vertical;
-  word-break: break-word;
-  hyphens: auto;
+}
+.card-header h2 { font-size: 20px; margin-bottom: 4px; }
+.card-header p { font-size: 13px; margin: 0; opacity: 0.95; }
+
+/* body grows and scrolls if content too large (but generally should wrap) */
+.card-body {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1 1 auto;
+  min-height: 0; /* allow content to scroll inside flex */
+  overflow: hidden;
 }
 
-/* info list */
-.info-section {
-  display: block;
-  width: 100%;
-}
+/* info items layout */
 .info-item {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  padding: 0.35rem 0;
-  border-bottom: 1px solid #f0f2f5;
-  min-width: 0; /* important inside table/flex to allow children to shrink */
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  transition: transform 0.18s ease, border-color 0.18s ease;
+  min-width: 0; /* important for text wrapping inside flex */
 }
-.info-item:last-child { border-bottom: none; }
+.info-item:hover {
+  transform: translateX(4px);
+  border-bottom-color: #8e54e9;
+}
 
-/* icon wrapper and svg icons */
-.icon-wrapper {
-  width: calc(var(--icon-wrapper-size, 1) * 1px); /* keep existing override safe */
-  width: clamp(24px, 8vw, 40px);
-  height: clamp(24px, 8vw, 40px);
-  flex: 0 0 auto;
+.info-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4776e6 0%, #8e54e9 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-}
-.icon {
-  width: 60%;
-  height: 60%;
-  display: block;
-  flex-shrink: 0;
+  color: white;
+  font-size: 18px;
+  flex: 0 0 48px;
+  box-shadow: 0 5px 15px rgba(142, 84, 233, 0.22);
 }
 
-/* text inside info: wrap instead of forcing width */
-.info-text {
-  font-size: clamp(12px, 1.8vw, 15px);
-  color: #2f2f2f;
-  font-weight: 500;
-  white-space: normal;
-  overflow-wrap: anywhere; /* break long words instead of overflowing */
-  min-width: 0;            /* allows ellipsis/wrapping in flex containers */
-}
-
-/* action button */
-.button-section {
-  display: flex;
-  justify-content: center;
-  padding-top: 0.5rem;
-  border-top: 1px solid #f0f2f5;
-}
-.detail-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.45rem 0.8rem;
-  border-radius: 8px;
-  background: #1890ff;
-  color: #fff;
-  border: none;
-  cursor: pointer;
+/* ensure content text wraps and truncates long lines */
+.info-content { flex: 1 1 auto; min-width: 0; }
+.info-label { font-size: 13px; color: #6b7280; margin-bottom: 4px; font-weight: 500; }
+.info-value {
+  font-size: 15px;
+  color: #111827;
   font-weight: 600;
-  font-size: clamp(12px, 1.6vw, 14px);
-  min-width: 0;
-  white-space: nowrap;
-}
-.button-icon {
-  width: 1em;
-  height: 1em;
-  flex-shrink: 0;
-}
-
-/* helper: when the card is placed inside a table, use these table classes
-   to prevent cell-driven overflow. Prefer adding class="table-fixed" on table. */
-.table-fixed {
-  table-layout: fixed;   /* force cells to obey widths */
-  width: 100%;
-}
-.table-fixed td,
-.table-fixed th {
-  min-width: 0;          /* allow child elements to shrink */
   overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* limit to 2 lines */
+  -webkit-box-orient: vertical;
+  line-height: 1.2;
+  word-break: break-word;
 }
 
-/* small screens tweaks */
-@media (max-width: 420px) {
-  .passenger-card { padding: 0.6rem; border-radius: 10px; }
-  .avatar { width: 56px; height: 56px; }
+/* status centered */
+.status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 6px;
+  color: #16a34a;
+  font-weight: 600;
+}
+
+/* button area pinned near bottom with small top margin */
+.detail-button {
+  display: block;
+  width: 100%;
+  background: linear-gradient(135deg, #4776e6 0%, #8e54e9 100%);
+  color: white;
+  border: none;
+  border-radius: 999px;
+  padding: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: auto; /* push to bottom */
+  transition: all 0.22s ease;
+}
+.detail-button:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(142,84,233,0.28); }
+
+/* small screen adjustments */
+@media (max-width: 520px) {
+  .container-student-card .card { min-height: 0; }
+  .card-body { padding: 14px; gap: 10px; }
+  .info-icon { width: 42px; height: 42px; flex: 0 0 42px; }
 }

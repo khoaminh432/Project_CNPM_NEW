@@ -1,6 +1,9 @@
 {
   "dependencies": {
+    "@goongmaps/goong-js": "github:goong-io/goong-js",
+    "@goongmaps/goong-map-react": "^1.1.2",
     "@vitejs/plugin-react": "^5.0.4",
+    "axios": "^1.13.2",
     "vite": "^7.1.7"
   }
 }

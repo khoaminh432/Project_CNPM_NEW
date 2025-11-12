@@ -2,9 +2,13 @@ import React, { useState } from "react";
 import "./App.css";
 import Info from "./Info";
 import Tracking from "./Tracking";
-import StudentManagementPage from "./pages/maincontent/Student_management/StudentManagementPage";
 import MapComponent from "./components/MapComponent";
+import StudentManagementPage from "./pages/maincontent/Student_management/StudentManagementPage";
+import RouteManagementPage from "./pages/maincontent/Route_management/RouteManagementPage";
+
+import AddRoute from "./pages/maincontent/Route_management/component/AddRoute";
 function App() {
+
   const [showModal, setShowModal] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
   const [modalValue, setModalValue] = useState("");
@@ -65,7 +69,6 @@ function App() {
 
             {/* Bản đồ */}
             <div className="map">
-              
               <MapComponent />
             </div>
           </>
@@ -74,7 +77,7 @@ function App() {
         {/* component Tracking */}
         {activePage === "THEO DÕI XE BUÝT" && <Tracking />}
         {activePage === "QUẢN LÝ HỌC SINH" && <StudentManagementPage />}
-        {activePage === "QUẢN LÝ TUYẾN XE" && (<div><h2>Route Management Page</h2></div>)}
+        {activePage === "QUẢN LÝ TUYẾN XE" && <AddRoute/>}
       </div>
     </div>
   );

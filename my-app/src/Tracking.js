@@ -1,5 +1,4 @@
 import React from "react";
-
 function Tracking() {
   return (
     <div className="tracking-container">
@@ -9,7 +8,7 @@ function Tracking() {
         <div className="body">
           {/* Map */}
           <div className="map">
-            <p>Bản đồ Google Map</p>
+            Map API Component
           </div>
 
           {/* Panel tìm kiếm / bộ lọc */}

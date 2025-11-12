@@ -1,0 +1,146 @@
+/* index.css - styles cho DriverMap */
+:root{
+  --bg: #fff;
+  --muted: #6b7280;
+  --main-color: #0073FB; /* nút */
+  --light-gray: #f3f4f6;
+}
+
+* { box-sizing: border-box; }
+html,body,#root { height: 100%; margin: 0; font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
+
+.driver-map-root {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* header */
+.dm-header {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  background: transparent;
+  z-index: 30;
+}
+.dm-back-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: rgba(255,255,255,0.9);
+  padding: 6px;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+}
+
+/* map container fills remaining space */
+.dm-map-container {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  background: var(--light-gray); /* temporary */
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+
+
+/* placeholder map (centered image / color) */
+.dm-map-placeholder {
+  flex: 1;
+  background-image: linear-gradient(180deg, #f8fafc 0%, #eef2f6 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  position: relative;
+  overflow: hidden;
+}
+
+/* text inside placeholder */
+.dm-placeholder-text {
+  text-align: center;
+  background: rgba(255,255,255,0.85);
+  padding: 16px 20px;
+  border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(16,24,40,0.06);
+}
+.dm-placeholder-text strong { display:block; margin-bottom:6px; color:#111827; }
+.dm-placeholder-text span { display:block; font-size:13px; color:var(--muted); }
+
+/* center connect button (floating slightly above bottom) */
+.dm-center-control {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 86px; /* adjust to match screenshot */
+  z-index: 50;
+}
+
+.dm-connect-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 48px;
+  padding: 0 18px;
+  border-radius: 999px;
+  border: none;
+  background: var(--main-color);
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(25,118,210,0.22);
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+.dm-connect-btn:hover {
+  background: var(--main-color);
+  transform: translateY(-2px);
+}
+
+.dm-connect-btn.connected {
+  background: var(--main-color);
+}
+
+/* bottom status bar */
+.dm-bottom-status {
+  height: 72px;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top: 1px solid rgba(15,23,42,0.06);
+  z-index: 40;
+}
+
+.dm-status-text {
+  text-align: center;
+  color: var(--muted);
+}
+.dm-status-line1 {
+  font-weight: 700;
+  color: var(--main-color); 
+  font-size: 20px;
+}
+.dm-map-wrapper {
+  position: absolute;
+  inset: 0;
+}
+
+.dm-status-line2 {
+  font-weight: bold;
+  font-size: 20px;
+  margin-top: 2px;
+  color: #000000;
+}
+
+/* responsive tweaks */
+@media (max-width: 600px) {
+  .dm-connect-btn { width: 48px; height: 48px; bottom: 80px; }
+  .dm-bottom-status { height: 64px; }
+}

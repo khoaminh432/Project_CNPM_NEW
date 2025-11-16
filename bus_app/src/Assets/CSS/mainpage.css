@@ -23,65 +23,43 @@
 }
 
 /* ========== HEADER ========== */
-.mp-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 32px;
-  background: white;
-  border-bottom: 1px solid #f0f0f0;
-  gap: 24px;
-  z-index: 100;
-}
 
-.mp-header-logo {
-  font-size: 36px;
-  font-weight: 700;
-  color: var(--main-color);
+
+.mp-nav-current {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-dark);
   font-family: "Raleway", sans-serif;
-  min-width: 100px;
+  white-space: nowrap;
 }
 
-.mp-header-nav-icon {
-  width: 140px;
-  height: 50px;
-  background: var(--light-blue);
-  border-radius: 20px;
-  overflow: hidden;
-}
-
-.mp-header-nav-icon img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.mp-header-nav {
-  display: flex;
-  gap: 90px;
-  flex: 1;
-}
 
 .mp-nav-item {
-  font-size: 20px;
-  font-weight: 700;
+  font-size: 18px;
+  font-weight: 600;
   color: var(--text-dark);
   text-decoration: none;
   font-family: "Raleway", sans-serif;
   cursor: pointer;
-  transition: color 0.2s ease;
+  transition: color 0.2s ease, opacity 0.2s ease;
+  white-space: nowrap;
+  opacity: 0.7;
+}
+
+.mp-nav-item:hover {
+  color: var(--main-color);
+  opacity: 1;
+}
+
+.mp-nav-item:first-child {
+  opacity: 1;
+  font-weight: 700;
 }
 
 .mp-nav-item:hover {
   color: var(--main-color);
 }
 
-.mp-header-profile {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-left: auto;
-}
 
 .mp-profile-avatar-wrapper {
   position: relative;
@@ -100,7 +78,7 @@
 }
 
 .mp-profile-text {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
   color: var(--text-dark);
   font-family: "Raleway", sans-serif;
@@ -118,9 +96,16 @@
 }
 
 .mp-profile-dropdown {
-  width: 26px;
-  height: 20px;
+  width: 22px;
+  height: 16px;
   object-fit: contain;
+  transform: rotate(180deg);
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.mp-profile-dropdown:hover {
+  transform: rotate(180deg) scaleY(1.1);
 }
 
 /* ========== MAIN CONTAINER ========== */
@@ -155,32 +140,31 @@
   background: white;
   display: flex;
   flex-direction: column;
-}
-
-.mp-card-banner {
-  position: relative;
-  height: 140px;
-  background: #f0f0f0;
+  width: 120%;
   flex-shrink: 0;
+  margin: 0 auto;
+  margin-left: 25px;
 }
 
-.mp-card-banner img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+
+/* Content Wrapper - Contains avatar, info, bank section in one row */
+.mp-card-content-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  position: relative;
 }
 
 .mp-card-avatar {
-  position: absolute;
-  bottom: -30px;
-  left: 16px;
-  width: 72px;
-  height: 72px;
+  flex-shrink: 0;
+  width: 84px;
+  height: 84px;
   border-radius: 50%;
   border: 3px solid white;
   background: white;
   overflow: hidden;
-  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .mp-card-avatar img {
@@ -189,24 +173,23 @@
   object-fit: cover;
 }
 
+/* Center Section - Driver Name and Join Date */
 .mp-card-info {
-  padding: 50px 16px 16px 110px;
-  position: relative;
-  flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+  flex: 1;
 }
 
 .mp-card-name-section {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
 }
 
 .mp-driver-name {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
   color: var(--text-dark);
   margin: 0;
@@ -214,90 +197,120 @@
 }
 
 .mp-star-icon {
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
 }
 
 .mp-rating {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
   color: var(--text-dark);
   font-family: "Radio Canada", sans-serif;
 }
 
 .mp-join-date {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 300;
   color: var(--text-dark);
-  margin: 2px 0;
+  margin: 0;
   font-family: "Radio Canada", sans-serif;
+  line-height: 1.4;
 }
 
-.mp-card-divider {
-  height: 1px;
-  margin: 6px 0;
-  opacity: 0.3;
-}
-
-.mp-card-divider img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
+/* Right Section - Bank and Payment Info */
+.mp-card-bank-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  flex-shrink: 0;
 }
 
 .mp-card-meta {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 300;
   color: var(--text-dark);
-  margin: 2px 0;
+  margin: 0 0 4px 0;
   font-family: "Radio Canada", sans-serif;
+  text-align: left;
 }
 
 .mp-card-account {
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 300;
   color: var(--text-dark);
-  margin: 2px 0 0 0;
+  margin: 0 0 8px 0;
   font-family: "Radio Canada", sans-serif;
+  text-align: left;
 }
 
+.mp-card-divider {
+  position: relative;
+  width: 1px;
+  height: 100px;
+  background: #d0d0d0;
+  flex-shrink: 0;
+}
+
+.mp-card-divider img {
+  display: none;
+}
+
+/* Stats Section */
 .mp-card-stats {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  padding: 12px 16px;
-  gap: 12px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 16px;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 1) 100%);
   border-top: 1px solid #f0f0f0;
-  flex-wrap: wrap;
+  gap: 12px;
+}
+
+
+
+.mp-stats-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 70px;
+  width: 100%;
 }
 
 .mp-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
-  flex: 1;
-  min-width: 80px;
 }
 
 .mp-stat-value {
-  font-size: 16px;
-  font-weight: 700;
+  font-size: 22px;
+  font-weight: 600;
   color: var(--main-color);
   font-family: "Radio Canada", sans-serif;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
   line-height: 1;
+  letter-spacing: 0.15px;
 }
 
 .mp-stat-label {
-  font-size: 11px;
+  font-size: 16px;
   font-weight: 500;
   color: var(--main-color);
   font-family: "Radio Canada", sans-serif;
-  line-height: 1.2;
+  line-height: 1.3;
+  letter-spacing: 0.15px;
 }
 
 .mp-card-card-image {
-  width: 90px;
-  height: 45px;
+  width: 140px;
+  height: 50px;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
 }
 
 .mp-card-card-image img {
@@ -315,10 +328,12 @@
   background: white;
   flex: 1;
   margin: 0 auto;
+  margin-left: 25px;
+  flex-shrink: 0;
 }
 
 .mp-activity-title {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
   color: var(--text-dark);
   margin: 0 0 12px 0;
@@ -382,13 +397,14 @@
 /* ========== MAP SECTION ========== */
 .mp-map-container {
   width: 80%;
-  height: 60vh;
+  height: 70vh;
   border: 2px solid var(--border-color);
   border-radius: 8px;
   overflow: hidden;
   background: #f0f0f0;
   flex-shrink: 0;
-  margin: 0 auto;
+  margin-left: auto;
+  margin-right: 5vh;
 }
 
 .mp-map-container img {
@@ -398,12 +414,12 @@
 }
 
 .mp-map-button {
-  width: 60%;
+  width: 80%;
   padding: 14px 28px;
   background: var(--light-blue);
   border: none;
   border-radius: 25px;
-  font-size: 15px;
+  font-size: 18px;
   font-weight: 600;
   color: var(--text-dark);
   cursor: pointer;
@@ -414,7 +430,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto;
+  margin-left: auto;
+  margin-right: 5vh;
 }
 
 
@@ -444,14 +461,30 @@
     width: 100%;
   }
 
-  .mp-header {
-    flex-wrap: wrap;
+  .mp-profile-card {
+    width: 100%;
+    margin: 0 auto;
   }
 
-  .mp-header-nav {
-    gap: 30px;
+  .mp-activity-card {
+    width: 100%;
+    margin: 0 auto;
   }
 
+  .mp-map-container {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .mp-map-button {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+ 
+ 
   .mp-nav-item {
     font-size: 16px;
   }
@@ -462,23 +495,6 @@
     height: auto;
   }
 
-  .mp-header {
-    padding: 12px 16px;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
-
-  .mp-header-logo {
-    font-size: 24px;
-  }
-
-  .mp-header-nav {
-    display: none;
-  }
-
-  .mp-header-profile {
-    margin-left: 0;
-  }
 
   .mp-container {
     padding: 12px;
@@ -488,6 +504,31 @@
 
   .mp-left-panel {
     flex: 1;
+  }
+
+  .mp-profile-card {
+    width: 100%;
+    margin-left: 0;
+    margin: 0 auto;
+  }
+
+  .mp-activity-card {
+    width: 100%;
+    margin-left: 0;
+    margin: 0 auto;
+  }
+
+  .mp-map-container {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    height: 40vh;
+  }
+
+  .mp-map-button {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
   }
 
   .mp-card-info {

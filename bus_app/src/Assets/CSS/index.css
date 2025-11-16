@@ -15,15 +15,6 @@ html,body,#root { height: 100%; margin: 0; font-family: Inter, system-ui, -apple
   flex-direction: column;
 }
 
-/* header */
-.dm-header {
-  height: 56px;
-  display: flex;
-  align-items: center;
-  padding: 0 12px;
-  background: transparent;
-  z-index: 30;
-}
 .dm-back-btn {
   display: inline-flex;
   align-items: center;

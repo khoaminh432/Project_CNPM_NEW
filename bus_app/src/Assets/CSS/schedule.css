@@ -1,0 +1,423 @@
+/* schedule.css - Styles for Schedule (Lịch làm) component */
+:root {
+  --main-color: #0073FB;
+  --light-blue: #87BEFF;
+  --light-blue-bg: #9BC9FF;
+  --light-green: #CFFFC9;
+  --light-red: #FFC9C9;
+  --border-color: #757373;
+  --text-dark: #111827;
+  --text-gray: #626161;
+  --text-brown: #827676;
+  --text-muted: #707070;
+  --bg-light: #f3f4f6;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.sc-root {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+  background: white;
+  font-family: Inter, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* ========== CONTAINER ========== */
+.sc-container {
+  flex: 1;
+  padding: 40px 60px;
+  display: flex;
+  gap: 40px;
+  overflow-y: auto;
+}
+
+/* ========== LEFT PANEL ========== */
+.sc-left-panel {
+  width: 320px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+/* ========== DRIVER CARD ========== */
+.sc-driver-card {
+  background: white;
+  border: 2px solid #e0e0e0;
+  border-radius: 15px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sc-date-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.sc-calendar-icon {
+  font-size: 20px;
+}
+
+.sc-date-text {
+  font-family: "Raleway", sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.sc-driver-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.sc-driver-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid #e0e0e0;
+  background: white;
+  flex-shrink: 0;
+}
+
+.sc-driver-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sc-driver-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sc-driver-name-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sc-driver-name {
+  font-family: "Raleway", sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin: 0;
+}
+
+.sc-driver-rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sc-star-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.sc-rating-text {
+  font-family: "Raleway", sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.sc-driver-id {
+  font-family: "Raleway", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-gray);
+  margin: 0;
+}
+
+/* ========== STATUS LEGEND ========== */
+.sc-status-legend {
+  background: #f9f9f9;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.sc-legend-title {
+  font-family: "Raleway", sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin: 0 0 16px 0;
+}
+
+.sc-legend-items {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sc-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sc-legend-color {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.sc-color-red {
+  background: var(--light-red);
+}
+
+.sc-color-green {
+  background: var(--light-green);
+}
+
+.sc-color-blue {
+  background: var(--light-blue-bg);
+}
+
+.sc-legend-text {
+  font-family: "Radio Canada", sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-dark);
+}
+
+/* ========== RIGHT PANEL - SCHEDULE ITEMS ========== */
+.sc-right-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ========== SCHEDULE ITEM ========== */
+.sc-schedule-item {
+  border-radius: 20px;
+  padding: 24px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.sc-schedule-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.sc-item-not-started {
+  background: var(--light-red);
+  border: 2px solid #ffb3b3;
+}
+
+.sc-item-in-progress {
+  background: var(--light-green);
+  border: 2px solid #b3ffb3;
+}
+
+.sc-item-completed {
+  background: var(--light-blue-bg);
+  border: 2px solid #6fa9e6;
+}
+
+/* ========== ITEM HEADER ========== */
+.sc-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.sc-item-driver-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sc-item-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid white;
+}
+
+.sc-item-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sc-item-driver-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sc-item-driver-name {
+  font-family: "Radio Canada", sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin: 0;
+}
+
+.sc-item-driver-route {
+  font-family: "Radio Canada", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-gray);
+  margin: 0;
+}
+
+.sc-bus-icon {
+  width: 40px;
+  height: 40px;
+}
+
+/* ========== ITEM BODY ========== */
+.sc-item-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sc-item-time-section {
+  display: flex;
+  gap: 32px;
+}
+
+.sc-time-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sc-time-label {
+  font-family: "Radio Canada", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-gray);
+}
+
+.sc-time-value {
+  font-family: "Radio Canada", sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.sc-item-location {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 10px;
+}
+
+.sc-location-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.sc-location-text {
+  font-family: "Radio Canada", sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-dark);
+}
+
+.sc-item-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 8px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.sc-item-price {
+  font-family: "Radio Canada", sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+/* ========== RESPONSIVE DESIGN ========== */
+@media (max-width: 1200px) {
+  .sc-container {
+    padding: 30px 40px;
+    gap: 30px;
+  }
+
+  .sc-left-panel {
+    width: 280px;
+  }
+
+  .sc-driver-name {
+    font-size: 20px;
+  }
+
+  .sc-schedule-item {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 968px) {
+  .sc-container {
+    flex-direction: column;
+    padding: 20px;
+  }
+
+  .sc-left-panel {
+    width: 100%;
+    flex-direction: row;
+    gap: 20px;
+  }
+
+  .sc-driver-card {
+    flex: 1;
+  }
+
+  .sc-status-legend {
+    flex: 1;
+  }
+
+  .sc-right-panel {
+    gap: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .sc-left-panel {
+    flex-direction: column;
+  }
+
+  .sc-item-time-section {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .sc-schedule-item {
+    padding: 16px;
+  }
+
+  .sc-item-driver-name {
+    font-size: 16px;
+  }
+
+  .sc-item-price {
+    font-size: 20px;
+  }
+}

@@ -1,5 +1,4 @@
-// File: src/frontend/NextWeekScheduler.js
-// (ĐÃ CẬP NHẬT ĐỂ GỌI API BACKEND CHO XẾP LỊCH NHANH)
+
 
 import React, { useState, useEffect, useMemo } from "react";
 import "./NextWeekScheduler.css"; 
@@ -30,7 +29,7 @@ export default function NextWeekScheduler({ isOpen, onClose, drivers = [] }) {
     const [isGenerating, setIsGenerating] = useState(false);
     // =====================================================
 
-    // 2. LOGIC TÍNH TOÁN (VẪN GIỮ Ở ĐÂY)
+    // 2. LOGIC TÍNH TOÁN 
     const totalBusShifts = vehicles.length * 7;
     const totalDriverShifts = useMemo(() => {
       if (!drivers) return 0;
@@ -45,7 +44,6 @@ export default function NextWeekScheduler({ isOpen, onClose, drivers = [] }) {
 
     // 3. CÁC HÀM XỬ LÝ STATE 
     
-    // (useEffect cho mainTab - giữ nguyên)
     useEffect(() => {
         if (mainTab === 'currentWeek') {
             setDaysOfWeek(generateWeekDays(0)); 
@@ -55,7 +53,7 @@ export default function NextWeekScheduler({ isOpen, onClose, drivers = [] }) {
         setFastAssignSummary(null);
     }, [mainTab]); 
     
-    // (useEffect cho fetch data - giữ nguyên)
+    
     useEffect(() => {
         if (isOpen) {
             setIsLoading(true);
@@ -127,7 +125,6 @@ export default function NextWeekScheduler({ isOpen, onClose, drivers = [] }) {
         return null;
     }
 
-    // (getAvailableDrivers - giữ nguyên)
     const getAvailableDrivers = (currentBusId, dayKey) => {
         if (!drivers || drivers.length === 0) {
             return [];
@@ -147,7 +144,6 @@ export default function NextWeekScheduler({ isOpen, onClose, drivers = [] }) {
         return baseAvailableDrivers.filter(driver => !assignedDriversInColumn.has(driver.id));
     };
 
-    // (handleMatrixChange - giữ nguyên)
     const handleMatrixChange = (busId, dayKey, driverId) => {
         setScheduleMatrix(prevMatrix => ({
             ...prevMatrix,
@@ -163,7 +159,7 @@ export default function NextWeekScheduler({ isOpen, onClose, drivers = [] }) {
     const handleFullWeekMatch = async () => {
         console.log("Bắt đầu gọi API xếp lịch nhanh...");
         setIsGenerating(true); // Bật loading
-        setFastAssignSummary(null); // Xóa tóm tắt cũ
+        setFastAssignSummary(null); 
 
         try {
             const response = await fetch('http://localhost:3001/api/schedules/generate-fast-match', {
@@ -207,8 +203,7 @@ export default function NextWeekScheduler({ isOpen, onClose, drivers = [] }) {
             setSubTab('fast-match');
         }
     }
-
-    // (handleSaveSchedule - giữ nguyên)
+    
     const handleSaveSchedule = async () => {
         setIsSaving(true);
         try {

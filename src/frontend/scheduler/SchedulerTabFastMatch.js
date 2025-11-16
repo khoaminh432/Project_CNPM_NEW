@@ -1,6 +1,3 @@
-// File: src/frontend/scheduler/SchedulerTabFastMatch.js
-// (ĐÃ CẬP NHẬT ĐỂ NHẬN DỮ LIỆU TỪ API)
-
 import React from "react";
 
 // (Hàm getShortDayLabel giữ nguyên)
@@ -64,7 +61,6 @@ export default function SchedulerTabFastMatch({
                             <tr>
                                 {daysOfWeek.map(day => {
                                     // === 🔹 CẬP NHẬT LOGIC ĐỌC ===
-                                    // (Giờ đây 'fastAssignSummary' là object, 'day.key' là TUE, MON...)
                                     const assignedDrivers = fastAssignSummary[day.key] || []; 
                                     
                                     return (

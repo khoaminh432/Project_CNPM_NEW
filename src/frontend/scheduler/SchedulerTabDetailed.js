@@ -15,9 +15,8 @@ export default function SchedulerTabDetailed({
 
     // State của filter nên được đặt ở đây, vì nó chỉ ảnh hưởng đến tab này
     const [filterRoute, setFilterRoute] = useState("Tất cả");
-    const [filterStatus, setFilterStatus] = useState("Tất cả"); // (Logic filter này chưa được code, nhưng state đặt ở đây là đúng)
-
-    // useMemo để tính toán lại filteredVehicles chỉ khi state/props liên quan thay đổi
+    const [filterStatus, setFilterStatus] = useState("Tất cả"); 
+    
     const filteredVehicles = useMemo(() => {
         return vehicles.filter(vehicle => {
             if (filterRoute === "Tất cả") return true;

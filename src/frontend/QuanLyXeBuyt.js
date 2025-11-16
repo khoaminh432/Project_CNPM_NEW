@@ -1,61 +1,231 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react"; 
 import "./QuanLyXeBuyt.css";
+import BusFormPopup from "./components/BusFormPopup";
+
+
+const API_URL = "http://localhost:3001/api/buses";
+const ROUTES_API_URL = "http://localhost:3001/api/routes";
 
 function QuanLyXeBuyt() {
-  const [busData, setBusData] = useState([
-    { id: "001", license: "51C-49494", route: "q1-q5, vvk", status: "Đang hoạt động", driver: "Lê Văn A", departure: "Đã xuất phát", registry: "2025-12-31" },
-    { id: "002", license: "52B-12345", route: "q8-q7, ttx", status: "Đang bảo trì", driver: "Lê Thị B", departure: "Chưa xuất phát", registry: "2024-11-15" },
-    { id: "003", license: "54C-56789", route: "q3-q10, ltk", status: "Ngưng hoạt động", driver: "Nguyễn Văn C", departure: "Chưa xuất phát", registry: "2026-01-10" },
-  ]);
-
+  // --- TẤT CẢ STATE VÀ HÀM VẪN Ở ĐÂY ---
+  const [busData, setBusData] = useState([]); 
   const [showForm, setShowForm] = useState(false);
-  const [formType, setFormType] = useState(""); // "edit" | "add" | "view"
+  const [formType, setFormType] = useState(""); 
   const [formData, setFormData] = useState({ id: "", license: "", route: "", status: "", driver: "", departure: "", registry: "" });
   const [filterStatus, setFilterStatus] = useState("");
   const [filterDeparture, setFilterDeparture] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [allRoutes, setAllRoutes] = useState([]);
+  const [suggestions, setSuggestions] = useState([]);
 
+  // ... (fetchBuses, useEffect fetchBuses, useEffect fetchAllRoutes giữ nguyên) ...
+  const fetchBuses = useCallback(async () => {
+    // ...
+    const params = new URLSearchParams();
+    if (filterStatus) {
+      params.append("status", filterStatus);
+    }
+    if (filterDeparture) {
+      params.append("departure", filterDeparture);
+    }
+    
+    try {
+      setErrorMessage(""); 
+      const response = await fetch(`${API_URL}?${params.toString()}`);
+      if (!response.ok) {
+        throw new Error("Lỗi khi tải dữ liệu");
+      }
+      const data = await response.json();
+      setBusData(data); 
+    } catch (error) {
+      console.error("Fetch error:", error);
+      setErrorMessage("Không thể kết nối đến máy chủ. Vui lòng thử lại.");
+    }
+  }, [filterStatus, filterDeparture]);
+
+  useEffect(() => {
+    fetchBuses();
+  }, [fetchBuses]);
+
+  useEffect(() => {
+    const fetchAllRoutes = async () => {
+      try {
+        const response = await fetch(ROUTES_API_URL);
+        if (!response.ok) throw new Error("Không thể tải danh sách tuyến");
+        const data = await response.json();
+        setAllRoutes(data); 
+      } catch (error) {
+        console.error(error.message);
+      }
+    };
+    
+    fetchAllRoutes();
+  }, []); 
+  
+  // ... (handleAdd giữ nguyên) ...
   const handleAdd = () => {
+    const allNumbers = busData.map(bus => 
+        parseInt(bus.id.replace("XE", ""), 10)
+    ).filter(num => !isNaN(num)); 
+
+    const maxIdNumber = allNumbers.length > 0 ? Math.max(...allNumbers) : 0;
+    const nextIdNumber = maxIdNumber + 1;
+    const nextId = "XE" + String(nextIdNumber).padStart(3, '0');
+
     setFormType("add");
-    setFormData({ id: "", license: "", route: "", status: "", driver: "", departure: "", registry: "" });
+    setFormData({ 
+        id: nextId, 
+        license: "", 
+        route: "", 
+        status: "Đang hoạt động", 
+        departure: "Chưa xuất phát", 
+        registry: "" 
+    });
+    setErrorMessage("");
+    setSuggestions([]); 
     setShowForm(true);
   };
-
+  
   const handleEdit = (bus) => {
     setFormType("edit");
     setFormData(bus);
+    setErrorMessage("");
+    setSuggestions([]); 
     setShowForm(true);
   };
 
   const handleView = (bus) => {
     setFormType("view");
     setFormData(bus);
+    setErrorMessage("");
+    setSuggestions([]); 
     setShowForm(true);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (formType === "add") {
-      setBusData([...busData, formData]);
-    } else if (formType === "edit") {
-      setBusData(busData.map((bus) => (bus.id === formData.id ? formData : bus)));
-    }
-    setShowForm(false);
-  };
+    setErrorMessage("");
+    
+    const dataToSubmit = {
+        id: formData.id,
+        license: formData.license,
+        route: formData.route, 
+        status: formData.status,
+        departure: formData.departure,
+        registry: formData.registry,
+    };
 
-  const handleDelete = () => {
-    if (window.confirm("Bạn có chắc chắn muốn xóa xe buýt này không?")) {
-      setBusData(busData.filter((bus) => bus.id !== formData.id));
+    const url = (formType === "add") ? API_URL : `${API_URL}/${formData.id}`;
+    const method = (formType === "add") ? "POST" : "PUT";
+
+    try {
+      const response = await fetch(url, {
+        method: method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(dataToSubmit), 
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Lỗi không xác định");
+      }
+      
       setShowForm(false);
+      fetchBuses(); 
+
+    } catch (error) {
+      console.error("Submit error:", error);
+      setErrorMessage(error.message);
     }
   };
 
-  const filteredData = busData.filter(
-    (bus) =>
-      (filterStatus === "" || bus.status === filterStatus) &&
-      (filterDeparture === "" || bus.departure === filterDeparture)
-  );
+  const handleDelete = async () => {
+    if (window.confirm("Bạn có chắc chắn muốn xóa xe buýt này không?")) {
+      try {
+        setErrorMessage("");
+        const response = await fetch(`${API_URL}/${formData.id}`, {
+          method: "DELETE",
+        });
+        
+        if (!response.ok) {
+           const errorData = await response.json();
+           throw new Error(errorData.error || errorData.message || "Lỗi khi xóa");
+        }
+        
+        setShowForm(false);
+        fetchBuses(); 
+        
+      } catch (error) {
+        console.error("Delete error:", error);
+        setErrorMessage(error.message);
+      }
+    }
+  };
+  
+  const handleEditFirst = () => {
+    setFormType("edit");
+    setFormData({ 
+        id: "", 
+        license: "", 
+        route: "", 
+        status: "", 
+        departure: "", 
+        registry: "" 
+    });
+    setErrorMessage(""); 
+    setSuggestions([]);
+    setShowForm(true);
+  };
+  
+  const handleIdChange = (idValue) => {
+    setFormData({ ...formData, id: idValue });
 
+    if (formType !== 'edit') return; 
+
+    if (idValue.length === 0) {
+        setSuggestions([]);
+        setErrorMessage("");
+        setFormData({
+            id: "", 
+            license: "", 
+            route: "", 
+            status: "", 
+            departure: "", 
+            registry: ""
+        });
+        return;
+    }
+
+    const filteredSuggestions = busData.filter(bus => 
+        bus.id.toLowerCase().startsWith(idValue.toLowerCase())
+    );
+    
+    setSuggestions(filteredSuggestions);
+
+    if (filteredSuggestions.length === 0) {
+        setErrorMessage("Không tìm thấy kết quả hợp lệ");
+    } else {
+        setErrorMessage("");
+    }
+  };
+
+  const handleSuggestionClick = (bus) => {
+    setFormData(bus); 
+    setSuggestions([]); 
+    setErrorMessage("");
+  };
+
+  const filteredBusData = busData.filter(bus => {
+    const term = searchTerm.toLowerCase();
+    return (
+      bus.id.toLowerCase().includes(term) ||
+      bus.license.toLowerCase().includes(term) ||
+      (bus.driver && bus.driver.toLowerCase().includes(term)) 
+    );
+  });
+
+  // --- PHẦN RENDER (JSX) ĐÃ NGẮN GỌN HƠN ---
   return (
     <div className="dashboard">
       <aside className="sidebar">
@@ -69,13 +239,21 @@ function QuanLyXeBuyt() {
         </header>
 
         <div className="toolbar">
-          <input className="search-box" type="text" placeholder="🔍 Search..." />
+          <input 
+            className="search-box" 
+            type="text" 
+            placeholder="🔍 Tìm theo mã xe, biển số, tên tài xế..." 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
           <div className="toolbar-buttons">
-            <button onClick={() => handleEdit(busData[0])}>Chỉnh sửa</button>
+            <button onClick={handleEditFirst}>
+              Chỉnh sửa
+            </button>
             <button onClick={handleAdd}>+ Thêm xe buýt</button>
           </div>
         </div>
-
+        
         <table className="bus-table">
           <thead>
             <tr>
@@ -94,7 +272,9 @@ function QuanLyXeBuyt() {
                   <option value="Ngưng hoạt động">Ngưng hoạt động</option>
                 </select>
               </th>
+              
               <th>TÀI XẾ</th>
+              
               <th>
                 TÌNH TRẠNG XUẤT PHÁT{" "}
                 <select
@@ -105,13 +285,13 @@ function QuanLyXeBuyt() {
                   <option value="">Tất cả</option>
                   <option value="Đã xuất phát">Đã xuất phát</option>
                   <option value="Chưa xuất phát">Chưa xuất phát</option>
-                  <option value="Kết thúc chuyến đi">Kết thúc chuyến đi</option>
+                  <option value="Đã kết thúc">Đã kết thúc</option>
                 </select>
               </th>
             </tr>
           </thead>
           <tbody>
-            {filteredData.map((bus) => (
+            {filteredBusData.map((bus) => (
               <tr key={bus.id} onClick={() => handleView(bus)} className="clickable-row">
                 <td>
                   <strong>{bus.id}</strong>
@@ -131,14 +311,16 @@ function QuanLyXeBuyt() {
                     {bus.status}
                   </span>
                 </td>
+                
                 <td className="medium-column">{bus.driver}</td>
+                
                 <td>
                   <span
                     className={`departure-badge ${
                       bus.departure === "Đã xuất phát"
                         ? "active"
-                        : bus.departure === "Kết thúc chuyến đi"
-                        ? "maintenance"
+                        : bus.departure === "Đã kết thúc"
+                        ? "maintenance" 
                         : "inactive"
                     }`}
                   >
@@ -151,107 +333,23 @@ function QuanLyXeBuyt() {
         </table>
       </main>
 
-      {showForm && (
-        <div className="popup">
-          <div className="popup-content">
-            <h3>
-              {formType === "add"
-                ? "Thêm xe buýt"
-                : formType === "edit"
-                ? "Chỉnh sửa xe buýt"
-                : "Thông tin xe buýt"}
-            </h3>
-
-            {/* Popup chỉ hiển thị form, không còn notification */}
-
-            <form onSubmit={handleSubmit}>
-              <label>Mã số xe</label>
-              <input
-                type="text"
-                value={formData.id}
-                readOnly={formType === "view"}
-                onChange={(e) => {
-                  const idValue = e.target.value.trim();
-                  const foundBus = busData.find((bus) => bus.id === idValue);
-                  if (foundBus) {
-                    setFormData(foundBus);
-                    setErrorMessage("");
-                  } else if (idValue !== "") {
-                    setErrorMessage("Không có thông tin hợp lệ!");
-                    setFormData({ id: idValue, license: "", route: "", status: "", driver: "", departure: "", registry: "" });
-                  } else {
-                    setErrorMessage("");
-                    setFormData({ id: "", license: "", route: "", status: "", driver: "", departure: "", registry: "" });
-                  }
-                }}
-                required
-              />
-              {errorMessage && <p className="error">{errorMessage}</p>}
-
-              <label>Tuyến đường</label>
-              <input
-                type="text"
-                value={formData.route}
-                readOnly={formType === "view"}
-                onChange={(e) => setFormData({ ...formData, route: e.target.value })}
-                required
-              />
-
-              <label>Tình trạng xe</label>
-              <select
-                value={formData.status}
-                disabled={formType === "view"}
-                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                required
-              >
-                <option value="">-- Chọn --</option>
-                <option value="Đang hoạt động">Đang hoạt động</option>
-                <option value="Ngưng hoạt động">Ngưng hoạt động</option>
-                <option value="Đang bảo trì">Đang bảo trì</option>
-              </select>
-
-              <label>Tài xế</label>
-              <input
-                type="text"
-                value={formData.driver}
-                readOnly={formType === "view"}
-                onChange={(e) => setFormData({ ...formData, driver: e.target.value })}
-                required
-              />
-
-              <label>Tình trạng xuất phát</label>
-              <select
-                value={formData.departure}
-                disabled={formType === "view"}
-                onChange={(e) => setFormData({ ...formData, departure: e.target.value })}
-                required
-              >
-                <option value="">-- Chọn --</option>
-                <option value="Đã xuất phát">Đã xuất phát</option>
-                <option value="Kết thúc chuyến đi">Kết thúc chuyến đi</option>
-                <option value="Chưa xuất phát">Chưa xuất phát</option>
-              </select>
-
-              <label>Hạn đăng kiểm</label>
-              <input
-                type="date"
-                value={formData.registry}
-                readOnly={formType === "view"}
-                onChange={(e) => setFormData({ ...formData, registry: e.target.value })}
-                required
-              />
-
-              <div className="popup-buttons">
-                {formType !== "view" && <button type="submit">Lưu</button>}
-                <button type="button" onClick={() => setShowForm(false)}>Thoát</button>
-                {formType !== "add" && (
-                  <button type="button" className="delete-btn" onClick={handleDelete}>Xóa</button>
-                )}
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* === 2. GỌI COMPONENT POPUP MỚI === */}
+      {/* Truyền tất cả state và hàm cần thiết vào component con */}
+      <BusFormPopup
+        show={showForm}
+        formType={formType}
+        formData={formData}
+        allRoutes={allRoutes}
+        errorMessage={errorMessage}
+        suggestions={suggestions}
+        
+        onClose={() => setShowForm(false)}
+        onSubmit={handleSubmit}
+        onDelete={handleDelete}
+        onIdChange={handleIdChange}
+        onSuggestionClick={handleSuggestionClick}
+        setFormData={setFormData}
+      />
     </div>
   );
 }

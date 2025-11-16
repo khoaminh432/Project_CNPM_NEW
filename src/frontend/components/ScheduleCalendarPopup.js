@@ -25,7 +25,7 @@ export default function ScheduleCalendarPopup({ isOpen, onClose, title, driver, 
   useEffect(() => {
     if (isOpen && !driver) { 
       const summary = {
-        MON: [], TUE: [], WED: [], THU: [], FRI: [], SAT: [], SUN: []
+        MON: [], TUE: [], WED: [], THU: [], FRI: [], SAT: [], CN: [] 
       };
       for (const d of drivers) {
         if (d.work_schedule) {
@@ -137,7 +137,7 @@ export default function ScheduleCalendarPopup({ isOpen, onClose, title, driver, 
                       const holidayKey = `${date.getDate()}-${date.getMonth() + 1}`;
                       const isHolidayDay = holidays.includes(holidayKey);
                       
-                      const dayKey = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'][date.getDay()];
+                      const dayKey = ['CN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'][date.getDay()];
                       
                       let registrations = 0;
                       let driversForThisDay = [];
@@ -167,11 +167,7 @@ export default function ScheduleCalendarPopup({ isOpen, onClose, title, driver, 
                       }
                       
                       const canClick = isCurrentMonth && registrations > 0;
-                      
-                      // === 🔹 CẬP NHẬT LOGIC Ở ĐÂY ===
-                      // Chỉ hiện số lượng khi (có đăng ký) VÀ (đang ở chế độ chung !driver)
                       const shouldShowReg = isCurrentMonth && registrations > 0 && !driver;
-                      // ==============================
                       
                       return (
                         <div
@@ -244,12 +240,11 @@ export default function ScheduleCalendarPopup({ isOpen, onClose, title, driver, 
                       <td key={i}>
                         {w.drivers.length > 0 ? (
                           <ul className="driver-list-vertical">
-                            {w.drivers.slice(0, 4).map((d, idx) => (
+                            {w.drivers.map((d, idx) => (
                               <li key={idx} title={`${d.id} - ${d.name}`}>{d.name}</li>
                             ))}
-                            {w.drivers.length > 4 && (
-                              <li style={{ fontStyle: 'italic' }}>...và {w.drivers.length - 4} người khác</li>
-                            )}
+                            
+                            
                           </ul>
                         ) : (
                           <span className="no-registration-table">Không có lịch</span>

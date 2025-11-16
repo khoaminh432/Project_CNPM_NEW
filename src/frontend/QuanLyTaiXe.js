@@ -1,4 +1,4 @@
-// File: src/frontend/QuanLyTaiXe.js
+
 import React, { useState, useEffect } from "react"; 
 import "./QuanLyTaiXe.css";
 import NextWeekScheduler from "./NextWeekScheduler";
@@ -30,9 +30,6 @@ export default function QuanLyTaiXe() {
   const [drivers, setDrivers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   
-  // === 🔹 CẬP NHẬT: Xóa state 'showAutoAssignResultPopup' ===
-  // (State này không còn cần thiết)
-
   useEffect(() => {
     setIsLoading(true);
     fetch('http://localhost:3001/api/drivers')
@@ -80,10 +77,6 @@ export default function QuanLyTaiXe() {
   const handleCloseViewPopup = () => {
     setShowDriverViewPopup(false);
   }
-
-  // === 🔹 CẬP NHẬT: Xóa các hàm xử lý popup kết quả ===
-  // (Không còn cần thiết)
-  // ====================================================
 
   const handleAddDriverToList = (newDriver) => {
     setDrivers(prevDrivers => [...prevDrivers, newDriver]);
@@ -250,11 +243,8 @@ export default function QuanLyTaiXe() {
           isOpen={showScheduler}
           onClose={() => setShowScheduler(false)}
           drivers={drivers}
-          // === 🔹 CẬP NHẬT: Xóa prop 'onShowAutoAssignResult' ===
         />
         
-        {/* 4. (XÓA) Popup Kết Quả Gán Lịch */}
-        {/* (Đã xóa) */}
 
       </main>
     </div>

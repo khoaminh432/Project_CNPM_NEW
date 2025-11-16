@@ -118,27 +118,27 @@
 }
 
 .status-badge.active {
-    background-color: #4CAF50;
+    background-color: #4CAF50; /* Đang hoạt động - Xanh lá */
 }
 
 .status-badge.maintenance {
-    background-color: #FFC107;
+    background-color: #FFC107; /* Đang bảo trì - Vàng (Đã đúng) */
 }
 
 .status-badge.inactive {
-    background-color: #F44336;
+    background-color: #F44336; /* Ngưng hoạt động - Đỏ (Đã đúng) */
 }
 
 .departure-badge.active {
-    background-color: #4CAF50;
+    background-color: #2a4dff; /* Đã xuất phát - Xanh nước biển (Theo yêu cầu) */
 }
 
 .departure-badge.maintenance {
-    background-color: #FFC107;
+    background-color: #4CAF50; /* Kết thúc chuyến đi - Xanh lá */
 }
 
 .departure-badge.inactive {
-    background-color: #F44336;
+    background-color: #F44336; /* Chưa xuất phát - Đỏ (Đã đúng) */
 }
 
 /* Popup */
@@ -246,9 +246,8 @@
     min-width: 200px;
 }
 
-.narrow-column {
-    width: 140px;
-}
+/* --- .narrow-column đã bị xóa vì không dùng --- */
+
 .bus-table td strong {
     display: block;        /* Bắt buộc dòng riêng */
     font-size: 14px;
@@ -259,4 +258,45 @@
     display: block;        /* Biển số xuống dòng */
     font-size: 11px;
     color: #555;
+}
+
+/* --- .readonly-input (bị lặp) đã được xóa 1 lần --- */
+.popup-content input.readonly-input {
+    background-color: #f0f0f0; /* Màu xám */
+    cursor: not-allowed;
+    color: #555;
+    font-weight: bold;
+}
+/* Container cho input tìm kiếm (để định vị dropdown) */
+.popup-content .search-container {
+    position: relative;
+}
+
+/* Dropdown gợi ý */
+.suggestions-dropdown {
+    position: absolute;
+    top: 100%; /* Ngay dưới ô input */
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000; /* Hiển thị đè lên trên các trường khác */
+}
+
+.suggestion-item {
+    padding: 10px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.suggestion-item:hover {
+    background-color: #f0f0f0;
 }

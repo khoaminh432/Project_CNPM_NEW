@@ -1,4 +1,3 @@
-// File: src/frontend/components/DriverEditPopup.js
 import React, { useState, useEffect } from "react"; 
 import "../QuanLyTaiXe.css"; // Dùng chung CSS
 import WorkScheduleCheckboxes from "./WorkScheduleCheckboxes";

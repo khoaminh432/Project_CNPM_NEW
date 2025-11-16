@@ -1,4 +1,3 @@
-
 .popup.scheduler-popup {
     width: 90%;
     max-width: 1200px;
@@ -7,6 +6,7 @@
     flex-direction: column;
     padding: 0;
 }
+
 .popup.scheduler-popup .popup-header {
     background-color: #2563eb;
     color: white;
@@ -16,7 +16,7 @@
 }
 
 .popup.scheduler-popup .popup-header h2 {
-    color: white;
+    /* color: white; <-- Đã xóa, vì được kế thừa từ .popup-header */
     font-size: 18px;
 }
 
@@ -29,12 +29,9 @@
     opacity: 1;
 }
 
-
-.scheduler -tabs-main {
+.scheduler-tabs-main {
     display: flex;
     background-color: #f3f4f6;
-    /*gap: 8px;
-    padding: 10px 20px 0 20px; */
     gap: 6px;
     padding: 8px 15px 0 20px;
 }
@@ -59,6 +56,7 @@
     top: 1px;
 
 }
+
 .scheduler-tabs-sub {
     display: flex;
     gap: 4px;
@@ -181,7 +179,6 @@
     background: #c7e6fb;
     border-radius: 5px;
     margin-top: 0px;
-    margin-down: 0px;
 }
 
 .scheduler-filters .form-group {
@@ -270,20 +267,17 @@
     color: #aaa;
 }
 
+/* --- CSS cho Tab Tổng quan (Yêu cầu 2) --- */
+/* (Phần CSS cũ cho .bus-summary-controls đã bị xóa vì không còn dùng) */
 .bus-summary-controls {
     display: flex;
-    padding: 12px 16px;
+    gap: 20px;
+    padding: 10px 14px;
     border-bottom: 1px solid #eee;
-    background-color: #c7e6fb;
-    border-radius: 8px;
-}
+    background: #c7e6fb;
+    border-radius: 5px;
+    margin-top: 0px;
 
-.bus-summary-controls .form-group {
-    margin-bottom: 0;
-}
-
-.bus-summary-controls .form-group select {
-    width: 300px;
 }
 
 .bus-summary-list {
@@ -305,10 +299,6 @@
     position: sticky;
     top: 0;
     z-index: 1;
-}
-
-.bus-summary-body {
-    /*tự động cuộn */
 }
 
 .bus-summary-row {
@@ -371,7 +361,6 @@
     font-size: 14px;
     font-style: italic;
     color: #dc3545;
-    
 }
 
 .popup.scheduler-popup .popup-footer {
@@ -386,4 +375,177 @@
     border-radius: 0 0 10px 10px;
     position: sticky;
     bottom: 0;
+}
+
+.fast-match-stats div.status-ok strong {
+    color: #28a745;
+    font-weight: bold;
+}
+
+/* --- 1. CSS cho Tóm tắt Xếp lịch nhanh (Yêu cầu 1) --- */
+
+.fast-assign-summary {
+    margin-top: 20px;
+    animation: fadeIn 0.5s;
+}
+
+.fast-assign-summary h4 {
+    color: #0056b3;
+}
+
+.fast-assign-summary p {
+    font-size: 14px;
+    margin-bottom: 15px;
+}
+
+.fast-summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    border: 1px solid #ddd;
+}
+
+.fast-summary-table th {
+    background-color: #007bff;
+    color: white;
+    padding: 10px;
+    text-transform: uppercase;
+    font-size: 14px;
+    border: 1px solid #0069d9;
+}
+
+.fast-summary-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    vertical-align: top;
+    height: 150px;
+}
+
+.fast-summary-table ul {
+    list-style-type: none;
+    padding-left: 0;
+    margin: 0;
+    max-height: 140px;
+    overflow-y: auto;
+}
+
+.fast-summary-table li {
+    font-size: 13px;
+    padding: 4px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.fast-summary-table li:last-child {
+    border-bottom: none;
+}
+
+li.no-assign {
+    font-style: italic;
+    color: #999;
+    text-align: center;
+    padding-top: 10px;
+}
+
+/* --- 2. CSS cho Tab Tổng quan (Yêu cầu 2) --- */
+
+.bus-summary-controls {
+    display: flex;
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 15px;
+}
+
+.summary-view-tab {
+    padding: 10px 15px;
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+    font-size: 15px;
+    color: #555;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -1px;
+    /* Nối với border-bottom của container */
+}
+
+.summary-view-tab:hover {
+    background-color: #f4f4f4;
+    color: #000;
+}
+
+.summary-view-tab.active {
+    color: #007bff;
+    border-bottom-color: #007bff;
+    font-weight: 600;
+}
+
+/* Style cho dropdown chọn ngày */
+.form-group-inline {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.form-group-inline label {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.form-group-inline select {
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+/* Căn chỉnh bảng tóm tắt tuần */
+/* (Rule .summary-week-view rỗng đã bị xóa) */
+
+.cell-summary {
+    text-align: left;
+    vertical-align: top;
+    padding: 8px;
+    font-size: 13px;
+}
+
+.cell-summary .unassigned {
+    color: #aaa;
+    font-style: italic;
+    display: block;
+    text-align: center;
+    padding-top: 10px;
+}
+
+.cell-summary .cell-stacked {
+    /* Tái sử dụng từ .bus-summary-row */
+    display: flex;
+    flex-direction: column;
+}
+
+.cell-summary .cell-stacked strong {
+    font-weight: 600;
+    color: #333;
+}
+
+.cell-summary .cell-stacked span {
+    font-size: 12px;
+    color: #777;
+}
+
+/* Thêm style cho select đã gán */
+.scheduler-select.assigned {
+    background-color: #e6f7ff;
+    /* Màu nền nhẹ khi đã gán */
+    font-weight: 600;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

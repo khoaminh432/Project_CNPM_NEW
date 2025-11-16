@@ -723,3 +723,29 @@
     fill: #5f6368;
     flex-shrink: 0;
 }
+/* Thêm vào cuối file QuanLyTaiXe.css */
+
+.form-group-checkbox-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 8px;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.form-group-checkbox-row label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.form-group-checkbox-row input[type="checkbox"] {
+  width: 16px; /* Ghi đè CSS input chung */
+  height: 16px;
+  cursor: pointer;
+}

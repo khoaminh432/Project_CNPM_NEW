@@ -10,8 +10,10 @@ import '../Assets/CSS/index.css';
 
 function App() {
   const [currentPage, setCurrentPage] = useState("mainpage");
+  const [previousPage, setPreviousPage] = useState(null);
 
   const handleNavigate = (page) => {
+    setPreviousPage(currentPage);
     setCurrentPage(page);
   };
 
@@ -33,7 +35,9 @@ function App() {
       {currentPage === "list" && (
         <List 
           onNavigateToMainPage={() => setCurrentPage("mainpage")} 
+          onNavigateToMap={() => setCurrentPage("drivermap")} 
           onNavigate={handleNavigate}
+          fromDriverMap={previousPage === "drivermap"}
         />
       )}
       {currentPage === "notification" && (

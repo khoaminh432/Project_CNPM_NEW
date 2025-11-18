@@ -14,13 +14,15 @@ const imgEllipse1 = "https://www.figma.com/api/mcp/asset/d5b9682c-87c6-47c0-95d1
 const imgVector = "https://www.figma.com/api/mcp/asset/039918d8-2a2a-4c92-9162-b5c2172b4b40";
 const imgVector1 = "https://www.figma.com/api/mcp/asset/d35bc3a2-045b-4f40-80f0-14a7df2a2fb5";
 
-export default function List({ onNavigateToMainPage, onNavigate }) {
+export default function List({ onNavigateToMainPage, onNavigateToMap, onNavigate, fromDriverMap }) {
   const [selectedStudent, setSelectedStudent] = useState("Nguyễn Văn A");
   const [selectedGender, setSelectedGender] = useState("male");
 
   const handleNavigate = (page) => {
     if (page === "mainpage" && onNavigateToMainPage) {
       onNavigateToMainPage();
+    } else if (page === "drivermap" && onNavigateToMap) {
+      onNavigateToMap();
     } else if (onNavigate) {
       onNavigate(page);
     }
@@ -47,11 +49,19 @@ export default function List({ onNavigateToMainPage, onNavigate }) {
 
       {/* Main Content */}
       <div className="list-container">
+        {/* Back to DriverMap Button - Only show if navigating from DriverMap */}
+        {fromDriverMap && (
+          <button className="list-back-btn" onClick={() => handleNavigate('drivermap')}>
+            ← Quay lại
+          </button>
+        )}
+
         {/* Title */}
         <h1 className="list-title">Thông tin học sinh cần đón</h1>
 
         {/* Left Panel - Student Details */}
         <div className="list-left-panel">
+          
           {/* Pickup/Destination Section */}
           <h2 className="list-section-title">Điểm đón và điểm đến</h2>
           <div className="list-location-card">
@@ -73,28 +83,13 @@ export default function List({ onNavigateToMainPage, onNavigate }) {
           <h2 className="list-section-title">Thông tin học sinh</h2>
           
           <div className="list-info-form">
+            <div className="list-form-row">
             <div className="list-form-group">
               <label className="list-label">Tên</label>
-              <div className="list-input">Nguyễn Văn A</div>
+              <div className="list-input list-input-medium">Nguyễn Văn A</div>
+              
             </div>
-
-            <div className="list-form-row">
-              <div className="list-form-group">
-                <label className="list-label">Lớp</label>
-                <div className="list-input list-input-small">10A1</div>
-              </div>
-              <div className="list-form-group">
-                <label className="list-label">Trường</label>
-                <div className="list-input list-input-medium">Trường THPT ABC</div>
-              </div>
-            </div>
-
-            <div className="list-form-row">
-              <div className="list-form-group">
-                <label className="list-label">Tuổi</label>
-                <div className="list-input list-input-small">12</div>
-              </div>
-              <div className="list-form-group">
+            <div className="list-form-group">
                 <label className="list-label">Giới tính</label>
                 <div className="list-gender-selector">
                   <button 
@@ -110,6 +105,28 @@ export default function List({ onNavigateToMainPage, onNavigate }) {
                     <img src={imgMaterialSymbolsFemale} alt="female" className="list-gender-icon" />
                   </button>
                 </div>
+              </div></div>
+
+            <div className="list-form-row">
+              <div className="list-form-group">
+                <label className="list-label">Tuổi</label>
+                <div className="list-input list-input-small">12</div>
+              </div>
+              <div className="list-form-group">
+                <label className="list-label">Trường</label>
+                <div className="list-input list-input-medium">Trường THPT ABC</div>
+              </div>
+            </div>
+
+            <div className="list-form-row">
+              
+              <div className="list-form-group">
+                <label className="list-label">Phụ huynh</label>
+                <div className="list-input list-input-medium">Nguyễn Văn Ba</div>
+              </div>
+              <div className="list-form-group">
+                <label className="list-label">Số điện thoại</label>
+                <div className="list-input list-input-medium">0123456789</div>
               </div>
             </div>
           </div>

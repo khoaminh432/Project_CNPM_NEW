@@ -110,6 +110,10 @@ export default function Schedule({ onNavigateToMainPage, onNavigate }) {
                   <span className="sc-time-label">Thời gian kết thúc:</span>
                   <span className="sc-time-value">08:00</span>
                 </div>
+                <div className="sc-time-group">
+                  <span className="sc-time-label">Số lượng học sinh:</span>
+                  <span className="sc-time-value">12</span>
+                </div>
               </div>
               <div className="sc-item-location">
                 <FontAwesomeIcon icon={faLocationDot} className="sc-location-icon" />
@@ -145,6 +149,10 @@ export default function Schedule({ onNavigateToMainPage, onNavigate }) {
                   <span className="sc-time-label">Thời gian kết thúc:</span>
                   <span className="sc-time-value">10:30</span>
                 </div>
+                <div className="sc-time-group">
+                  <span className="sc-time-label">Số lượng học sinh:</span>
+                  <span className="sc-time-value">12</span>
+                </div>
               </div>
               <div className="sc-item-location">
                 <FontAwesomeIcon icon={faLocationDot} className="sc-location-icon" />
@@ -179,6 +187,10 @@ export default function Schedule({ onNavigateToMainPage, onNavigate }) {
                 <div className="sc-time-group">
                   <span className="sc-time-label">Thời gian kết thúc:</span>
                   <span className="sc-time-value">13:00</span>
+                </div>
+                <div className="sc-time-group">
+                  <span className="sc-time-label">Số lượng học sinh:</span>
+                  <span className="sc-time-value">12</span>
                 </div>
               </div>
               <div className="sc-item-location">

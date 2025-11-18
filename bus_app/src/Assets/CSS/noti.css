@@ -40,7 +40,7 @@
 
 .noti-section-title {
   font-family: "Raleway", sans-serif;
-  font-size: 30px;
+  font-size: 28px;
   font-weight: 700;
   margin: 0;
   letter-spacing: 0.3px;
@@ -97,8 +97,8 @@
 }
 
 .noti-delete-icon {
-  width: 39px;
-  height: 39px;
+  width: 32px;
+  height: 32px;
   display: block;
 }
 
@@ -136,7 +136,7 @@
 
 .noti-card-title {
   font-family: "Raleway", sans-serif;
-  font-size: 30px;
+  font-size: 25px;
   font-weight: 700;
   margin: 0;
   line-height: 1.167;
@@ -154,7 +154,7 @@
 
 .noti-card-preview {
   font-family: "Raleway", sans-serif;
-  font-size: 25px;
+  font-size: 22px;
   font-weight: 700;
   margin: 0;
   line-height: 1.167;

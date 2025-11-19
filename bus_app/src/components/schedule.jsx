@@ -4,18 +4,12 @@ import Header from "./Header";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCalendar } from "@fortawesome/free-solid-svg-icons";
 import { faLocationDot } from "@fortawesome/free-solid-svg-icons";
-
-// Asset images from Figma
-const imgAvatar = "https://www.figma.com/api/mcp/asset/c801fcef-aea0-4136-b9c5-23a2a428336f";
-const imgLaBus = "https://www.figma.com/api/mcp/asset/446d5b4c-938a-44a9-abc9-43b7a77bdcfb";
-const imgRectangle22 = "https://www.figma.com/api/mcp/asset/282f5add-89cd-420d-86ce-c03c98633023";
-const imgEllipse1 = "https://www.figma.com/api/mcp/asset/e84f9744-6e19-4a02-ae6f-ca9f1c0170e0";
-const imgVector = "https://www.figma.com/api/mcp/asset/73006818-2124-44a3-ab15-91719f0cc349";
-const imgVector1 = "https://www.figma.com/api/mcp/asset/0caf2632-5db1-491e-a6b0-079ef892efc1";
-const imgRectangle6 = "https://www.figma.com/api/mcp/asset/afc64fb7-3b48-4bc2-b537-9d72e46d8420";
-const imgVector2 = "https://www.figma.com/api/mcp/asset/e782c8fd-651a-4c0a-8474-d5f887e272eb";
-const imgStar1 = "https://www.figma.com/api/mcp/asset/16800473-399a-4385-b64d-74a70454de10";
-const imgFrame = "https://www.figma.com/api/mcp/asset/edb80832-79f4-4649-b51c-9ae7865e9855";
+import imgAvatar from "../Assets/images/imgAvatar.png";
+import imgLaBus from "../Assets/images/imgLaBus.svg";
+import imgEllipse1 from "../Assets/images/imgEllipse1.svg";
+import imgVector from "../Assets/images/imgVector.svg";
+import imgVector1 from "../Assets/images/imgVector1.svg";
+import imgStar1 from "../Assets/images/imgStar1.svg";
 
 export default function Schedule({ onNavigateToMainPage, onNavigate }) {
   const handleNavigate = (page) => {

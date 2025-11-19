@@ -2,17 +2,13 @@ import React, { useState } from "react";
 import "../Assets/CSS/list.css";
 import Header from "./Header";
 
-// Asset images from Figma
-const imgEllipse5 = "https://www.figma.com/api/mcp/asset/fbf4ea10-e179-43a1-a63e-c20f8b31e7a5";
-const imgMaterialSymbolsMale = "https://www.figma.com/api/mcp/asset/e3dc3096-b81b-4c4b-9242-1f18b3c32f82";
-const imgEllipse6 = "https://www.figma.com/api/mcp/asset/b12c9f2b-8091-4cdc-b9e3-c3c43c25c075";
-const imgMaterialSymbolsFemale = "https://www.figma.com/api/mcp/asset/12248b6c-d566-4164-8ef0-757fbdf56ac5";
-const imgRectangle56 = "https://www.figma.com/api/mcp/asset/da700ce8-de24-462c-973f-469c7fc31024";
-const imgPhBusLight = "https://www.figma.com/api/mcp/asset/0bf13c5c-b7e6-4487-a64f-a4db5ec299b7";
-const imgGroup23 = "https://www.figma.com/api/mcp/asset/685ac4c1-ac7a-4eed-8f26-278c8a3548bd";
-const imgEllipse1 = "https://www.figma.com/api/mcp/asset/d5b9682c-87c6-47c0-95d1-85edd88ec7aa";
-const imgVector = "https://www.figma.com/api/mcp/asset/039918d8-2a2a-4c92-9162-b5c2172b4b40";
-const imgVector1 = "https://www.figma.com/api/mcp/asset/d35bc3a2-045b-4f40-80f0-14a7df2a2fb5";
+// Import local images
+import imgMaterialSymbolsMale from "../Assets/images/imgMaterialSymbolsMale.svg";
+import imgMaterialSymbolsFemale from "../Assets/images/imgMaterialSymbolsFemale.svg";
+import imgPhBusLight from "../Assets/images/imgPhBusLight.svg";
+import imgEllipse1 from "../Assets/images/imgEllipse1.svg";
+import imgVector from "../Assets/images/imgVector.svg";
+import imgVector1 from "../Assets/images/imgVector1.svg";
 
 export default function List({ onNavigateToMainPage, onNavigateToMap, onNavigate, fromDriverMap }) {
   const [selectedStudent, setSelectedStudent] = useState("Nguyễn Văn A");

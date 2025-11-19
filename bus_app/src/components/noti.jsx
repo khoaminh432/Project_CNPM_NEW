@@ -2,15 +2,12 @@ import React, { useState } from "react";
 import "../Assets/CSS/noti.css";
 import Header from "./Header";
 
-// Asset images from Figma
-const imgRectangle22 = "https://www.figma.com/api/mcp/asset/f32f0136-18b0-4d4d-8625-20736eea1f6c";
-const imgGroup23 = "https://www.figma.com/api/mcp/asset/6681faf0-5e9d-4a58-8627-9449ce6c6559";
-const imgRiArrowUpSLine = "https://www.figma.com/api/mcp/asset/ff2d622c-0c19-4ba5-b1f7-f064d1218509";
-const imgLine23 = "https://www.figma.com/api/mcp/asset/dc1903f6-bd20-44a8-a134-ccd166e17d44";
-const imgFrame = "https://www.figma.com/api/mcp/asset/68fede06-fd8f-4374-84f8-7a2c183c2f09";
-const imgEllipse1 = "https://www.figma.com/api/mcp/asset/d5b9682c-87c6-47c0-95d1-85edd88ec7aa";
-const imgVector = "https://www.figma.com/api/mcp/asset/039918d8-2a2a-4c92-9162-b5c2172b4b40";
-const imgVector1 = "https://www.figma.com/api/mcp/asset/d35bc3a2-045b-4f40-80f0-14a7df2a2fb5";
+// Import local images
+import imgLine23 from "../Assets/images/imgLine23.svg";
+import imgFrame from "../Assets/images/imgFrame.svg";
+import imgEllipse1 from "../Assets/images/imgEllipse1.svg";
+import imgVector from "../Assets/images/imgVector.svg";
+import imgVector1 from "../Assets/images/imgVector1.svg";
 
 export default function Noti({ onNavigateToMainPage, onNavigate }) {
   const [notifications, setNotifications] = useState([

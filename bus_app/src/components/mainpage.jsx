@@ -2,15 +2,13 @@ import React, { useEffect, useRef } from "react";
 import "../Assets/CSS/mainpage.css";
 import Header from "./Header";
 
-// Asset images from Figma
-const imgAvatar = "https://www.figma.com/api/mcp/asset/0d9e691f-52c3-43ac-8e53-4843e4c7b55c";
-const imgImage4 = "https://www.figma.com/api/mcp/asset/025fc4e4-cf71-41a7-9e04-8a7dad102442";
-const imgRectangle22 = "https://www.figma.com/api/mcp/asset/b2de9023-09b8-4aa8-9fc9-6289f5b949e5";
-const imgEllipse1 = "https://www.figma.com/api/mcp/asset/d5b9682c-87c6-47c0-95d1-85edd88ec7aa";
-const imgVector = "https://www.figma.com/api/mcp/asset/039918d8-2a2a-4c92-9162-b5c2172b4b40";
-const imgVector1 = "https://www.figma.com/api/mcp/asset/d35bc3a2-045b-4f40-80f0-14a7df2a2fb5";
-const imgStar1 = "https://www.figma.com/api/mcp/asset/6e6891ea-b6dc-4afd-aeaf-b761178bb5ba";
-const imgLine25 = "https://www.figma.com/api/mcp/asset/b0c91f6b-eb3d-49b7-9745-25793414f86f";
+// Import local images
+import imgAvatar from "../Assets/images/imgAvatar.png";
+import imgImage4 from "../Assets/images/imgImage4.png";
+import imgEllipse1 from "../Assets/images/imgEllipse1.svg";
+import imgVector from "../Assets/images/imgVector.svg";
+import imgVector1 from "../Assets/images/imgVector1.svg";
+import imgStar1 from "../Assets/images/imgStar1.svg";
 
 // Goong map keys
 const GOONG_MAPTILES_KEY = "qZzxSh57ziQQsNzf8mUcjWzglhqIjC7pnH4xRCwr";

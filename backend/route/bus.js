@@ -160,6 +160,7 @@ router.delete('/:id', async (req, res) => {
  * LẤY DANH SÁCH XE (GET /api/buses)
  * (Lấy tài xế theo ngày + Sửa lỗi ngày đăng kiểm)
  * ========================================================== */
+
 router.get('/', async (req, res) => {
   try {
     const { status, departure } = req.query; 
@@ -168,23 +169,27 @@ router.get('/', async (req, res) => {
       SELECT 
         b.bus_id AS id,
         b.license_plate AS license,
-        r.route_name AS route,
+        
+        -- ko co data thi ko hien
+        r_daily.route_name AS route,
+        
         b.status,
         b.departure_status AS departure,
-        
-        -- SỬA LỖI: Thêm DATE_FORMAT
         DATE_FORMAT(b.registry, '%Y-%m-%d') AS registry,
-        
-        -- Lấy tên tài xế TỪ LỊCH TRÌNH CỦA HÔM NAY
         d.name AS driver 
         
       FROM bus b
       
-      LEFT JOIN route r ON b.default_route_id = r.route_id
-      
-      -- SỬA LỖI: Dùng CURDATE() của MySQL để lấy ngày hiện tại của CSDL
+      -- 1. Lấy lịch trình của ngày hôm nay (CURDATE)
       LEFT JOIN bus_schedule bs ON b.bus_id = bs.bus_id AND bs.schedule_date = CURDATE()
       
+      -- 2. Join bảng route lần 1: Lấy tên tuyến Mặc Định (của xe)
+      LEFT JOIN route r_default ON b.default_route_id = r_default.route_id
+      
+      -- 3. Join bảng route lần 2: Lấy tên tuyến theo Lịch Trình (của hôm nay)
+      LEFT JOIN route r_daily ON bs.route_id = r_daily.route_id
+      
+      -- 4. Lấy tài xế từ lịch trình
       LEFT JOIN driver d ON bs.driver_id = d.driver_id
     `;
     

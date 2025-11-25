@@ -59,7 +59,11 @@ export default function Header({
       </div>
 
       <div className="app-header-profile">
-        <div className="app-profile-avatar-wrapper">
+        <div 
+          className="app-profile-avatar-wrapper"
+          onClick={() => onNavigate && onNavigate('profile')}
+          style={{ cursor: 'pointer' }}
+        >
           <img alt="avatar" src={imgEllipse1} className="app-profile-avatar" />
           <img alt="vector" src={imgVector} className="app-profile-icon" />
         </div>

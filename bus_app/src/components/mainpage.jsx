@@ -17,6 +17,8 @@ export default function MainPage({ onNavigateToMap, onNavigateToSchedule, onNavi
   const handleNavigate = (page) => {
     if (page === 'schedule' && onNavigateToSchedule) {
       onNavigateToSchedule();
+    } else if (page === 'profile') {
+      onNavigate('profile');
     } else if (onNavigate) {
       onNavigate(page);
     }
@@ -62,7 +64,11 @@ export default function MainPage({ onNavigateToMap, onNavigateToSchedule, onNavi
             {/* Card Content - Avatar, Info, and Bank Details */}
             <div className="mp-card-content-wrapper">
               {/* Left Section - Avatar */}
-              <div className="mp-card-avatar">
+              <div 
+                className="mp-card-avatar"
+                onClick={() => handleNavigate('profile')}
+                style={{ cursor: 'pointer' }}
+              >
                 <img alt="driver avatar" src={imgAvatar} />
               </div>
               

@@ -5,6 +5,7 @@ import MainPage from "../components/mainpage";
 import Schedule from "../components/schedule";
 import List from "../components/list";
 import Noti from "../components/noti";
+import Profile from "../components/profile";
 import '../Assets/CSS/index.css';
 
 
@@ -47,7 +48,18 @@ function App() {
         />
       )}
       {currentPage === "drivermap" && (
-        <DriverMap onBackToMain={() => setCurrentPage("mainpage")} />
+        <DriverMap 
+          onBackToMain={() => setCurrentPage("mainpage")} 
+          onNavigateToList={() => {
+            setPreviousPage("drivermap");
+            setCurrentPage("list");
+          }}
+        />
+      )}
+      {currentPage === "profile" && (
+        <Profile 
+          onBackToMain={() => setCurrentPage("mainpage")} 
+        />
       )}
     </div>
   );

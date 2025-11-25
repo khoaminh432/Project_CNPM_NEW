@@ -1,0 +1,431 @@
+/* profile.css - Driver Profile Component Styles */
+:root {
+  --main-color: #0073fb;
+  --light-blue: #87beff;
+  --border-color: #757373;
+  --text-dark: #111827;
+  --text-light: #6b7280;
+  --bg-light: #f5f5f5;
+}
+
+/* ========== MAIN CONTAINER ========== */
+.profile-root {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+  background: white;
+  position: relative;
+  overflow-y: auto;
+}
+
+/* ========== HEADER ========== */
+.profile-header {
+  position: relative;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid #f0f0f0;
+  z-index: 100;
+}
+
+.profile-back-btn {
+  width: 40px;
+  height: 40px;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+  position: relative;
+}
+
+.profile-back-btn:hover {
+  background: #f5f5f5;
+  border-color: #ccc;
+}
+
+.profile-back-btn img,
+.profile-back-icon {
+  width: 23px;
+  height: 23px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.profile-back-icon {
+  fill: #111827;
+  transition: fill 0.2s ease;
+}
+
+.profile-back-btn:hover .profile-back-icon {
+  fill: #0073fb;
+}
+
+/* ========== MAIN CONTENT ========== */
+.profile-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ========== AVATAR SECTION ========== */
+.profile-avatar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 48px;
+}
+
+.profile-avatar-wrapper {
+  position: relative;
+  width: 160px;
+  height: 160px;
+}
+
+.profile-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid var(--light-blue);
+  box-shadow: 0 4px 16px rgba(0, 115, 251, 0.2);
+}
+
+.profile-avatar-badge {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
+  background: white;
+  border-radius: 50%;
+  border: 2px solid white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.profile-avatar-badge:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 115, 251, 0.4);
+}
+
+.profile-badge-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+.profile-rating {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.profile-star-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.profile-rating-text {
+  font-family: "Radio Canada", sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+/* ========== FORM SECTION ========== */
+.profile-form {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.profile-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.profile-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.profile-form-group-half {
+  flex: 1;
+}
+
+.profile-form-label {
+  font-family: "Radio Canada", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.profile-form-input,
+.profile-form-select {
+  padding: 12px 16px;
+  border: 1px solid #d0d0d0;
+  border-radius: 8px;
+  font-family: "Radio Canada", sans-serif;
+  font-size: 14px;
+  color: var(--text-dark);
+  background: white;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.profile-form-input:focus,
+.profile-form-select:focus {
+  border-color: var(--main-color);
+  background: rgba(0, 115, 251, 0.02);
+  box-shadow: 0 0 0 3px rgba(0, 115, 251, 0.1);
+}
+
+.profile-form-input:disabled,
+.profile-form-select:disabled {
+  background: #f5f5f5;
+  color: var(--text-light);
+  cursor: not-allowed;
+  border-color: #e0e0e0;
+}
+
+.profile-form-input-disabled {
+  background: #e8e8e8;
+  color: #666;
+  border-color: #d0d0d0;
+}
+
+.profile-form-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 20px;
+  padding-right: 40px;
+  cursor: pointer;
+}
+
+.profile-form-select:disabled {
+  cursor: not-allowed;
+}
+
+/* ========== BUTTON GROUP ========== */
+.profile-button-group {
+  display: flex;
+  gap: 12px;
+  margin-top: 32px;
+  justify-content: center;
+}
+
+.profile-btn {
+  padding: 12px 32px;
+  border: none;
+  border-radius: 24px;
+  font-family: "Radio Canada", sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 150px;
+}
+
+.profile-btn-primary {
+  background: linear-gradient(135deg, var(--main-color) 0%, #0052b8 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(0, 115, 251, 0.3);
+}
+
+.profile-btn-primary:hover {
+  background: linear-gradient(135deg, #0052b8 0%, #003d88 100%);
+  box-shadow: 0 6px 16px rgba(0, 115, 251, 0.4);
+  transform: translateY(-2px);
+}
+
+.profile-btn-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 115, 251, 0.3);
+}
+
+.profile-btn-secondary {
+  background: white;
+  color: var(--main-color);
+  border: 2px solid var(--main-color);
+}
+
+.profile-btn-secondary:hover {
+  background: var(--main-color);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 115, 251, 0.3);
+}
+
+.profile-btn-secondary:active {
+  transform: translateY(0);
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 1200px) {
+  .profile-container {
+    padding: 32px 24px;
+  }
+
+  .profile-form {
+    max-width: 500px;
+  }
+}
+
+@media (max-width: 768px) {
+  .profile-container {
+    padding: 24px 16px;
+  }
+
+  .profile-form {
+    max-width: 100%;
+  }
+
+  .profile-form-row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .profile-avatar-section {
+    margin-bottom: 32px;
+  }
+
+  .profile-avatar-wrapper {
+    width: 120px;
+    height: 120px;
+  }
+
+  .profile-avatar {
+    border-width: 3px;
+  }
+
+  .profile-avatar-badge {
+    width: 28px;
+    height: 28px;
+  }
+
+  .profile-rating {
+    padding: 6px 12px;
+  }
+
+  .profile-star-icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .profile-rating-text {
+    font-size: 14px;
+  }
+
+  .profile-form-label {
+    font-size: 12px;
+  }
+
+  .profile-form-input,
+  .profile-form-select {
+    font-size: 13px;
+    padding: 10px 12px;
+  }
+
+  .profile-btn {
+    padding: 10px 24px;
+    font-size: 14px;
+    min-width: 130px;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-header {
+    height: 50px;
+    padding: 12px;
+  }
+
+  .profile-back-btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .profile-back-btn img {
+    width: 20px;
+    height: 20px;
+  }
+
+  .profile-container {
+    padding: 16px 12px;
+  }
+
+  .profile-avatar-wrapper {
+    width: 100px;
+    height: 100px;
+  }
+
+  .profile-avatar {
+    border-width: 2px;
+  }
+
+  .profile-avatar-badge {
+    width: 24px;
+    height: 24px;
+    bottom: 4px;
+    right: 4px;
+  }
+
+  .profile-form-label {
+    font-size: 11px;
+  }
+
+  .profile-form-input,
+  .profile-form-select {
+    font-size: 12px;
+    padding: 8px 10px;
+  }
+
+  .profile-form-group {
+    gap: 6px;
+  }
+
+  .profile-form {
+    gap: 16px;
+  }
+
+  .profile-button-group {
+    gap: 8px;
+    margin-top: 24px;
+  }
+
+  .profile-btn {
+    padding: 10px 16px;
+    font-size: 12px;
+    min-width: 100px;
+  }
+}

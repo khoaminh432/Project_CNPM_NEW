@@ -1,9 +1,21 @@
 {
+  "name": "project-cnpm-new",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "start": "vite"
+  },
   "dependencies": {
     "@goongmaps/goong-js": "github:goong-io/goong-js",
     "@goongmaps/goong-map-react": "^1.1.2",
     "@vitejs/plugin-react": "^5.0.4",
     "axios": "^1.13.2",
     "vite": "^7.1.7"
+  },
+  "overrides": {
+    "minimist": "^1.2.8"
   }
 }

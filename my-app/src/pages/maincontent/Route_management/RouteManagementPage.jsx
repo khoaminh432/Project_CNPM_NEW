@@ -35,6 +35,10 @@ function RouteManagementPage() {
     setRoutes([
       new Route("001", "Tuyến A", "Cổng Y", 110, new Time(6, 0), new Time(8, 0), "stable", false),
       new Route("002", "Tuyến B", "Bến Xe", 15, new Time(6, 0), new Time(9, 0), "warning", true),
+      new Route("003", "Tuyến C", "Trạm Sài Gòn", 25, new Time(7, 0), new Time(10, 0), "danger", false),
+      new Route("004", "Tuyến D", "Cầu Phú Mỹ", 45, new Time(5, 30), new Time(8, 30), "stable", true),
+      new Route("005", "Tuyến E", "Bến Thành", 30, new Time(6, 15), new Time(9, 15), "warning", false),
+    
     ]);
   }, []);
   
@@ -53,9 +57,9 @@ function RouteManagementPage() {
     
     <div className="container-route-management">
       <header>
-        <div className={StyleMain.row_direction} style={{ padding:"20px",justifyContent: "space-between", alignItems: "center" }}>
+        <div className={StyleMain.row_direction} style={{justifyContent: "space-between", alignItems: "center" }}>
           <div>
-            <h1><i className="fas fa-route" /> Hệ Thống Quản Lý Tuyến Xe</h1>
+            <h1 className={StyleMain.setTitle_h1}><i className="fas fa-route" /> Quản Lý Tuyến Xe</h1>
             <p className="description">Quản lý và theo dõi các tuyến xe hiện có một cách hiệu quả và trực quan</p>
           </div>
           <div><button style={{ color: "white" }}>➕ Thêm Tuyến xe</button></div>
@@ -89,7 +93,7 @@ function RouteManagementPage() {
       <div className="controls">
         <div className="search-container">
           <i className="fas fa-search" />
-          <input type="text" className="search-box" placeholder="Tìm kiếm tuyến xe..." />
+          <input style={{fontSize:"1.1em"}} type="text" className="search-box" placeholder="Tìm kiếm tuyến xe..." />
         </div>
         <div className="filter-container">
           <i className="fas fa-filter" />

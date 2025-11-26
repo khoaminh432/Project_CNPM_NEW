@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import GoongMapReact from "@goongmaps/goong-map-react";
-
+import { getPlaceDetail } from "../../api/GoongPlaceDetail";
+import PointLocation from "./PointLocation";
 const GOONG_API_KEY = process.env.REACT_APP_GOONG_API_KEY;
 let count = 0
-export default function SearchSuggestAddress({placeholderinput,className,styleInputMain}) {
+
+export default function SearchSuggestAddress({placeholderinput,className,styleInputMain,onAddressSelect=null}) {
   const styleInputdefault = {
             width:"100%",
             padding: "8px 10px",
@@ -15,7 +17,6 @@ export default function SearchSuggestAddress({placeholderinput,className,styleIn
     
     const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);
-  const [center, setCenter] = useState([106.700981, 10.776889]); // TP.HCM mặc định
   const timeoutRef = useRef(null);
 
   // Xử lý gõ địa chỉ với debounce
@@ -38,9 +39,11 @@ export default function SearchSuggestAddress({placeholderinput,className,styleIn
         const res = await axios.get("https://rsapi.goong.io/Place/AutoComplete", {
           params: { api_key: GOONG_API_KEY, input },
         });
-        count++
+        
         setSuggestions(res.data.predictions || []);
-        console.log(count)
+        console.log(suggestions)
+        
+        
       } catch (err) {
         console.error("Lỗi gọi API Goong:", err);
         if (err.response?.status === 429) {
@@ -54,13 +57,19 @@ export default function SearchSuggestAddress({placeholderinput,className,styleIn
   const handleSelect = async (item) => {
     setQuery(item.description);
     setSuggestions([]);
-
+    
     try {
-      const res = await axios.get("https://rsapi.goong.io/Place/Detail", {
-        params: { place_id: item.place_id, api_key: GOONG_API_KEY },
-      });
-      const loc = res.data.result.geometry.location;
-      setCenter([loc.lng, loc.lat]);
+      const res = await getPlaceDetail(item.place_id)
+      const loc = res.geometry;
+      
+      loc.location.name = res.formatted_address
+      console.log(loc)
+      if(onAddressSelect)
+        onAddressSelect(
+          loc.location
+        )
+      
+      
     } catch (err) {
       console.error("Lỗi lấy chi tiết địa điểm:", err);
     }
@@ -73,7 +82,6 @@ export default function SearchSuggestAddress({placeholderinput,className,styleIn
           zIndex: 10,
           background: "white",
           width:"auto",
-          
           borderRadius: 8,
           boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
         }}

@@ -15,7 +15,22 @@ function AddRoute() {
     "Ninh Thuan",
     "Binh Thuan",
   ];
-
+  const [positions,setPosition] = useState({
+    start: null,
+    end: null
+  })
+  const handleStartLocation = (geometry)=>{
+    
+    if(geometry){
+      setPosition(pos=>({...pos,start:geometry}))
+    }
+  }
+  const handleEndLocation = (geometry)=>{
+    
+    if(geometry.location){
+      setPosition(pos=>({...pos,end:geometry.location}))
+    }
+  }
   const [startAddress, setStartAddress] = useState('');
   const [endAddress, setEndAddress] = useState('');
   const [routeName, setRouteName] = useState('');
@@ -53,8 +68,8 @@ function AddRoute() {
       <header className="add-route-header">
         <h1>Chọn / Tạo tuyến đường</h1>
         <form className="search-row" onSubmit={(e) => e.preventDefault()}>
-          <SearchSuggestAddress placeholderinput="nhập địa chỉ bắt đầu" className="search-input"/>
-          <SearchSuggestAddress placeholderinput="nhập địa chỉ kết thúc" className="search-input"/>
+          <SearchSuggestAddress placeholderinput="nhập địa chỉ bắt đầu" className="search-input"  onAddressSelect={handleStartLocation}/>
+          <SearchSuggestAddress placeholderinput="nhập địa chỉ kết thúc" className="search-input" onAddressSelect={handleEndLocation}/>
           <button className="search-btn" type="button" onClick={() => alert('Chức năng tìm tuyến chưa triển khai')}>
             Tìm tuyến
           </button>
@@ -135,7 +150,7 @@ function AddRoute() {
         <aside className="right-card" style={{height:"auto"}}>
           <div className="map-card" style={{height:"100%" ,width:"100%"}} >
             {/* Nếu có component map sẵn thì thay placeholder bằng MapComponent */}
-            <MapComponent/>
+            <MapComponent positionCurrent={positions}/>
           </div>
         </aside>
       </div>

@@ -69,7 +69,7 @@ function App() {
 
             {/* Bản đồ */}
             <div className="map">
-              <MapComponent />
+              map component here
             </div>
           </>
         )}
@@ -77,7 +77,7 @@ function App() {
         {/* component Tracking */}
         {activePage === "THEO DÕI XE BUÝT" && <Tracking />}
         {activePage === "QUẢN LÝ HỌC SINH" && <StudentManagementPage />}
-        {activePage === "QUẢN LÝ TUYẾN XE" && <AddRoute/>}
+        {activePage === "QUẢN LÝ TUYẾN XE" && <RouteManagementPage/>}
       </div>
     </div>
   );

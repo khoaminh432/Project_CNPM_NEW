@@ -2,8 +2,8 @@ import { Marker,Popup } from "@goongmaps/goong-map-react";
 import { useState } from "react";
 function PointLocation({location,styleView}) {
     const [Location, setLocation] = useState({
-        latitude: location.latitude,
-        longitude: location.longitude,
+        latitude: location.lat,
+        longitude: location.lng,
         name: location.name,
     });
     const [styleViewState, setStyleViewState] = useState({
@@ -44,7 +44,7 @@ function PointLocation({location,styleView}) {
                     </div>
                   </Popup>
                 )}
-                </>
+        </>
     );
 }
 export default PointLocation;

@@ -1,138 +1,128 @@
 import React, { useState } from 'react';
+import './style.css';
+import { Student } from './../../../../../models/Student';
 
-// model class for student
-class Student {
-  constructor(data = {}) {
-    this.id = data.id ?? '001';
-    this.name = data.name ?? 'Nguyễn Văn A';
-    this.gender = data.gender ?? 'Nam';
-    this.dob = data.dob ?? '15/05/2010';
-    this.placeOfBirth = data.placeOfBirth ?? 'TP. Hồ Chí Minh';
-    this.address = data.address ?? '455 Hồng Bàng, Phường 14, Quận 5, TP. HCM';
-    this.phone = data.phone ?? '0901 234 567';
-    this.email = data.email ?? 'nguyenvana@example.com';
-    this.className = data.className ?? '6A1';
-    this.schoolYear = data.schoolYear ?? '2023-2024';
-    this.route = data.route ?? '1';
-    this.pickupTime = data.pickupTime ?? '6:55';
-    this.parentName = data.parentName ?? 'Nguyễn Văn B';
-    this.relation = data.relation ?? 'Cha';
-    this.parentPhone = data.parentPhone ?? '0909 876 543';
-    this.parentEmail = data.parentEmail ?? 'nguyenvanb@example.com';
-  }
-
-  // merge updates immutably
-  with(update = {}) {
-    return new Student({ ...this, ...update });
-  }
-}
-
-function Detail_Student({ tempStudent = null }) {
-  // initialize state with Student instance (use provided tempStudent if any)
-  const [student, setStudent] = useState(new Student(tempStudent || {}));
+function Detail_Student({ tempStudent = new Student() ,backToList = ()=>{} }) {
+  const [student, setStudent] = useState(tempStudent);
 
   const handleEdit = () => {
-    // example: update name (demo)
-    // setStudent(prev => prev.with({ name: 'Tên mới' }));
     alert('Chức năng chỉnh sửa chưa triển khai');
+  };
+
+  const handleBack = () => {
+    backToList()
   };
 
   return (
     <div className="container-detail-student">
+      {/* Header */}
       <div className="header-detail-student">
-        <h1>THÔNG TIN CHI TIẾT HỌC SINH</h1>
-        <div className="student-id">Mã học sinh: {student.id}</div>
+        <button className="btn-back-icon" onClick={handleBack}>
+          ← Quay lại
+        </button>
+        <h1>Chi tiết học sinh</h1>
+        <div className="student-id">ID: {student.id}</div>
       </div>
 
+      {/* Content */}
       <div className="content">
-        <div className="section">
-          <h2 className="section-title">Thông tin cá nhân</h2>
+        {/* Personal Info Card */}
+        <section className="info-card">
+          <h2 className="card-title">Thông tin cá nhân</h2>
           <div className="info-grid">
             <div className="info-item">
-              <div className="info-label">Họ và tên</div>
-              <div className="info-value">{student.name}</div>
+              <span className="info-label">Họ và tên</span>
+              <span className="info-value">{student.name}</span>
             </div>
             <div className="info-item">
-              <div className="info-label">Giới tính</div>
-              <div className="info-value">{student.gender}</div>
+              <span className="info-label">Giới tính</span>
+              <span className="info-value">{student.gender || 'N/A'}</span>
             </div>
             <div className="info-item">
-              <div className="info-label">Ngày sinh</div>
-              <div className="info-value">{student.dob}</div>
+              <span className="info-label">Ngày sinh</span>
+              <span className="info-value">{student.dob || 'N/A'}</span>
             </div>
             <div className="info-item">
-              <div className="info-label">Nơi sinh</div>
-              <div className="info-value">{student.placeOfBirth}</div>
+              <span className="info-label">Nơi sinh</span>
+              <span className="info-value">{student.placeOfBirth || 'N/A'}</span>
             </div>
           </div>
-        </div>
+        </section>
 
-        <div className="section">
-          <h2 className="section-title">Thông tin liên hệ</h2>
+        {/* Contact Info Card */}
+        <section className="info-card">
+          <h2 className="card-title">Thông tin liên hệ</h2>
           <div className="info-grid">
             <div className="info-item full-width">
-              <div className="info-label">Địa chỉ</div>
-              <div className="info-value">{student.address}</div>
+              <span className="info-label">Địa chỉ</span>
+              <span className="info-value">{student.address || 'N/A'}</span>
             </div>
             <div className="info-item">
-              <div className="info-label">Số điện thoại</div>
-              <div className="info-value">{student.phone}</div>
+              <span className="info-label">Số điện thoại</span>
+              <span className="info-value">{student.phone || 'N/A'}</span>
             </div>
             <div className="info-item">
-              <div className="info-label">Email</div>
-              <div className="info-value">{student.email}</div>
+              <span className="info-label">Email</span>
+              <span className="info-value" style={{ wordBreak: 'break-word' }}>
+                {student.email || 'N/A'}
+              </span>
             </div>
           </div>
-        </div>
+        </section>
 
-        <div className="section">
-          <h2 className="section-title">Thông tin học tập</h2>
+        {/* Academic Info Card */}
+        <section className="info-card">
+          <h2 className="card-title">Thông tin học tập</h2>
           <div className="info-grid">
             <div className="info-item">
-              <div className="info-label">Lớp</div>
-              <div className="info-value">{student.className}</div>
+              <span className="info-label">Lớp</span>
+              <span className="info-value">{student.className || 'N/A'}</span>
             </div>
             <div className="info-item">
-              <div className="info-label">Năm học</div>
-              <div className="info-value">{student.schoolYear}</div>
+              <span className="info-label">Năm học</span>
+              <span className="info-value">{student.schoolYear || 'N/A'}</span>
             </div>
             <div className="info-item">
-              <div className="info-label">Tuyến số</div>
-              <div className="info-value">{student.route}</div>
+              <span className="info-label">Tuyến số</span>
+              <span className="info-value">{student.route || 'N/A'}</span>
             </div>
             <div className="info-item">
-              <div className="info-label">Giờ đón</div>
-              <div className="info-value">{student.pickupTime}</div>
+              <span className="info-label">Giờ đón</span>
+              <span className="info-value">{student.pickupTime || 'N/A'}</span>
             </div>
           </div>
-        </div>
+        </section>
 
-        <div className="section">
-          <h2 className="section-title">Thông tin phụ huynh</h2>
+        {/* Parent Info Card */}
+        <section className="info-card">
+          <h2 className="card-title">Thông tin phụ huynh</h2>
           <div className="info-grid">
             <div className="info-item">
-              <div className="info-label">Họ tên phụ huynh</div>
-              <div className="info-value">{student.parentName}</div>
+              <span className="info-label">Họ tên</span>
+              <span className="info-value">{student.parentName || 'N/A'}</span>
             </div>
             <div className="info-item">
-              <div className="info-label">Quan hệ</div>
-              <div className="info-value">{student.relation}</div>
+              <span className="info-label">Quan hệ</span>
+              <span className="info-value">{student.relation || 'N/A'}</span>
             </div>
             <div className="info-item">
-              <div className="info-label">Số điện thoại</div>
-              <div className="info-value">{student.parentPhone}</div>
+              <span className="info-label">Số điện thoại</span>
+              <span className="info-value">{student.parentPhone || 'N/A'}</span>
             </div>
             <div className="info-item">
-              <div className="info-label">Email</div>
-              <div className="info-value">{student.parentEmail}</div>
+              <span className="info-label">Email</span>
+              <span className="info-value" style={{ wordBreak: 'break-word' }}>
+                {student.parentEmail || 'N/A'}
+              </span>
             </div>
           </div>
-        </div>
+        </section>
+      </div>
 
-        <div className="btn-group">
-          <button className="btn btn-secondary" onClick={() => window.print()}>In thông tin</button>
-          <button className="btn btn-primary" onClick={handleEdit}>Chỉnh sửa</button>
-        </div>
+      {/* Actions */}
+      <div className="btn-group">
+        <button className="btn btn-secondary" onClick={handleBack}>Quay lại</button>
+        <button className="btn btn-primary" onClick={handleEdit}>Chỉnh sửa</button>
       </div>
     </div>
   );

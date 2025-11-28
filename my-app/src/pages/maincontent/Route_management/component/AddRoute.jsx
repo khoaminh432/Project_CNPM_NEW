@@ -27,8 +27,8 @@ function AddRoute() {
   }
   const handleEndLocation = (geometry)=>{
     
-    if(geometry.location){
-      setPosition(pos=>({...pos,end:geometry.location}))
+    if(geometry){
+      setPosition(pos=>({...pos,end:geometry}))
     }
   }
   const [startAddress, setStartAddress] = useState('');

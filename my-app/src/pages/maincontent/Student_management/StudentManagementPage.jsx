@@ -1,17 +1,44 @@
 import TempStudent from "./component/Student";
 import Style from "./../styleMain.module.css";
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useRef,useEffect, useState, useMemo } from "react";
 import "./style.css";
 import "./../searchbar.css";
 import { Student } from "../../../models/Student";
-
+import Detail_Student from "./component/formdetails/Detail_Student";
+function renderStudentsTable(students, onDetails) {
+  return(students.length > 0 ? (
+          students.map((student) => (
+            <TempStudent 
+              key={student.id}
+              Tempstudent={student}
+              onDetails={onDetails}
+            />
+          ))
+        ) : (
+          <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px', color: '#6b7280' }}>
+            <p>Không tìm thấy học sinh phù hợp</p>
+          </div>
+        ));
+}
 function StudentManagementPage() {
   const [students, setStudents] = useState([]);
   const [filter, setFilter] = useState('all'); // filter by route
   const [searchQuery, setSearchQuery] = useState(''); // search by name
+  const [pagestudent, setPageStudent] = useState({}); // page state: default, detail
+  const boxRef = useRef(null);
+  const hide = () => {
+    boxRef.current.style.display = "none";
+  };
 
+  const showgrid = () => {
+    boxRef.current.style.display = "grid";
+  };
+  const showdetail = () => {
+    boxRef.current.style.display = "flex";
+  }
   useEffect(() => {
     // ví dụ: lấy từ API hoặc dữ liệu tĩnh
+    
     setStudents([
       new Student({ id: "001", name: "Nguyễn Văn A", route: "Tuyến 1", address: "123 Đường A, Quận B", time: "07:30 AM", avatarUrl: null }),
       new Student({ id: "002", name: "Trần Thị B", route: "Tuyến 2", address: "456 Đường C, Quận D", time: "07:45 AM", avatarUrl: null }),
@@ -25,6 +52,7 @@ function StudentManagementPage() {
       new Student({ id: "010", name: "Trịnh Thị K", route: "Tuyến 1", address: "159 Đường S, Quận T", time: "09:45 AM", avatarUrl: null }),
       new Student({ id: "011", name: "Lý Văn L", route: "Tuyến 2", address: "753 Đường U, Quận V", time: "10:00 AM", avatarUrl: null }),
     ]);
+    setPageStudent({key: "default", value: null});
   }, []);
 
   // filter + search logic
@@ -47,23 +75,31 @@ function StudentManagementPage() {
 
     return result;
   }, [students, filter, searchQuery]);
-
+  function handleSwitchPage(){
+    switch(pagestudent.key){
+      case "detail":
+        return <Detail_Student tempStudent={pagestudent.value} backToList={goBackToList}/>;
+      default:
+        
+        return renderStudentsTable(filteredStudents, handleStudentDetails);
+    }
+  }
   // helper functions
 
   const handleAddStudent = () => {
-    alert('Chức năng thêm học sinh chưa triển khai');
+    showdetail()
+    
   };
 
   const handleStudentDetails = (student) => {
-    alert(`Chi tiết học sinh: ${student.name}`);
-    setStudents(std=>{
-      const newList=[...std];
-      newList[0]={...newList[0],pickupTime:"08:00 AM"};
-      return newList;})
-      console.log(students[0].pickupTime);
-    // TODO: navigate to detail page or open modal
+    showdetail()
+    setPageStudent({key: "detail", value: student});
+    console.log('View details for student', pagestudent);
   };
-
+  const goBackToList = () => {
+    showgrid()
+    setPageStudent({key: "default", value: null});
+  }
   return (
     <div className={Style.content_main_center + " " + Style.column_direction}>
       {/* Header */}
@@ -112,20 +148,8 @@ function StudentManagementPage() {
       </div>
 
       {/* Card Grid - renders filtered students dynamically */}
-      <div className="card-grid">
-        {filteredStudents.length > 0 ? (
-          filteredStudents.map((student) => (
-            <TempStudent 
-              key={student.id} 
-              Tempstudent={student} 
-              onDetails={handleStudentDetails}
-            />
-          ))
-        ) : (
-          <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px', color: '#6b7280' }}>
-            <p>Không tìm thấy học sinh phù hợp</p>
-          </div>
-        )}
+      <div className="card-grid" ref={boxRef}>
+        {handleSwitchPage()}
       </div>
     </div>
   );

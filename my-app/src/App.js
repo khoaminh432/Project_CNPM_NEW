@@ -6,7 +6,6 @@ import MapComponent from "./components/MapComponent";
 import StudentManagementPage from "./pages/maincontent/Student_management/StudentManagementPage";
 import RouteManagementPage from "./pages/maincontent/Route_management/RouteManagementPage";
 
-import AddRoute from "./pages/maincontent/Route_management/component/AddRoute";
 function App() {
 
   const [showModal, setShowModal] = useState(false);

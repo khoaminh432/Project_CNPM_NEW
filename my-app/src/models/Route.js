@@ -1,43 +1,50 @@
-
-
+import React, { useState } from "react";
 export class Route{
-    constructor(id, name, startStation, totalDistance, timeStart,timeEnd, status, hasVehicle = true, stations = []) {
-                this.id = id;
-                this.name = name;
-                this.startStation = startStation;
-                this.totalDistance = totalDistance;
-                this.timeStart = timeStart;
-                this.timeEnd = timeEnd;
-                this.status = status;
-                this.hasVehicle = hasVehicle;
-                this.stations = stations;
-            }
+    constructor(route_id, route_code, route_name, start_location, end_location, planned_start, planned_end, 
+        total_students = 0, distance_km, estimated_duration_minutes, status = 'active', created_at, updated_at) {
+        this.route_id = route_id;
+        this.route_code = route_code;
+        this.route_name = route_name;
+        this.start_location = start_location;
+        this.end_location = end_location;
+        this.planned_start = planned_start;
+        this.planned_end = planned_end;
+        this.total_students = total_students;
+        this.distance_km = distance_km;
+        this.estimated_duration_minutes = estimated_duration_minutes;
+        this.status = status;
+        this.created_at = created_at;
+        this.updated_at = updated_at;
+    }
             
-            toTableRow() {
-                const statusClass = `status status-${this.status}`;
-                const statusText = this.getStatusText();
-                
-                return `
-                    <tr>
-                        <td>${this.id}</td>
-                        <td>
-                            <div>${this.name}</div>
-                            ${!this.hasVehicle ? '<div class="no-vehicle">Chưa có xe phù hợp</div>' : ''}
-                        </td>
-                        <td>${this.startStation}</td>
-                        <td>${this.totalDistance}</td>
-                        <td>Từ ${this.timeStart.toString()} Đến ${this.timeEnd.toString()}</td>
-                        <td><span class="${statusClass}">${statusText}</span></td>
-                        <td><button class="btn-detail" data-id="${this.id}">Xem chi tiết</button></td>
-                    </tr>
-                `;
+toTableRow(handledetailroute=()=>{}) {
+    const statusIcon = this.getStatusIcon();
+    const statusText = this.getStatusText();
+    const statusClass = this.status==="active" ? `status status-${"stable"}`: `status status-${"danger"}`;
+  return (
+    <tr>
+        <td><strong>{this.route_code}</strong>
+            </td>
+        <td>
+            <div>{this.route_name}</div>
+        </td>
+        <td>{this.start_location}</td>
+        <td>{this.distance_km}km </td>
+        <td>{this.total_students}</td>
+        <td>Từ {this.planned_start.toString()} Đến {this.planned_end.toString()}</td>
+        <td><span class={statusClass}>{statusIcon} {statusText}</span></td>
+        <td><button class="btn-detail" data-id={this.route_code} onClick={()=>handledetailroute(this)} ><i class="fas fa-eye"></i> Xem chi tiết</button></td>
+    </tr>
+  );
             } 
     // Phương thức lấy icon trạng thái
             getStatusIcon() {
                 const iconMap = {
                     'stable': <i class="fas fa-check-circle"></i>,
                     'warning': <i class="fas fa-exclamation-triangle"></i>,
-                    'danger': <i class="fas fa-times-circle"></i>
+                    'danger': <i class="fas fa-times-circle"></i>,
+                    'active': <i class="fas fa-check-circle"></i>,
+                    'inactive': <i class="fas fa-times-circle"></i>
                 };
                 return iconMap[this.status] || <i class="fas fa-question-circle"></i>;
             }
@@ -46,11 +53,13 @@ export class Route{
                 const statusMap = {
                     'stable': 'Ổn định',
                     'warning': 'Có vấn đề',
-                    'danger': 'Nguy hiểm'
+                    'danger': 'Nguy hiểm',
+                    "active": 'Hoạt động',
+                    "inactive": 'Không hoạt động'
                 };
                 return statusMap[this.status] || 'Không xác định';
             }
-    addRoute(){
+    addthis(){
 
 
         return (
@@ -69,11 +78,11 @@ export class Route{
             </div>
             
             <div class="section">
-                <h2 class="section-title">Tạo Tuyến Xe Mới</h2>
+                <h2 class="section-title">Tạo Tuyến Tuyến Xe Mới</h2>
                 
                 <div class="form-group">
-                    <label for="route-name">Tên tuyến xe</label>
-                    <input type="text" id="route-name" placeholder="Nhập tên tuyến xe"/>
+                    <label for="this-name">Tên tuyến xe</label>
+                    <input type="text" id="this-name" placeholder="Nhập tên tuyến xe"/>
                 </div>
                 
                 <div class="form-group">
@@ -130,7 +139,7 @@ export class Route{
                 
                 <div class="form-group">
                     <label>Tuyến Xe:</label>
-                    <div class="route-summary">
+                    <div class="this-summary">
                         Bến Thành --- Suối Tiên
                     </div>
                 </div>
@@ -166,3 +175,4 @@ export class Route{
         this.name = name;
     }
 }
+

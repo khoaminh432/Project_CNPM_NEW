@@ -5,36 +5,37 @@ const Profile = ({ userInfo, setUserInfo, isEditing, setIsEditing }) => {
   const [newStudent, setNewStudent] = useState({ name: '', class: '' });
   const [showStudentForm, setShowStudentForm] = useState(false);
 
-  useEffect(() => {
-    if (userInfo && userInfo.parent_id) {
-        fetch('http://localhost:8081/api/students')
-        .then(res => res.json())
-        .then(data => {
-            const myStudents = data.filter(s => s.parent_id === userInfo.parent_id);
-            setStudents(myStudents);
-        })
-        .catch(err => console.error(err));
-    }
-  }, [userInfo.parent_id]);
+ // eslint-disable-next-line react-hooks/exhaustive-deps
+useEffect(() => {
+  if (userInfo && userInfo.parent_id) {
+      fetch('http://localhost:8081/api/students')
+      .then(res => res.json())
+      .then(data => {
+          const myStudents = data.filter(s => s.parent_id === userInfo.parent_id);
+          setStudents(myStudents);
+      })
+      .catch(err => console.error(err));
+  }
+}, [userInfo]);  // Giữ nguyên deps
 
   // XỬ LÝ LƯU PROFILE (UPDATE)
-  const handleSaveProfile = () => {
+  function handleSaveProfile() {
     fetch('http://localhost:8081/api/profile', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(userInfo)
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(userInfo)
     })
-    .then(res => res.json())
-    .then(data => {
-        if(data.message === "Cập nhật thành công") {
-            alert("Cập nhật thông tin thành công!");
-            setIsEditing(false);
+      .then(res => res.json())
+      .then(data => {
+        if (data.message === "Cập nhật thành công") {
+          alert("Cập nhật thông tin thành công!");
+          setIsEditing(false);
         } else {
-            alert("Lỗi: " + JSON.stringify(data));
+          alert("Lỗi: " + JSON.stringify(data));
         }
-    })
-    .catch(err => alert("Lỗi kết nối: " + err));
-  };
+      })
+      .catch(err => alert("Lỗi kết nối: " + err));
+  }
 
   // XỬ LÝ THÊM HỌC SINH
   const handleAddStudent = () => {

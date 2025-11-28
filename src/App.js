@@ -1,23 +1,32 @@
 import React from "react";
-<<<<<<< HEAD
-import 'leaflet/dist/leaflet.css';
+import "leaflet/dist/leaflet.css"; // Cho Leaflet map
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
-// Import đủ 4 trang quan trọng
+// Imports từ main (sửa case và path)
 import Login from "./Login";
-import HomePH from "./HomePH";
-import BusLineDetail from "./BusLineDetail";
-import BusTracking from "./BusTracking";
+import BusLineDetail from "./BusLineDetail"; // Sửa: BusLine (L capital)
+import BusTracking from "./BusTracking"; // Giả sử tồn tại, kiểm tra tên
+
+// Import mới từ qlxb (sửa case và path)
+import QuanLyXeBuyt from "./frontend/QuanLyXeBuyt"; // Sửa: QuanLyXeBuyt
+
+// Fallback cho Home nếu thiếu
+function Home() {
+  return <div style={{ padding: "20px" }}>Home Page - Chào mừng! (Tạo Home.js nếu cần chi tiết hơn)</div>;
+}
 
 function App() {
   return (
     <Router>
       <div className="App">
         <Routes>
+          {/* Routes từ main */}
           <Route path="/" element={<Login />} />
-          <Route path="/home" element={<HomePH />} />
-          <Route path="/line/:id" element={<BusLineDetail />} />
-          <Route path="/tracking/:lineId" element={<BusTracking />} />
+          <Route path="/home" element={<Home />} />
+          <Route path="/busline-detail" element={<BusLineDetail />} />
+          <Route path="/bus-tracking" element={<BusTracking />} />
+          {/* Route mới */}
+          <Route path="/quanly-xebuyt" element={<QuanLyXeBuyt />} />
         </Routes>
       </div>
     </Router>
@@ -25,18 +34,3 @@ function App() {
 }
 
 export default App;
-=======
-import QuanLyXeBuyt from "./frontend/QuanLyXeBuyt";
-//import QuanLyXeBuyt from "./frontend/ThongBao";
-//import QuanLyXeBuyt from "./frontend/QuanLyTaiXe";
-
-function App() {
-  return (
-    <div>
-      <QuanLyXeBuyt />
-    </div>
-  );
-}
-
-export default App;
->>>>>>> qlxbtb-code

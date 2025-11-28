@@ -276,11 +276,9 @@ export default function DriverMap({ onBackToMain, onNavigateToList }) {
               </div>
 
               <div className="dm-info-card dm-card-price">
-                <img src={imgVector3} alt="price" className="dm-price-icon" />
                 <p className="dm-price-text">32,000 VND/người</p>
               </div>
             </div>
-
             <div className="dm-divider"></div>
 
             {/* Action Buttons */}

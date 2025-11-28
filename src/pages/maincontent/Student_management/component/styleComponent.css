@@ -1,4 +1,3 @@
-
 /* container must be shrinkable inside grid/flex */
 .container-student-card {
   width: 100%;
@@ -9,124 +8,184 @@
   font-size: 0.7em;
 }
 
-/* card fills container and uses flex column so footer/button sticks to bottom */
-.container-student-card .card {
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 20px;
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.12);
-  overflow: hidden;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+:root{
+  --card-bg: #fff8f9;
+  --bg: #f7f6fb;
+  --text: #0f172a;
+  --muted: #6b7280;
+  --accent: #2563eb;
+  --card-border: rgba(0, 0, 0, 0.06);
+  --shadow: 0 10px 30px rgba(2,6,23,0.08);
+
+}
+
+/* Card */
+.passenger-card{
+  max-width: 300px;
+  height: auto;
+  background: var(--card-bg);
+  border-radius: 16px;
+  padding: 10px 0;
+  box-shadow: var(--shadow);
+  border: 4px solid var(--card-border);
   display: flex;
   flex-direction: column;
-  height: 100%;
-  min-height: 280px; /* consistent, adjust as needed */
-}
-
-/* hover */
-.card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.18);
-}
-
-/* header stays compact */
-.card-header {
-  background: linear-gradient(135deg, #4776e6 0%, #8e54e9 100%);
-  color: white;
-  padding: 20px 16px;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-}
-.card-header h2 { font-size: 20px; margin-bottom: 4px; }
-.card-header p { font-size: 13px; margin: 0; opacity: 0.95; }
-
-/* body grows and scrolls if content too large (but generally should wrap) */
-.card-body {
-  padding: 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  flex: 1 1 auto;
-  min-height: 0; /* allow content to scroll inside flex */
-  overflow: hidden;
-}
-
-/* info items layout */
-.info-item {
-  display: flex;
   align-items: center;
-  gap: 12px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-  transition: transform 0.18s ease, border-color 0.18s ease;
-  min-width: 0; /* important for text wrapping inside flex */
+  
 }
-.info-item:hover {
-  transform: translateX(4px);
-  border-bottom-color: #8e54e9;
+.passenger-card>div{
 }
 
-.info-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #4776e6 0%, #8e54e9 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 18px;
-  flex: 0 0 48px;
-  box-shadow: 0 5px 15px rgba(142, 84, 233, 0.22);
-}
-
-/* ensure content text wraps and truncates long lines */
-.info-content { flex: 1 1 auto; min-width: 0; }
-.info-label { font-size: 13px; color: #6b7280; margin-bottom: 4px; font-weight: 500; }
-.info-value {
-  font-size: 15px;
-  color: #111827;
-  font-weight: 600;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2; /* limit to 2 lines */
-  -webkit-box-orient: vertical;
-  line-height: 1.2;
-  word-break: break-word;
-}
-
-/* status centered */
-.status {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  justify-content: center;
-  margin-top: 6px;
-  color: #16a34a;
-  font-weight: 600;
-}
-
-/* button area pinned near bottom with small top margin */
-.detail-button {
-  display: block;
+/* header id */
+.passenger-card__header{
   width: 100%;
-  background: linear-gradient(135deg, #4776e6 0%, #8e54e9 100%);
-  color: white;
-  border: none;
-  border-radius: 999px;
-  padding: 12px;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-  margin-top: auto; /* push to bottom */
-  transition: all 0.22s ease;
+  display:flex;
+  justify-content: center;
+  margin-bottom: 6px;
 }
-.detail-button:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(142,84,233,0.28); }
+.passenger-card__id{
+  font-weight:700;
+  color:var(--text);
+  
+  background: linear-gradient(90deg,#fff,#f8fafc);
+  padding:4px 10px;
+  border-radius:999px;
+  box-shadow: inset 0 -1px 0 rgba(0,0,0,0.02);
+}
 
-/* small screen adjustments */
-@media (max-width: 520px) {
-  .container-student-card .card { min-height: 0; }
-  .card-body { padding: 14px; gap: 10px; }
-  .info-icon { width: 42px; height: 42px; flex: 0 0 42px; }
+/* avatar */
+.passenger-card__avatar-wrap{
+  margin-top: 6px;
+  margin-bottom: 8px;
+}
+.passenger-card__avatar{
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: #fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border: 4px solid #fff;
+  box-shadow: 0 6px 18px rgba(2,6,23,0.06);
+  overflow: hidden;
+}
+.passenger-card__avatar img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.passenger-card__avatar-fallback{
+  width: 100%;
+  height: 100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size: 1.5rem;
+  color: var(--accent);
+  background: linear-gradient(180deg,#fff,#f3f8ff);
+}
+
+/* body */
+.passenger-card__body{
+  width: 100%;
+  text-align: center;
+  padding: 6px 4px 0;
+}
+.passenger-card__name{
+  margin: 6px 0 8px;
+  
+  line-height: 1;
+  color: var(--text);
+  font-weight: 800;
+}
+
+/* info rows */
+.passenger-card__info{
+  display:flex;
+  flex-direction:column;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.info-row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap: 8px;
+  color: var(--muted);
+  
+}
+.info-icon{
+  width: 28px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  
+}
+
+/* actions */
+.passenger-card__actions{
+  display:flex;
+  justify-content:center;
+}
+.btn{
+  border: none;
+  cursor: pointer;
+  padding: 12px 22px;
+  border-radius: 999px;
+  font-weight: 700;
+  
+}
+.btn--primary{
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(37,99,235,0.18);
+}
+
+/* Compact style overrides — giảm kích thước chữ + avatar + nút */
+.passenger-card {
+  font-size: 13px;           /* base size cho toàn component */
+  max-width: 280px;
+  padding: 8px 0;
+}
+
+.passenger-card__id {
+  font-size: 0.95rem;
+  padding: 3px 8px;
+}
+
+.passenger-card__avatar {
+  width: 72px;
+  height: 72px;
+}
+
+.passenger-card__avatar-fallback {
+  font-size: 32px;
+}
+
+.passenger-card__name {
+  font-size: 1.25rem; /* giảm từ 1.6rem */
+  margin: 4px 0 6px;
+}
+
+.info-row {
+  font-size: 0.95rem;
+  gap: 6px;
+}
+
+.btn {
+  padding: 10px 18px;
+  font-size: 0.95rem;
+}
+
+/* responsive small */
+@media (max-width: 420px){
+  .passenger-card{ width: 100%; padding: 14px; }
+  .passenger-card__avatar{ width: 96px; height: 96px; } 
+}
+
+/* responsive tweaks */
+@media (max-width: 420px) {
+  .passenger-card__avatar { width: 88px; height: 88px; }
+  .passenger-card__name { font-size: 1.15rem; }
 }

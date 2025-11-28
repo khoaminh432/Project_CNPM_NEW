@@ -2,68 +2,62 @@
 import React from 'react';
 import './styleComponent.css';
 
-const PassengerCard = () => {
-  return (
-     <div class="container-student-card">
-        <div class="card">
-            <div class="card-header">
-                <h2>Thông Tin Cá Nhân</h2>
-                <p>ID: 001 - Đã xác thực</p>
-            </div>
-            <div class="card-body">
-                <div class="info-item">
-                    <div class="info-icon">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <div class="info-content">
-                        <div class="info-label">Họ và tên</div>
-                        <div class="info-value">Nguyễn Văn A</div>
-                    </div>
-                </div>
-                
-                <div class="info-item">
-                    <div class="info-icon">
-                        <i class="fas fa-route"></i>
-                    </div>
-                    <div class="info-content">
-                        <div class="info-label">Tuyến số</div>
-                        <div class="info-value">Tuyến 1 - Trung tâm thành phố</div>
-                    </div>
-                </div>
-                
-                <div class="info-item">
-                    <div class="info-icon">
-                        <i class="fas fa-map-marker-alt"></i>
-                    </div>
-                    <div class="info-content">
-                        <div class="info-label">Địa chỉ</div>
-                        <div class="info-value">455 Hồng Bàng, P.11, Q.5, TP.HCM</div>
-                    </div>
-                </div>
-                
-                <div class="info-item">
-                    <div class="info-icon">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                    <div class="info-content">
-                        <div class="info-label">Thời gian</div>
-                        <div class="info-value">6:55</div>
-                    </div>
-                </div>
-                
-                <div class="status">
-                    <span class="pulse"></span>
-                    <span>Trạng thái: Hoạt động</span>
-                </div>
-                
-                <button class="detail-button">
-                    <i class="fas fa-info-circle"></i> Xem chi tiết
-                </button>
-            </div>
-        </div>
-    </div>
+const defaultStudent = {
+  id: '001',
+  name: 'Nguyễn Văn A',
+  route: 'Tuyến số: 1',
+  address: '45 Hồng Bàng',
+  pickupTime: '6:55',
+  avatarUrl: null,
+};
 
-  )
+const PassengerCard = ({ Tempstudent = defaultStudent, onDetails = () => {} }) => {
+  const { id, name, route, address, pickupTime, avatarUrl } = Tempstudent;
+
+  return (
+    <article className="passenger-card">
+      <header className="passenger-card__header">
+        <span className="passenger-card__id">ID: {id}</span>
+      </header>
+
+      <div className="passenger-card__avatar-wrap">
+        <div className="passenger-card__avatar">
+          {avatarUrl ? (
+            <img src={avatarUrl} alt={`${name} avatar`} />
+          ) : (
+            <div className="passenger-card__avatar-fallback">
+              {name ? name.charAt(0).toUpperCase() : 'A'}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="passenger-card__body">
+        <h2 className="passenger-card__name">{name}</h2>
+
+        <div className="passenger-card__info">
+          <div className="info-row">
+            <span className="info-icon">🚌</span>
+            <span className="info-text">{route}</span>
+          </div>
+
+          <div className="info-row">
+            <span className="info-icon">📍</span>
+            <span className="info-text">{address}</span>
+          </div>
+
+          <div className="info-row">
+            <span className="info-icon">⏱️</span>
+            <span className="info-text">{pickupTime}</span>
+          </div>
+        </div>
+
+        <div className="passenger-card__actions">
+          <button className="btn btn--primary" onClick={() => onDetails(Tempstudent)}>Xem chi tiết</button>
+        </div>
+      </div>
+    </article>
+  );
 };
 
 export default PassengerCard;

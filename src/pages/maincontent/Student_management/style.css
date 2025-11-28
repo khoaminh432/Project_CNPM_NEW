@@ -1,12 +1,13 @@
 /* Tiêu đề chính */
-h2 {
-  font-size: 1.8rem;
+.header-row h2 {
+  font-size: 1.25rem;
   font-weight: 700;
   margin-bottom: 24px;
   color: #1e293b;
   display: flex;
   align-items: center;
   justify-content: space-between;
+
 }
 
 /* Nút chức năng trên góc phải */
@@ -38,12 +39,6 @@ button:hover {
   gap: 16px;
   width: 100%;
 }
-h2 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin: 0;
-  color: #0f172a;
-}
 
 /* Header actions */
 .header-actions {
@@ -65,39 +60,31 @@ h2 {
 .header-actions button:hover { transform: translateY(-3px); box-shadow: 0 12px 24px rgba(2,6,23,0.12); }
 
 /* Toolbar (filters / search) */
-.toolbar {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  margin-top: 8px;
-  width: 100%;
-}
-.toolbar .select,
-.toolbar .search {
-  padding: 8px 10px;
-  border-radius: 10px;
-  border: 1px solid #e6edf6;
-  background: #fff;
-  font-size: 0.95rem;
-  color: #0f172a;
-}
+
 
 /* Grid chứa các card */
 .card-grid {
+  margin-top: 10px;
   display: grid;
+  box-shadow: 0 8px 30px rgba(2,6,23,0.04);
+  border: 1px solid #d9dbdf;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  background: #fff;
   gap: 18px;
+  overflow: hidden;
   align-items: start;
   width: 100%;
-  box-sizing: border-box;
   margin-top: 12px;
   padding: 8px 0;
+  height: 65vh;               /* chỉnh giá trị nếu cần (vd: calc(100vh - 260px)) */
+  overflow-y: auto;
+  border-radius: 12px;
 }
 
 /* Card nhân viên */
 .card {
   background: #fff;
-  border-radius: 12px;
+  border-radius: 12px;  
   padding: 12px;
   border: 1px solid #e6e9ee;
   box-shadow: 0 6px 16px rgba(2,6,23,0.04);

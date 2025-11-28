@@ -1,4 +1,5 @@
 import React from "react";
+<<<<<<< HEAD
 import 'leaflet/dist/leaflet.css';
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
@@ -24,3 +25,18 @@ function App() {
 }
 
 export default App;
+=======
+import QuanLyXeBuyt from "./frontend/QuanLyXeBuyt";
+//import QuanLyXeBuyt from "./frontend/ThongBao";
+//import QuanLyXeBuyt from "./frontend/QuanLyTaiXe";
+
+function App() {
+  return (
+    <div>
+      <QuanLyXeBuyt />
+    </div>
+  );
+}
+
+export default App;
+>>>>>>> qlxbtb-code

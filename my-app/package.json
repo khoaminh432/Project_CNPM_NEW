@@ -39,7 +39,7 @@
   },
   "devDependencies": {
     "react-scripts": "^5.0.1"
-  },s
+  },
   "overrides": {
     "minimist": "^1.2.8",
     "glob": "^10.4.6",

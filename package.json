@@ -12,13 +12,15 @@
     "react-dom": "^18.3.1",
     "react-leaflet": "^4.2.1",
     "react-router-dom": "^6.26.2",
+    "mapbox-gl": "^3.0.1",  // Thêm từ TCTDADMIN nếu dùng Tracking/map
     "web-vitals": "^2.1.4"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "server": "cd backend && node server.js"  // Thêm script chạy backend nếu có
   },
   "eslintConfig": {
     "extends": [
@@ -45,11 +47,6 @@
     "tailwindcss": "^3.4.13"
   },
   "overrides": {
-    "minimist": "^1.2.8",
-    "glob": "^10.4.6",
-    "js-yaml": "^4.1.1",
-    "nth-check": "^2.0.1",
-    "postcss": "^8.5.6",
-    "webpack-dev-server": "^4.15.1"
+    "minimist": "^1.2.8"
   }
 }

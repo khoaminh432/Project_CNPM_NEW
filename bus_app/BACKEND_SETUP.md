@@ -11,8 +11,13 @@
 ### 1. Install Dependencies
 
 ```bash
+# Install frontend dependencies
 cd bus_app
-npm install express cors dotenv mysql2
+npm install
+
+# Install backend dependencies
+cd backend
+npm install
 ```
 
 ### 2. Setup Database
@@ -28,6 +33,7 @@ npm install express cors dotenv mysql2
 
 1. Copy `.env.example` to `.env`:
    ```bash
+   cd backend
    copy .env.example .env
    ```
 
@@ -43,7 +49,12 @@ npm install express cors dotenv mysql2
 ### 4. Start the Server
 
 ```bash
-node src/backend/server.js
+# Development mode (with auto-restart)
+cd backend
+npm run dev
+
+# Or production mode
+npm start
 ```
 
 You should see:
@@ -77,6 +88,27 @@ You should see:
 - `GET /api/bus-locations/schedule/:id/history` - Get location history for schedule
 - `POST /api/bus-locations` - Record new GPS location
 - `GET /api/bus-locations/active/all` - Get all active drivers (for admin map)
+
+### Routes Management
+- `GET /api/routes` - Get all routes
+- `GET /api/routes/:id` - Get route details with stops and students
+- `POST /api/routes` - Create new route
+- `PUT /api/routes/:id` - Update route
+
+### Students Management  
+- `GET /api/students` - Get all students (query: ?route_id, ?class_name, ?is_active)
+- `GET /api/students/:id` - Get student details
+- `GET /api/students/route/:route_id` - Get students by route
+- `POST /api/students` - Create new student
+- `PUT /api/students/:id` - Update student
+
+### Notifications
+- `GET /api/notifications/user/:user_id` - Get notifications for user
+- `GET /api/notifications/user/:user_id/unread/count` - Get unread count
+- `POST /api/notifications` - Send notification to users
+- `POST /api/notifications/broadcast` - Broadcast to user role
+- `PUT /api/notifications/:id/read` - Mark as read
+- `PUT /api/notifications/user/:user_id/read-all` - Mark all as read
 
 ## Frontend Integration
 
@@ -124,29 +156,38 @@ const recordLocation = (driverId, routeId, scheduleId, latitude, longitude, spee
 
 ```
 bus_app/
-├── src/
-│   ├── backend/
-│   │   ├── db.js                 # Database connection
-│   │   ├── server.js             # Express server
-│   │   └── routes/
-│   │       ├── drivers.js        # Driver endpoints
-│   │       ├── schedules.js      # Schedule endpoints
-│   │       └── busLocations.js   # GPS tracking endpoints
+├── backend/                      # Backend API Server
+│   ├── config/
+│   │   └── database.js           # Database connection pool
+│   ├── routes/
+│   │   ├── drivers.js            # Driver endpoints
+│   │   ├── schedules.js          # Schedule endpoints
+│   │   ├── busLocations.js       # GPS tracking endpoints
+│   │   ├── routes.js             # Routes management
+│   │   ├── students.js           # Students management
+│   │   └── notifications.js      # Notifications system
+│   ├── server.js                 # Express server main file
+│   ├── package.json              # Backend dependencies
+│   └── .env.example              # Environment template
+├── src/                          # React Frontend
 │   ├── components/               # React components
 │   ├── Assets/                   # Static files
+│   ├── pages/                    # Page components
 │   └── db/
 │       └── busapp.sql            # Database schema
-├── .env.example                  # Environment template
-└── package.json                  # Dependencies
+├── public/                       # Public assets
+├── package.json                  # Frontend dependencies
+└── README.md
 ```
 
 ## Next Steps
 
-1. Implement Authentication Routes (`/api/auth`)
-2. Create Student Routes (`/api/students`)
-3. Create Notifications Routes (`/api/notifications`)
+1. ✅ Complete Backend API Structure
+2. ✅ All Route Endpoints Implemented
+3. Implement Authentication Routes (`/api/auth`)
 4. Add JWT authentication middleware
-5. Deploy to production server
+5. Complete Frontend Integration for all components
+6. Deploy to production server
 
 ## Common Issues
 

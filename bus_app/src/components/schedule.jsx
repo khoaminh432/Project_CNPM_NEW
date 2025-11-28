@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import "../Assets/CSS/schedule.css";
 import Header from "./Header";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -12,12 +12,110 @@ import imgVector1 from "../Assets/images/imgVector1.svg";
 import imgStar1 from "../Assets/images/imgStar1.svg";
 
 export default function Schedule({ onNavigateToMainPage, onNavigate }) {
+  const [schedules, setSchedules] = useState([]);
+  const [currentDriver, setCurrentDriver] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
+  // Fetch schedules data from API
+  useEffect(() => {
+    fetchSchedules();
+    fetchDriverInfo();
+  }, [selectedDate]);
+
+  const fetchSchedules = async () => {
+    try {
+      console.log('Fetching schedules for date:', selectedDate);
+      const response = await fetch(`http://localhost:5000/api/schedules?date=${selectedDate}`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('Schedules response:', data);
+      
+      if (data.status === 'OK') {
+        setSchedules(data.data);
+      } else {
+        console.error('API returned error:', data.message);
+        setSchedules([]);
+      }
+    } catch (error) {
+      console.error('Error fetching schedules:', error);
+      setSchedules([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchDriverInfo = async () => {
+    try {
+      // Assuming driver ID 1 for now (should come from auth context)
+      console.log('Fetching driver info...');
+      const response = await fetch('http://localhost:5000/api/drivers/1');
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('Driver response:', data);
+      
+      if (data.status === 'OK') {
+        setCurrentDriver(data.data);
+      } else {
+        console.error('API returned error:', data.message);
+      }
+    } catch (error) {
+      console.error('Error fetching driver info:', error);
+    }
+  };
+
+  const getStatusClass = (status) => {
+    switch (status) {
+      case 'scheduled': return 'sc-item-not-started';
+      case 'in_progress': return 'sc-item-in-progress';
+      case 'completed': return 'sc-item-completed';
+      case 'cancelled': return 'sc-item-cancelled';
+      default: return 'sc-item-not-started';
+    }
+  };
+
+  const formatTime = (timeString) => {
+    if (!timeString) return '--:--';
+    return timeString.substring(0, 5); // Convert HH:MM:SS to HH:MM
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const days = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+    const dayName = days[date.getDay()];
+    return `${dayName}, ${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+  };
+
   const handleNavigate = (page) => {
     if (page === "mainpage" && onNavigateToMainPage) {
       onNavigateToMainPage();
     } else if (onNavigate) {
       onNavigate(page);
     }
+  };
+
+  const handleDateClick = () => {
+    setShowDatePicker(true);
+  };
+
+  const handleDateChange = (event) => {
+    const newDate = event.target.value;
+    setSelectedDate(newDate);
+    setShowDatePicker(false);
+    setLoading(true);
+  };
+
+  const handleDatePickerBlur = () => {
+    setShowDatePicker(false);
   };
 
   return (
@@ -37,23 +135,34 @@ export default function Schedule({ onNavigateToMainPage, onNavigate }) {
         <div className="sc-left-panel">
           {/* Driver Info Card */}
           <div className="sc-driver-card">
-            <div className="sc-date-section">
+            <div className="sc-date-section" onClick={handleDateClick}>
               <FontAwesomeIcon icon={faCalendar} className="sc-calendar-icon" />
-              <span className="sc-date-text">Thứ 2, 26/10/2025</span>
+              {showDatePicker ? (
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={handleDateChange}
+                  onBlur={handleDatePickerBlur}
+                  className="sc-date-picker"
+                  autoFocus
+                />
+              ) : (
+                <span className="sc-date-text">{formatDate(selectedDate)}</span>
+              )}
             </div>
             <div className="sc-driver-info">
               <div className="sc-driver-avatar">
-                <img alt="driver avatar" src={imgAvatar} />
+                <img alt="driver avatar" src={currentDriver?.profile_image_url || imgAvatar} />
               </div>
               <div className="sc-driver-details">
                 <div className="sc-driver-name-section">
-                  <h3 className="sc-driver-name">Lê Văn A</h3>
+                  <h3 className="sc-driver-name">{currentDriver?.full_name || 'Loading...'}</h3>
                   <div className="sc-driver-rating">
                     <img src={imgStar1} alt="star" className="sc-star-icon" />
-                    <span className="sc-rating-text">5.00</span>
+                    <span className="sc-rating-text">{currentDriver?.rating || '5.00'}</span>
                   </div>
                 </div>
-                <p className="sc-driver-id">BUSDR-023</p>
+                <p className="sc-driver-id">{currentDriver?.driver_code || 'Loading...'}</p>
               </div>
             </div>
           </div>
@@ -80,122 +189,61 @@ export default function Schedule({ onNavigateToMainPage, onNavigate }) {
 
         {/* Right Panel - Schedule Items */}
         <div className="sc-right-panel">
-          {/* Schedule Item 1 - Not Started (Red) */}
-          <div className="sc-schedule-item sc-item-not-started">
-            <div className="sc-item-header">
-              <div className="sc-item-driver-info">
-                <div className="sc-item-avatar">
-                  <img src={imgAvatar} alt="driver" />
+          {loading ? (
+            <div className="sc-loading">Loading schedules...</div>
+          ) : schedules.length === 0 ? (
+            <div className="sc-no-data">No schedules found for this date</div>
+          ) : (
+            schedules.map((schedule) => (
+              <div key={schedule.schedule_id} className={`sc-schedule-item ${getStatusClass(schedule.status)}`}>
+                <div className="sc-item-header">
+                  <div className="sc-item-driver-info">
+                    <div className="sc-item-avatar">
+                      <img src={imgAvatar} alt="driver" />
+                    </div>
+                    <div className="sc-item-driver-details">
+                      <p className="sc-item-driver-name">{schedule.full_name}</p>
+                      <p className="sc-item-driver-route">{schedule.route_name}</p>
+                    </div>
+                  </div>
+                  <img src={imgLaBus} alt="bus" className="sc-bus-icon" />
                 </div>
-                <div className="sc-item-driver-details">
-                  <p className="sc-item-driver-name">Lê Văn A</p>
-                  <p className="sc-item-driver-route">Tuyến xe 07</p>
-                </div>
-              </div>
-              <img src={imgLaBus} alt="bus" className="sc-bus-icon" />
-            </div>
-            <div className="sc-item-body">
-              <div className="sc-item-time-section">
-                <div className="sc-time-group">
-                  <span className="sc-time-label">Thời gian bắt đầu:</span>
-                  <span className="sc-time-value">06:00</span>
-                </div>
-                <div className="sc-time-group">
-                  <span className="sc-time-label">Thời gian kết thúc:</span>
-                  <span className="sc-time-value">08:00</span>
-                </div>
-                <div className="sc-time-group">
-                  <span className="sc-time-label">Số lượng học sinh:</span>
-                  <span className="sc-time-value">12</span>
-                </div>
-              </div>
-              <div className="sc-item-location">
-                <FontAwesomeIcon icon={faLocationDot} className="sc-location-icon" />
-                <span className="sc-location-text">Bến xe Miền Đông - Trường THPT ABC</span>
-              </div>
-              <div className="sc-item-footer">
-                <span className="sc-item-price">32,000đ</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Schedule Item 2 - In Progress (Green) */}
-          <div className="sc-schedule-item sc-item-in-progress">
-            <div className="sc-item-header">
-              <div className="sc-item-driver-info">
-                <div className="sc-item-avatar">
-                  <img src={imgAvatar} alt="driver" />
-                </div>
-                <div className="sc-item-driver-details">
-                  <p className="sc-item-driver-name">Lê Văn A</p>
-                  <p className="sc-item-driver-route">Tuyến xe 07</p>
-                </div>
-              </div>
-              <img src={imgLaBus} alt="bus" className="sc-bus-icon" />
-            </div>
-            <div className="sc-item-body">
-              <div className="sc-item-time-section">
-                <div className="sc-time-group">
-                  <span className="sc-time-label">Thời gian bắt đầu:</span>
-                  <span className="sc-time-value">08:30</span>
-                </div>
-                <div className="sc-time-group">
-                  <span className="sc-time-label">Thời gian kết thúc:</span>
-                  <span className="sc-time-value">10:30</span>
-                </div>
-                <div className="sc-time-group">
-                  <span className="sc-time-label">Số lượng học sinh:</span>
-                  <span className="sc-time-value">12</span>
+                <div className="sc-item-body">
+                  <div className="sc-item-time-section">
+                    <div className="sc-time-group">
+                      <span className="sc-time-label">Thời gian bắt đầu:</span>
+                      <span className="sc-time-value">{formatTime(schedule.planned_start)}</span>
+                    </div>
+                    <div className="sc-time-group">
+                      <span className="sc-time-label">Thời gian kết thúc:</span>
+                      <span className="sc-time-value">{formatTime(schedule.planned_end)}</span>
+                    </div>
+                    <div className="sc-time-group">
+                      <span className="sc-time-label">Số lượng học sinh:</span>
+                      <span className="sc-time-value">{schedule.total_students_expected}</span>
+                    </div>
+                  </div>
+                  <div className="sc-item-location">
+                    <FontAwesomeIcon icon={faLocationDot} className="sc-location-icon" />
+                    <span className="sc-location-text">{schedule.route_code} - {schedule.route_name}</span>
+                  </div>
+                  <div className="sc-item-footer">
+                    <span className="sc-item-status">
+                      {schedule.status === 'scheduled' && 'Chưa bắt đầu'}
+                      {schedule.status === 'in_progress' && 'Đang thực hiện'}
+                      {schedule.status === 'completed' && 'Hoàn thành'}
+                      {schedule.status === 'cancelled' && 'Đã hủy'}
+                    </span>
+                    {schedule.actual_start_time && (
+                      <span className="sc-actual-time">
+                        Thực tế: {formatTime(schedule.actual_start_time)}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
-              <div className="sc-item-location">
-                <FontAwesomeIcon icon={faLocationDot} className="sc-location-icon" />
-                <span className="sc-location-text">Bến xe Miền Đông - Trường THPT ABC</span>
-              </div>
-              <div className="sc-item-footer">
-                <span className="sc-item-price">32,000đ</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Schedule Item 3 - Completed (Blue) */}
-          <div className="sc-schedule-item sc-item-completed">
-            <div className="sc-item-header">
-              <div className="sc-item-driver-info">
-                <div className="sc-item-avatar">
-                  <img src={imgAvatar} alt="driver" />
-                </div>
-                <div className="sc-item-driver-details">
-                  <p className="sc-item-driver-name">Lê Văn A</p>
-                  <p className="sc-item-driver-route">Tuyến xe 07</p>
-                </div>
-              </div>
-              <img src={imgLaBus} alt="bus" className="sc-bus-icon" />
-            </div>
-            <div className="sc-item-body">
-              <div className="sc-item-time-section">
-                <div className="sc-time-group">
-                  <span className="sc-time-label">Thời gian bắt đầu:</span>
-                  <span className="sc-time-value">11:00</span>
-                </div>
-                <div className="sc-time-group">
-                  <span className="sc-time-label">Thời gian kết thúc:</span>
-                  <span className="sc-time-value">13:00</span>
-                </div>
-                <div className="sc-time-group">
-                  <span className="sc-time-label">Số lượng học sinh:</span>
-                  <span className="sc-time-value">12</span>
-                </div>
-              </div>
-              <div className="sc-item-location">
-                <FontAwesomeIcon icon={faLocationDot} className="sc-location-icon" />
-                <span className="sc-location-text">Bến xe Miền Đông - Trường THPT ABC</span>
-              </div>
-              <div className="sc-item-footer">
-                <span className="sc-item-price">32,000đ</span>
-              </div>
-            </div>
-          </div>
+            ))
+          )}
         </div>
       </div>
     </div>

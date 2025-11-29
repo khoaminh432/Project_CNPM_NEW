@@ -1,7 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
-import MapComponent from "./components/MapTracking/MapComponent";
-import "./Tracking.css";
-
+import React from "react";
 function Tracking() {
   // State quản lý dữ liệu
   const [tuKhoaTim, setTuKhoaTim] = useState("");
@@ -67,11 +64,7 @@ function Tracking() {
         <div className="body">
           {/* Bản đồ */}
           <div className="map">
-            <MapComponent
-              searchQuery={tuKhoaTim}
-              searchTrigger={lanKichHoatTim}
-              onRouteSelect={xuLyChonTuyen}
-            />
+            Map API Component
           </div>
 
           {/* Thanh bên hiển thị thông tin */}

@@ -1,8 +1,11 @@
 body {
   margin: 0;
   font-family: Arial, sans-serif;
+  box-sizing: border-box;
 }
-
+*{
+  box-sizing: border-box;
+}
 .container {
   display: flex;
   height: 100vh;

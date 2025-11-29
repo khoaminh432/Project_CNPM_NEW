@@ -8,11 +8,16 @@ import StudentManagementPage from "./pages/maincontent/Student_management/Studen
 import RouteManagementPage from "./pages/maincontent/Route_management/RouteManagementPage";
 
 function App() {
-
   const [showModal, setShowModal] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
   const [modalValue, setModalValue] = useState("");
   const [activePage, setActivePage] = useState("TRANG CHỦ");
+  const [statsData, setStatsData] = useState({
+    xeBuyt: 0,
+    taiXe: 0,
+    hocSinh: 0,
+    tuyenDuong: 0
+  });
 
   const handleCardClick = (title, value) => {
     setModalTitle(title);
@@ -20,15 +25,31 @@ function App() {
     setShowModal(true);
   };
 
-  fetchStats();
-}, []);
+  // Định nghĩa hàm fetchStats để lấy dữ liệu thống kê từ API
+  const fetchStats = async () => {
+    try {
+      // Giả sử endpoint API là '/api/stats' - chỉnh sửa theo backend thực tế
+      const response = await axios.get('/api/stats');
+      setStatsData(response.data); // Giả sử response.data có cấu trúc { xeBuyt: 35, taiXe: 19, ... }
+    } catch (error) {
+      console.error("Error fetching stats:", error);
+      // Fallback data nếu API fail
+      setStatsData({
+        xeBuyt: 35,
+        taiXe: 19,
+        hocSinh: 4,
+        tuyenDuong: 12
+      });
+    }
+  };
 
-const handleCardClick = (title, value) => {
-setModalTitle(title);
-setModalValue(value);
-setShowModal(true);
-};
+  // Sử dụng useEffect để gọi fetchStats khi component mount
+  useEffect(() => {
+    fetchStats();
+  }, []);
 
+  return (
+    <div className="App">
       <div className="main">
         <div className="header">
           <h1>{activePage.toUpperCase()}</h1>
@@ -41,21 +62,25 @@ setShowModal(true);
         {activePage === "TRANG CHỦ" && (
           <>
             <div className="stats">
-              <div className="card" onClick={() => handleCardClick("Xe Buýt", 35)}>
-                Xe Buýt <br /> <b>35</b>
+              <div className="item" onClick={() => handleCardClick("Xe Buýt", statsData.xeBuyt)}>
+                <b>{statsData.xeBuyt}</b>
+                <span>Xe Buýt</span>
               </div>
-              <div className="card" onClick={() => handleCardClick("Tài Xế", 19)}>
-                Tài Xế <br /> <b>19</b>
+              <div className="item" onClick={() => handleCardClick("Tài Xế", statsData.taiXe)}>
+                <b>{statsData.taiXe}</b>
+                <span>Tài Xế</span>
               </div>
-              <div className="card" onClick={() => handleCardClick("Học Sinh", 4)}>
-                Học Sinh <br /> <b>4</b>
+              <div className="item" onClick={() => handleCardClick("Học Sinh", statsData.hocSinh)}>
+                <b>{statsData.hocSinh}</b>
+                <span>Học Sinh</span>
               </div>
-              <div className="card" onClick={() => handleCardClick("Tuyến Đường", 12)}>
-                Tuyến Đường <br /> <b>12</b>
+              <div className="item" onClick={() => handleCardClick("Tuyến Đường", statsData.tuyenDuong)}>
+                <b>{statsData.tuyenDuong}</b>
+                <span>Tuyến Đường</span>
               </div>
             </div>
 
-            {/* Bảng thông tin chi tiết */}
+            {/* Bảng thông tin chi tiết (modal) */}
             <Info
               show={showModal}
               onClose={() => setShowModal(false)}
@@ -65,71 +90,23 @@ setShowModal(true);
 
             {/* Bản đồ */}
             <div className="map">
-              map component here
+              <MapComponent />
             </div>
+
+            {/* Phần thông báo - nếu DemoTk là component, import nó; tạm thời comment */}
+            {/* <div className="thongbao">
+              <DemoTk />
+            </div> */}
           </>
         )}
 
-        {/* component Tracking */}
+        {/* Các trang khác */}
         {activePage === "THEO DÕI XE BUÝT" && <Tracking />}
         {activePage === "QUẢN LÝ HỌC SINH" && <StudentManagementPage />}
-        {activePage === "QUẢN LÝ TUYẾN XE" && <RouteManagementPage/>}
+        {activePage === "QUẢN LÝ TUYẾN XE" && <RouteManagementPage />}
       </div>
     </div>
-
-    {activePage === "TRANG CHỦ" && (
-      <>
-        <div className="stats">
-  <div className="item" onClick={() => handleCardClick("Xe Buýt", statsData.xeBuyt)}>
-    <b>{statsData.xeBuyt}</b>
-    <span>Xe Buýt</span>
-  </div>
-
-  <div className="item" onClick={() => handleCardClick("Tài Xế", statsData.taiXe)}>
-    <b>{statsData.taiXe}</b>
-    <span>Tài Xế</span>
-  </div>
-
-  <div className="item" onClick={() => handleCardClick("Học Sinh", statsData.hocSinh)}>
-    <b>{statsData.hocSinh}</b>
-    <span>Học Sinh</span>
-  </div>
-
-  <div className="item" onClick={() => handleCardClick("Tuyến Đường", statsData.tuyenDuong)}>
-    <b>{statsData.tuyenDuong}</b>
-    <span>Tuyến Đường</span>
-  </div>
-</div>
-
-
-        {/* Bảng thông tin chi tiết */}
-        <Info
-          show={showModal}
-          onClose={() => setShowModal(false)}
-          title={modalTitle}
-          value={modalValue}
-        />
-
-        {/* Bản đồ */}
-       
-<div className="thongbao">
-  <DemoTk />
-</div>
-      </>
-    )}
-
-    {/* component Tracking */}
-    {activePage === "THEO DÕI XE BUÝT" && <Tracking />}
-    {activePage === "QUẢN LÝ HỌC SINH" && <StudentManagementPage />}
-    {activePage === "QUẢN LÝ TUYẾN XE" && (
-      <div>
-        <h2>Route Management Page</h2>
-      </div>
-    )}
-  </div>
-</div>
-
-);
+  );
 }
 
 export default App;

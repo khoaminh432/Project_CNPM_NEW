@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState, useCallback } from "react";  // Removed unused useEffect
+
 function Tracking() {
   // State quản lý dữ liệu
   const [tuKhoaTim, setTuKhoaTim] = useState("");
@@ -7,7 +8,7 @@ function Tracking() {
   const [lanCapNhatCuoi, setLanCapNhatCuoi] = useState(null);
 
   // Hàm xử lý tìm kiếm
-  const xuLyTimKiem = () => setLanKichHoatTim(prev => prev + 1);
+  const xuLyTimKiem = useCallback(() => setLanKichHoatTim(prev => prev + 1), []);
 
   // Hàm chọn tuyến đường
   const xuLyChonTuyen = useCallback((thongTinTuyen) => {
@@ -47,16 +48,16 @@ function Tracking() {
   }, []);
 
   // Hàm định dạng thời gian
-  const dinhDangThoiGian = (ngayGio) => {
+  const dinhDangThoiGian = useCallback((ngayGio) => {
     if (!(ngayGio instanceof Date) || isNaN(ngayGio.getTime())) return "-";
     const themSo0 = (so) => (so < 10 ? "0" + so : so);
     return `${themSo0(ngayGio.getHours())}:${themSo0(ngayGio.getMinutes())}:${themSo0(ngayGio.getSeconds())}`;
-  };
+  }, []);
 
-  const dinhDangLanCapNhat = () => {
+  const dinhDangLanCapNhat = useCallback(() => {
     if (!lanCapNhatCuoi) return "";
     return `Cập nhật: ${lanCapNhatCuoi.toLocaleTimeString()}`;
-  };
+  }, [lanCapNhatCuoi]);
 
   return ( 
     <div className="tracking-container"> 

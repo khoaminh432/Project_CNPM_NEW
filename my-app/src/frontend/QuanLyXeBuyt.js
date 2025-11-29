@@ -3,11 +3,10 @@ import "./QuanLyXeBuyt.css";
 import BusFormPopup from "./components/BusFormPopup";
 
 
-const API_URL = "http://localhost:3001/api/buses";
-const ROUTES_API_URL = "http://localhost:3001/api/routes";
+const API_URL = "http://localhost:5000/api/buses";
+const ROUTES_API_URL = "http://localhost:5000/api/routes";
 
 function QuanLyXeBuyt() {
-  // --- TẤT CẢ STATE VÀ HÀM VẪN Ở ĐÂY ---
   const [busData, setBusData] = useState([]); 
   const [showForm, setShowForm] = useState(false);
   const [formType, setFormType] = useState(""); 
@@ -19,9 +18,7 @@ function QuanLyXeBuyt() {
   const [allRoutes, setAllRoutes] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
 
-  // ... (fetchBuses, useEffect fetchBuses, useEffect fetchAllRoutes giữ nguyên) ...
   const fetchBuses = useCallback(async () => {
-    // ...
     const params = new URLSearchParams();
     if (filterStatus) {
       params.append("status", filterStatus);
@@ -63,7 +60,6 @@ function QuanLyXeBuyt() {
     fetchAllRoutes();
   }, []); 
   
-  // ... (handleAdd giữ nguyên) ...
   const handleAdd = () => {
     const allNumbers = busData.map(bus => 
         parseInt(bus.id.replace("XE", ""), 10)
@@ -225,19 +221,12 @@ function QuanLyXeBuyt() {
     );
   });
 
-  // --- PHẦN RENDER (JSX) ĐÃ NGẮN GỌN HƠN ---
+  // --- SỬA LẠI PHẦN RENDER ---
   return (
-    <div className="dashboard">
-      <aside className="sidebar">
-        <h2>DASHBOARD</h2>
-      </aside>
-
-      <main className="content">
-        <header className="header">
-          <h1>QUẢN LÝ XE BUÝT</h1>
-          <div className="profile">Profile ⬇</div>
-        </header>
-
+    // Xóa thẻ <div className="dashboard"> và <aside> và <header>
+    // Chỉ giữ nội dung chính
+    <div style={{ height: "100%", display: "flex", flexDirection: "column", padding: "10px" }}>
+        
         <div className="toolbar">
           <input 
             className="search-box" 
@@ -331,10 +320,8 @@ function QuanLyXeBuyt() {
             ))}
           </tbody>
         </table>
-      </main>
 
-      {/* === 2. GỌI COMPONENT POPUP MỚI === */}
-      {/* Truyền tất cả state và hàm cần thiết vào component con */}
+      {/* === COMPONENT POPUP === */}
       <BusFormPopup
         show={showForm}
         formType={formType}

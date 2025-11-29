@@ -6,6 +6,10 @@ import Tracking from "./Tracking";
 import MapComponent from "./components/MapComponent";
 import StudentManagementPage from "./pages/maincontent/Student_management/StudentManagementPage";
 import RouteManagementPage from "./pages/maincontent/Route_management/RouteManagementPage";
+import QuanLyTaiXe from "./frontend/QuanLyTaiXe";
+import QuanLyXeBuyt from "./frontend/QuanLyXeBuyt";
+import ThongBao from "./frontend/ThongBao";
+
 
 function App() {
   const [showModal, setShowModal] = useState(false);
@@ -82,6 +86,24 @@ function App() {
           >
             Quản lý tuyến xe
           </button>
+          <button 
+            onClick={() => setActivePage("QUẢN LÝ XE BUÝT")} 
+            className={activePage === "QUẢN LÝ XE BUÝT" ? "active" : ""}
+          >
+            Quản lý xe buýt
+          </button>
+          <button 
+            onClick={() => setActivePage("QUẢN LÝ TÀI XẾ")} 
+            className={activePage === "QUẢN LÝ TÀI XẾ" ? "active" : ""}
+          >
+            Quản lý tài xế
+          </button>
+          <button 
+            onClick={() => setActivePage("THÔNG BÁO")} 
+            className={activePage === "THÔNG BÁO" ? "active" : ""}
+          >
+            THÔNG BÁO
+          </button>
         </nav>
       </div>
 
@@ -127,6 +149,9 @@ function App() {
         {activePage === "THEO DÕI XE BUÝT" && <Tracking />}
         {activePage === "QUẢN LÝ HỌC SINH" && <StudentManagementPage />}
         {activePage === "QUẢN LÝ TUYẾN XE" && <RouteManagementPage />}
+        {activePage === "QUẢN LÝ XE BUÝT" && <QuanLyXeBuyt />}
+        {activePage === "QUẢN LÝ TÀI XẾ" && <QuanLyTaiXe />}
+        {activePage === "THÔNG BÁO" && <ThongBao />}
 
         {/* Modal Info - Global */}
         <Info

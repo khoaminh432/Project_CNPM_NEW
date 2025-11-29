@@ -19,6 +19,11 @@ body {
   border-right: 1px solid #ddd; /* đường viền bên phải */
   box-shadow: 2px 0 5px rgba(0,0,0,0.1); /* tạo hiệu ứng nổi */
   height: 100vh;               /* full chiều cao */
+  position: fixed;             /* fixed để không scroll */
+  left: 0;
+  top: 0;
+  overflow-y: auto;            /* scroll nếu menu dài */
+  z-index: 1000;               /* nổi trên content */
 }
 
 .sidebar h2 {
@@ -48,6 +53,9 @@ body {
   display: flex;
   flex-direction: column;
   background: #F0F2F5;
+  /* FIX: Push content right of sidebar */
+  margin-left: 200px;  /* Sidebar width */
+  min-height: 100vh;
 }
 .main1 {
   flex: 1;
@@ -55,6 +63,8 @@ body {
   flex-direction: column;
   background: url('./assets/image/Bus Tracking.png') no-repeat center center;
   background-size: cover; /* ảnh phủ toàn bộ */
+  /* FIX: Also push right if used */
+  margin-left: 200px;
 }
 
 .header {
@@ -198,6 +208,9 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
+  /* FIX: Push right of sidebar (if used instead of .main) */
+  margin-left: 200px;
+  min-height: 100vh;
 }
 
 /* Body */

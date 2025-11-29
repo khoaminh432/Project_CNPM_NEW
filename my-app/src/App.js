@@ -48,9 +48,45 @@ function App() {
     fetchStats();
   }, []);
 
+  // Debug: Log activePage khi thay đổi (xóa sau khi test)
+  useEffect(() => {
+    console.log("Active page changed to:", activePage);
+  }, [activePage]);
+
   return (
     <div className="App">
-      <div className="main">
+      {/* Sidebar Navigation */}
+      <div className="sidebar">
+        <nav className="nav-menu">
+          <button 
+            onClick={() => setActivePage("TRANG CHỦ")} 
+            className={activePage === "TRANG CHỦ" ? "active" : ""}
+          >
+            Trang chủ
+          </button>
+          <button 
+            onClick={() => setActivePage("THEO DÕI XE BUÝT")} 
+            className={activePage === "THEO DÕI XE BUÝT" ? "active" : ""}
+          >
+            Theo dõi xe buýt
+          </button>
+          <button 
+            onClick={() => setActivePage("QUẢN LÝ HỌC SINH")} 
+            className={activePage === "QUẢN LÝ HỌC SINH" ? "active" : ""}
+          >
+            Quản lý học sinh
+          </button>
+          <button 
+            onClick={() => setActivePage("QUẢN LÝ TUYẾN XE")} 
+            className={activePage === "QUẢN LÝ TUYẾN XE" ? "active" : ""}
+          >
+            Quản lý tuyến xe
+          </button>
+        </nav>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="main-content">
         <div className="header">
           <h1>{activePage.toUpperCase()}</h1>
           <div className="profile">
@@ -59,6 +95,7 @@ function App() {
           </div>
         </div>
 
+        {/* Render content based on activePage */}
         {activePage === "TRANG CHỦ" && (
           <>
             <div className="stats">
@@ -80,30 +117,24 @@ function App() {
               </div>
             </div>
 
-            {/* Bảng thông tin chi tiết (modal) */}
-            <Info
-              show={showModal}
-              onClose={() => setShowModal(false)}
-              title={modalTitle}
-              value={modalValue}
-            />
-
             {/* Bản đồ */}
             <div className="map">
               <MapComponent />
             </div>
-
-            {/* Phần thông báo - nếu DemoTk là component, import nó; tạm thời comment */}
-            {/* <div className="thongbao">
-              <DemoTk />
-            </div> */}
           </>
         )}
 
-        {/* Các trang khác */}
         {activePage === "THEO DÕI XE BUÝT" && <Tracking />}
         {activePage === "QUẢN LÝ HỌC SINH" && <StudentManagementPage />}
         {activePage === "QUẢN LÝ TUYẾN XE" && <RouteManagementPage />}
+
+        {/* Modal Info - Global */}
+        <Info
+          show={showModal}
+          onClose={() => setShowModal(false)}
+          title={modalTitle}
+          value={modalValue}
+        />
       </div>
     </div>
   );

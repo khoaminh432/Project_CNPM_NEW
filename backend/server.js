@@ -1,24 +1,28 @@
 const express = require('express');
 const cors = require('cors');
-const cron = require('node-cron');      // Thư viện tạo lịch chạy ngầm
-const pool = require('./db/connect');   // Kết nối DB để Cron Job lấy dữ liệu
+const cron = require('node-cron'); // Thư viện tạo lịch chạy ngầm
+const dotenv = require('dotenv'); // THÊM MỚI: Load .env
+const pool = require('./db/connect'); // Kết nối DB để Cron Job lấy dữ liệu (sử dụng .env)
+
+// Load env vars từ .env (mặc định như bạn yêu cầu)
+dotenv.config();
 
 // 1. Import file route
 const driverRoutes = require('./route/driver.js');
-const busRoutes = require('./route/bus.js'); 
+const busRoutes = require('./route/bus.js');
 const scheduleRoutes = require('./route/schedule.js');
 const routeRoutes = require('./route/route.js');
 const notificationRoutes = require('./route/notification.js');
 
 const app = express();
-const PORT = 3001; 
+const PORT = process.env.PORT || 5000;  // Mặc định 5000 từ .env
 
 app.use(cors());
 app.use(express.json());
 
-// 2. Chỉ dẫn cho server: 
-app.use('/api/drivers', driverRoutes); 
-app.use('/api/buses', busRoutes); 
+// 2. Chỉ dẫn cho server:
+app.use('/api/drivers', driverRoutes);
+app.use('/api/buses', busRoutes);
 app.use('/api/schedules', scheduleRoutes);
 app.use('/api/routes', routeRoutes);
 app.use('/api/notifications', notificationRoutes);
@@ -31,16 +35,14 @@ cron.schedule('* * * * *', async () => {
   try {
     // Lấy tin cần gửi
     const [pendingNotifs] = await pool.query(`
-      SELECT * FROM notification 
+      SELECT * FROM notification
       WHERE type = 'scheduled' AND status_sent = 'pending' AND scheduled_time <= NOW()
     `);
-
     if (pendingNotifs.length === 0) return;
     connection = await pool.getConnection();
-
     for (const notif of pendingNotifs) {
         await connection.beginTransaction();
-        
+       
         // 1. Gửi tin (Copy vào bảng recipients)
         let recipientIds = [];
         if (notif.recipient_type === 'driver') {
@@ -50,19 +52,17 @@ cron.schedule('* * * * *', async () => {
             const [parents] = await connection.query("SELECT parent_id FROM bus_map_parent");
             recipientIds = parents.map(p => p.parent_id);
         } else if (notif.recipient_type === 'bus') recipientIds = ['admin'];
-
         if (recipientIds.length > 0) {
             const data = recipientIds.map(id => [notif.id, id, notif.recipient_type==='bus'?'admin':notif.recipient_type, 'unread']);
             await connection.query("INSERT INTO notification_recipients (notification_id, recipient_id, recipient_type, status) VALUES ?", [data]);
         }
-
         // 2. TÍNH TOÁN NGÀY GỬI TIẾP THEO
         if (notif.is_recurring == 1 && notif.recurrence_days) {
             // Logic: Tìm ngày hợp lệ tiếp theo gần nhất
             const allowedDays = notif.recurrence_days.split(',').map(Number).sort((a,b)=>a-b); // VD: [1, 3, 5]
             const current = new Date(notif.scheduled_time);
             let nextDate = new Date(current);
-            
+           
             // Cộng thêm 1 ngày trước, sau đó kiểm tra xem có trùng ngày cho phép không
             // Nếu không trùng, cộng tiếp cho đến khi trùng
             let found = false;
@@ -74,7 +74,7 @@ cron.schedule('* * * * *', async () => {
                     break;
                 }
             }
-            
+           
             if (found) {
                 // Cập nhật thời gian gửi tiếp theo, giữ status 'pending'
                 await connection.query(`UPDATE notification SET scheduled_time = ? WHERE id = ?`, [nextDate, notif.id]);
@@ -83,20 +83,26 @@ cron.schedule('* * * * *', async () => {
                 // Trường hợp hiếm: ko tìm thấy ngày (dữ liệu lỗi), cho dừng luôn
                 await connection.query(`UPDATE notification SET status_sent = 'sent' WHERE id = ?`, [notif.id]);
             }
-
         } else {
             // Nếu không lặp lại -> Đánh dấu đã xong
             await connection.query(`UPDATE notification SET status_sent = 'sent' WHERE id = ?`, [notif.id]);
         }
-
         await connection.commit();
     }
-    connection.release();
+    if (connection) connection.release();
   } catch (err) {
     if (connection) { await connection.rollback(); connection.release(); }
     console.error(err);
   }
 });
+
+// Test DB connection khi start (THÊM MỚI)
+pool.getConnection()
+  .then(connection => {
+    console.log('MySQL connected successfully');
+    connection.release();
+  })
+  .catch(err => console.error('MySQL connection error:', err));
 
 // Khởi động server
 app.listen(PORT, () => {

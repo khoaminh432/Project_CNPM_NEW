@@ -13,6 +13,9 @@ const busRoutes = require('./route/bus.js');
 const scheduleRoutes = require('./route/schedule.js');
 const routeRoutes = require('./route/route.js');
 const notificationRoutes = require('./route/notification.js');
+const thongKeRoutes = require('./routes/thongKeRoutes');
+
+
 
 const app = express();
 const PORT = process.env.PORT || 5000;  // Mặc định 5000 từ .env
@@ -26,6 +29,8 @@ app.use('/api/buses', busRoutes);
 app.use('/api/schedules', scheduleRoutes);
 app.use('/api/routes', routeRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/thongke', thongKeRoutes);
+
 
 /* ==================================================================
  * CRON JOB: TỰ ĐỘNG QUÉT VÀ GỬI THÔNG BÁO (CHẠY MỖI PHÚT)

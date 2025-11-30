@@ -142,7 +142,7 @@
 }
 
 /* Popup */
-.popup {
+.bus-popup-overlay {
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.5);
@@ -152,7 +152,7 @@
     z-index: 999;
 }
 
-.popup-content {
+.bus-popup-content {
     background: white;
     padding: 20px;
     border-radius: 10px;
@@ -163,18 +163,18 @@
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
-.popup-content h3 {
+.bus-popup-content h3 {
     margin-bottom: 15px;
 }
 
-.popup-content label {
+.bus-popup-content label {
     display: block;
     margin: 5px 0;
     font-weight: bold;
 }
 
-.popup-content input,
-.popup-content select {
+.bus-popup-content input,
+.bus-popup-content select {
     width: 100%;
     padding: 8px;
     margin-bottom: 10px;
@@ -268,7 +268,7 @@
     font-weight: bold;
 }
 /* Container cho input tìm kiếm (để định vị dropdown) */
-.popup-content .search-container {
+.bus-popup-content .search-container {
     position: relative;
 }
 

@@ -1,5 +1,5 @@
 // models/thongKeModel.js
-const pool = require('../db'); // kết nối database
+const pool = require('../db/connect') // kết nối database
 
 const getThongKe = async () => {
   const [xeBuyt] = await pool.query('SELECT COUNT(*) as count FROM xe_buyt');

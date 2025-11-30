@@ -1,26 +1,13 @@
-class User {
-    constructor(userId, username, password, email, userRole, isActive, createdAt, updatedAt) {
-        this.userId = userId;
-        this.username = username;
-        this.password = password;
-        this.email = email;
-        this.userRole = userRole;
-        this.isActive = isActive;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-    }
+import { BaseModel } from './BaseModel';
 
-    createUser() {
-        // Logic to create a new user
-    }
-
-    updateUser() {
-        // Logic to update user information
-    }
-
-    deleteUser() {
-        // Logic to delete a user
-    }
+export class User extends BaseModel {
+  constructor(input = {}) {
+    super(input);
+    this.user_id = input.user_id ?? null;
+    this.username = input.username ?? '';
+    this.password = input.password ?? '';
+    this.email = input.email ?? '';
+    this.user_role = input.user_role ?? 'driver';
+    this.is_active = typeof input.is_active === 'boolean' ? input.is_active : true;
+  }
 }
-
-export default User;

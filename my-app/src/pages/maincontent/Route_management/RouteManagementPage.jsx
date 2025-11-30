@@ -1,8 +1,9 @@
 import './style.css';
 import React, { useEffect, useState, useMemo } from 'react';
 import BusRoute from './component/bus_route';
-import { Route } from "../../../models/Route";
+import { Route,defaultRoutes } from "../../../models/Route";
 import { Time } from '../../../models/Time';
+import AddRoute from './component/AddRoute';
 import StyleMain from './../styleMain.module.css';
 import { RouteDetail } from './component/formdetails/Detail_Route';
 function renderRoutesTable(routes,handleViewDetail) {
@@ -10,11 +11,36 @@ function renderRoutesTable(routes,handleViewDetail) {
     <BusRoute route={route} onViewDetail={handleViewDetail}/>
   ));
 }
+function formatNumber2(value) {
+  if (value === null || value === undefined || value === '') return '0.00';
+  const n = Number(value);
+  if (Number.isNaN(n)) return String(value);
+  return n.toFixed(2);
+}
+function parseTimeToModel(inputTime, fallback="00:00") {
+    // inputTime có thể là chuỗi "HH:MM" hoặc đối tượng Date
+    if (typeof inputTime === 'string') {
+      const parts = inputTime.split(':');
+      if (parts.length === 2) {
+        const hours = parseInt(parts[0], 10);
+        const minutes = parseInt(parts[1], 10);
+        return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+      }
+      return fallback;
+    } else if (inputTime instanceof Date) {
+      const hours = inputTime.getHours();
+      const minutes = inputTime.getMinutes();
+      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+    } else {
+      return fallback;
+    }   
+  }
+
 function totalRouteStable(array){
   return array.filter(route=>route.status==="active").length
 }
 function totalDistance(array){
-  return array.reduce((sum,route)=>sum+parseKm(route.distance_km),0)
+  return formatNumber2(array.reduce((sum,route)=>sum+parseKm(route.distance_km),0))
 }
 function parseKm(val) {
     if (val == null) return 0;
@@ -30,20 +56,43 @@ function RouteManagementPage() {
   const [routes, setRoutes] = useState([]);
   const [filter, setFilter] = useState('all'); // <-- new state for filter
   const [showDetail, setShowDetail] = useState({key:false,value:null});
+  const [showaddroute, setShowAddRoute] = useState(false);
   useEffect(() => {
     // ví dụ: lấy từ API hoặc dữ liệu tĩnh
-    setRoutes([
-      new Route(1, 'R001', 'Tuyến 1', 'Trạm A', 'Trạm B', new Time(7, 0), new Time(8, 0), 30, 15, 45, 'active', new Date(), new Date()),
-      new Route(2, 'R002', 'Tuyến 2', 'Trạm C', 'Trạm D', new Time(9, 0), new Time(10, 0), 25, 10, 35, 'inactive', new Date(), new Date()),
-      new Route(3, 'R003', 'Tuyến 3', 'Trạm E', 'Trạm F', new Time(11, 0), new Time(12, 0), 40, 20, 60, 'active', new Date(), new Date()),
-      new Route(4, 'R004', 'Tuyến 4', 'Trạm G', 'Trạm H', new Time(13, 0), new Time(14, 0), 15, 5, 20, 'active', new Date(), new Date()),
-      new Route(5, 'R005', 'Tuyến 5', 'Trạm I', 'Trạm J', new Time(15, 0), new Time(16, 0), 50, 25, 75, 'inactive', new Date(), new Date()),
-      new Route(6, 'R006', 'Tuyến 6', 'Trạm K', 'Trạm L', new Time(17, 0), new Time(18, 0), 35, 15, 50, 'active', new Date(), new Date()),
-      new Route(7, 'R007', 'Tuyến 7', 'Trạm M', 'Trạm N', new Time(19, 0), new Time(20, 0), 20, 10, 30, 'inactive', new Date(), new Date()),
-      new Route(8, 'R008', 'Tuyến 8', 'Trạm O', 'Trạm P', new Time(21, 0), new Time(22, 0), 45, 20, 65, 'active', new Date(), new Date()),
-    ]);
+    setRoutes(defaultRoutes);
   }, []);
-  
+  function editRoute(updated) {
+    setRoutes(prev => prev.map(r => {
+      // match by route_id first, fallback to route_code
+      const matchId = (updated.route_id != null && r.route_id === updated.route_id);
+      const matchCode = (!matchId && updated.route_code && r.route_code === updated.route_code);
+      if (matchId || matchCode) {
+        // keep created_at, update updated_at
+        return new Route(
+          updated.route_id ?? r.route_id,
+          updated.route_code ?? r.route_code,
+          updated.route_name ?? r.route_name,
+          updated.start_location ?? r.start_location,
+          updated.end_location ?? r.end_location,
+          updated.planned_start ? parseTimeToModel(updated.planned_start, r.planned_start) : r.planned_start,
+          updated.planned_end ? parseTimeToModel(updated.planned_end, r.planned_end) : r.planned_end,
+          Number(updated.total_students ?? r.total_students),
+          updated.distance_km ?? r.distance_km,
+          Number(updated.estimated_duration_minutes ?? r.estimated_duration_minutes),
+          updated.status ?? r.status,
+          r.created_at,
+          new Date()
+        );
+      }
+      return r;
+    }));}
+  const cancelShowAddRoute = () => {
+    setShowAddRoute(false);
+  }
+  const handleSaveRoute = (newRoute) => {
+    editRoute(newRoute);
+    setShowDetail({key:false,value:null});
+  }
   const handleViewDetail = (route) => {
     setShowDetail({key:true,value: route});
     console.log('Viewing details for route:', route);
@@ -61,13 +110,15 @@ function RouteManagementPage() {
   return (
     
     <div className="container-route-management">
+      {!showaddroute && 
+      <>
       <header>
         <div className={StyleMain.row_direction} style={{justifyContent: "space-between", alignItems: "center" }}>
           <div>
             <h1 className={StyleMain.setTitle_h1}><i className="fas fa-route" /> Quản Lý Tuyến Xe</h1>
             <p className="description">Quản lý và theo dõi các tuyến xe hiện có một cách hiệu quả và trực quan</p>
           </div>
-          <div><button style={{ color: "white" }}>➕ Thêm Tuyến xe</button></div>
+          <div><button style={{ color: "white" }} onClick={()=>setShowAddRoute(true)}>➕ Thêm Tuyến xe</button></div>
         </div>
       </header>
 
@@ -135,9 +186,18 @@ function RouteManagementPage() {
         {showDetail.key && (
           <RouteDetail
             route={showDetail.value} // ví dụ: hiển thị chi tiết của tuyến đầu tiên  
-            onClose={() => setShowDetail(false)}
+            onClose={() => setShowDetail({key:false,value:null})}
+            onSave={handleSaveRoute}
             />)}
       </div>
+      </>
+      }
+      {showaddroute && (
+        <AddRoute
+         onclose={cancelShowAddRoute}
+        />
+      )}
+      
     </div>
     
   );

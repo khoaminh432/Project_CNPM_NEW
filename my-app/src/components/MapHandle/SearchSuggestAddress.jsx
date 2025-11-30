@@ -5,7 +5,19 @@ import { getPlaceDetail } from "../../api/GoongPlaceDetail";
 import PointLocation from "./PointLocation";
 const GOONG_API_KEY = process.env.REACT_APP_GOONG_API_KEY;
 let count = 0
+function get3character(address){
+  // Tách thành các từ, lọc chỉ lấy chữ cái
+const words = address.split(' ')
+                    .filter(word => /[a-zA-ZÀ-ỹ]/.test(word))
+                    .map(word => word.replace(/[^a-zA-ZÀ-ỹ]/g, ''))
+                    .filter(word => word.length > 0);
 
+// Lấy 3 chữ cái đầu từ các từ
+const firstThreeCharsFromWords = words.slice(0, 3)
+                                    .map(word => word.charAt(0))
+                                    .join('');
+  return firstThreeCharsFromWords.toUpperCase();
+                                  }
 export default function SearchSuggestAddress({placeholderinput,className,styleInputMain,onAddressSelect=null}) {
   const styleInputdefault = {
             width:"100%",
@@ -62,8 +74,8 @@ export default function SearchSuggestAddress({placeholderinput,className,styleIn
       const res = await getPlaceDetail(item.place_id)
       const loc = res.geometry;
       
-      loc.location.name = res.formatted_address
-      console.log(loc)
+      loc.location.address = res.formatted_address
+      loc.location.name = get3character(loc.location.address);
       if(onAddressSelect)
         onAddressSelect(
           loc.location

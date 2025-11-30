@@ -1,20 +1,26 @@
 // ...existing code...
-import React, { useState } from 'react';
+import React, { use, useEffect, useState } from 'react';
 import './addRoute.css';
 import StyleMain from "./../../styleMain.module.css";
 import MapComponent from "./../../../../components/MapComponent"
 import SearchSuggestAddress from '../../../../components/MapHandle/SearchSuggestAddress';
-function AddRoute() {
-  const defaultStations = [
-    'Bến Thành',
-    'Ba Son',
-    'Nhà Hát Thành Phố',
-    'Bệnh Viện Chợ Rẫy',
-    'Công Viên Tao Đàn',
-    'Suối Tiên',
-    "Ninh Thuan",
-    "Binh Thuan",
-  ];
+import {Stop,stops} from '../../../../models/Stop';
+function listtoString(list){
+  let stopNames = "";
+
+ list.forEach(temp => {
+  stopNames += temp.stop_name + "->";
+});
+return stopNames.slice(0, -2); // loại bỏ dấu phẩy và khoảng trắng cuối cùng
+}
+function AddRoute({onclose=()=>{}}) {
+  const [stations,setStation]= useState([]);
+  useEffect(()=>{
+    // giả lập lấy danh sách trạm từ API
+    setStation(stops);
+  }
+    
+    ,[])
   const [positions,setPosition] = useState({
     start: null,
     end: null
@@ -23,7 +29,9 @@ function AddRoute() {
     
     if(geometry){
       setPosition(pos=>({...pos,start:geometry}))
+      console.log("xin chao")
     }
+    
   }
   const handleEndLocation = (geometry)=>{
     
@@ -39,6 +47,7 @@ function AddRoute() {
   const [endTime, setEndTime] = useState('');
 
   const toggleStation = (name) => {
+
     setSelectedStations(prev => {
       const next = new Set(prev);
       if (next.has(name)) next.delete(name);
@@ -60,17 +69,35 @@ function AddRoute() {
     alert('Đã lưu tuyến (console.log)');
   };
 
-  const selectedList = Array.from(selectedStations);
+  const selectedList = Array.from(selectedStations)
   const routeDisplay = routeName || "";
 
   return (
     <div className="add-route-wrap" >
       <header className="add-route-header">
-        <h1>Chọn / Tạo tuyến đường</h1>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h1>Chọn / Tạo tuyến đường</h1>
+          <button 
+            className="btn-close-route" 
+            onClick={()=>onclose()}
+            style={{ 
+              background: '#ef4444', 
+              color: '#fff', 
+              border: 'none', 
+              padding: '8px 12px',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontWeight: '600',
+              fontSize: '14px'
+            }}
+          >
+            ✕ Đóng
+          </button>
+        </div>
         <form className="search-row" onSubmit={(e) => e.preventDefault()}>
           <SearchSuggestAddress placeholderinput="nhập địa chỉ bắt đầu" className="search-input"  onAddressSelect={handleStartLocation}/>
           <SearchSuggestAddress placeholderinput="nhập địa chỉ kết thúc" className="search-input" onAddressSelect={handleEndLocation}/>
-          <button className="search-btn" type="button" onClick={() => alert('Chức năng tìm tuyến chưa triển khai')}>
+          <button className="search-btn" type="button" onClick={() => console.log(positions)}>
             Tìm tuyến
           </button>
         </form>
@@ -92,17 +119,17 @@ function AddRoute() {
 
             <h3 className="sub-title">Các trạm đi qua</h3>
             <div className="stations-list">
-              {defaultStations.map((s, idx) => {
+              {stations.map((s, idx) => {
                 const id = `station-${idx}`;
                 return (
-                  <label key={s} htmlFor={id} className={`station-item ${selectedStations.has(s) ? 'active' : ''}`}>
+                  <label htmlFor={id} className={`station-item ${selectedStations.has(s) ? 'active' : ''}`}>
                     <input
                       id={id}
                       type="checkbox"
                       checked={selectedStations.has(s)}
                       onChange={() => toggleStation(s)}
                     />
-                    <span className="station-name">{s}</span>
+                    <span className="station-name">{s.stop_name}</span>
                   </label>
                 );
               })}
@@ -134,11 +161,11 @@ function AddRoute() {
               <strong>Tuyến:{routeDisplay}</strong>
               
               <div className="stations-preview">
-                {selectedList.length ? selectedList.join(' → ') : <span className="muted">Chưa chọn trạm</span>}
+                {selectedList.length ? listtoString(selectedList): <span className="muted">Chưa chọn trạm</span>}
               </div>
             </div>
 
-            <div className="form-actions">
+            <div className="form-actions-add-route">
               <button type="submit" className="save-btn">Lưu Tuyến xe</button>
               <button type="button" className="cancel-btn" onClick={() => {
                 setRouteName(''); setStartAddress(''); setEndAddress(''); setSelectedStations(new Set()); setStartTime(''); setEndTime('');
@@ -150,7 +177,7 @@ function AddRoute() {
         <aside className="right-card" style={{height:"auto"}}>
           <div className="map-card" style={{height:"100%" ,width:"100%"}} >
             {/* Nếu có component map sẵn thì thay placeholder bằng MapComponent */}
-            <MapComponent positionCurrent={positions}/>
+            <MapComponent positionCurrent={positions} stops={[...selectedStations]}/>
           </div>
         </aside>
       </div>

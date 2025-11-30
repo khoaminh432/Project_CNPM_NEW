@@ -1,10 +1,17 @@
-// MapComponent.jsx
-import React, { useEffect, useRef, useState } from 'react';
+import React, { use, useEffect, useRef, useState } from 'react';
 import { InteractiveMap,} from '@goongmaps/goong-map-react';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import PointLocation from './MapHandle/PointLocation';
 import {createRoute, getDirection} from "./../api/GoongDirection";
 import DrawRoute from './MapHandle/DrawRoute';
+const symbolLocation = <i className="fa-solid fa-location-dot"></i>;
+const styleLocation = {
+  temp:{color:'black', style:"📍"},
+  pointtraim:{color:"red",style:symbolLocation},
+  pointcurrent:{color:"blue",style:symbolLocation},
+  pointstart:{color:"green",style:symbolLocation},
+  pointend:{color:"black",style:symbolLocation},
+}
 const GOONG_MAPTILES_KEY = process.env.REACT_APP_GOONG_API_MAPTILE_KEY;
 function CreatePoint(locationnew,styleView={ colorLocation: 'red', fontSize: "1.5em" }){
 
@@ -40,21 +47,30 @@ const styleLocate = {
 const MapComponent = ({positionCurrent={
     start: null,
     end: null
-  }}) => {
+  },stops=[]}) => {
   const [locations,setLocation] = useState([
     {
     start: null,
     end: null
-  },
-    { name: "Van Hanh Mall", lat: 10.7704868, lng: 106.6704975 },
-    { name: "Đại Học Sài Gòn csc", lat: 10.75997732, lng: 106.6821643 },
-    { name: "Trường tiểu học Hùng Vương", lat: 10.7536827, lng: 106.6526513 },
-    { name: "Trường thpt Thăng Long", lat: 10.7511922, lng: 106.6609409 },
+  }
+  ]);
+  // Cập nhật locations khi stops thay đổi
+  useEffect(() => {
+  const stopLocations = stops.map((stop) => ({
+    ...stop,           // copy toàn bộ thuộc tính Stop
+    latitude: stop.latitude,
+    longitude: stop.longitude
+  }));
+
+  setLocation(prev => [
+    prev[0],           // giữ lại element đầu: {start:null, end:null}
+    ...stopLocations   // thêm toàn bộ stop vào
   ]);
   
-  const [routesfull,setRoutesFull] = React.useState(null)
-  const location = useRef({latitude: locations[0].lat,longitude: locations[0].lng})
-  const [viewport, setViewport] = React.useState({
+}, [stops]);
+  
+  const [routesfull,setRoutesFull] = useState(null)
+  const [viewport, setViewport] = useState({
     latitude: 10.7500452,
     longitude: 106.6622499,
     zoom: 15,
@@ -64,21 +80,26 @@ const MapComponent = ({positionCurrent={
     pitch: 0,
     transitionDuration: 1000
   });
-  function LocationMark(){
-    setLocation(prevLocations => 
-  prevLocations.map((location, index) => 
-    index === 0 
-      ? positionCurrent
-      : location
-  )
-);
+  const [chooseMapLocation,setChooseMapLocation] = useState(null)
   
-  }
+  
   useEffect(()=>{
     
     if(positionCurrent.start)
       setCenter(positionCurrent.start)
-  },[positionCurrent])
+    if(positionCurrent.end)
+      setCenter(positionCurrent.end)
+  },[positionCurrent.start,positionCurrent.end])
+  // Cập nhật center khi locations thay đổi
+  useEffect(()=>{
+    if(locations.length>1){
+      setCenter(locations.at(-1))
+    }},[locations.at(-1)])
+  const handleMapChoose = (event) => {
+    let lngLat = event.lngLat;
+    const [lng, lat] = lngLat;
+    setChooseMapLocation({ lat:lat, lng: lng });
+  };
   function handleAddlocation(location){
     setLocation(loc=>[...loc,location])
   }
@@ -97,11 +118,10 @@ const MapComponent = ({positionCurrent={
     setViewport(prev => ({ ...prev, zoom: Math.max((prev.zoom || 0) - 1, 0) }));
   };
   function setCenter(location){
-    setViewport(prev=>({...prev,latitude:location.lat,longitude:location.lng,zoom: Math.max(prev.zoom || 0, 15)}))
+    setViewport(prev=>({...prev,latitude:location.lat||location.latitude,longitude:location.lng||location.longitude,zoom: Math.max(prev.zoom || 0, 17)}))
   }
   const locateMe = () => {
 
-    console.log(locations)
     if (!navigator.geolocation) {
       alert('Trình duyệt không hỗ trợ Geolocation.');
       return;
@@ -166,33 +186,47 @@ const MapComponent = ({positionCurrent={
         onViewportChange={handleViewportChange}
         height="100%"
         width="100%"
+        onClick={handleMapChoose}
       >
       
         {/* Marker mặc định: truyền fontSize tính theo zoom */}
         {locations.filter((_,index)=>index!==0).map((loc, index) => (
           
+          <>
           <PointLocation
             key={index}
-            location={{ lat: loc.lat, lng: loc.lng, name: loc.name }}
-            styleView={{ colorLocation: 'red', fontSize: currentFont }} 
-          />  
+            location={loc}
+            styleView={{ colorLocation: 'yellow', fontSize: currentFont }} 
+            styleLocation={styleLocation.pointtraim}
+          />
+          
+          </>
+
         ))}
+        {<DrawRoute origin={locations[1]} destination={locations.at(2)} styleDrawView={{}} />}
+        {<DrawRoute origin={locations[3]} destination={locations.at(4)} styleDrawView={{}} />}
+
         
         
         
         {/* Marker cho vị trí hiện tại (được tạo khi userLocation != null) */}
         {
-          (
-            
-            locations[0].start &&  locations.filter((_,index)=>index===0).map((loc, index) => (
-          <PointLocation
-            key={index}
-            location={loc.start}
-            styleView={{ colorLocation: 'red', fontSize: currentFont }} 
-          />  
-        ))
-            
-          )
+          <>
+          {positionCurrent.start && (
+            <PointLocation
+              location={{ ...positionCurrent.start, name: 'Điểm bắt đầu' }}
+              styleView={{ colorLocation: 'green', fontSize: currentFont }}  
+              styleLocation={styleLocation.pointstart}
+            />
+          )}
+          {positionCurrent.end && (
+            <PointLocation
+              location={{ ...positionCurrent.end, name: 'Điểm kết thúc' }}
+              styleView={{ colorLocation: 'black', fontSize: currentFont }}  
+              styleLocation={styleLocation.pointend}
+            />
+          )}
+          </>
         }
         {userLocation && (
           
@@ -200,17 +234,19 @@ const MapComponent = ({positionCurrent={
             <PointLocation
             location={{ ...userLocation, name: 'Vị trí của bạn' }}
             styleView={{ colorLocation: 'blue', fontSize: currentFont }}  
+            styleLocation={styleLocation.pointcurrent}
           />
-          
            </>
-
-           
         )  
-        
         }
-        
+        {chooseMapLocation && (
+          <PointLocation
+            location={{...chooseMapLocation, name: 'Vị trí đã chọn'}}
+            styleView={{ colorLocation: 'green', fontSize: currentFont }} 
+            styleLocation={styleLocation.temp} 
+          />
+        )}
         {/* Popup khi click marker */}
-        
       </InteractiveMap>
     </div>
   );

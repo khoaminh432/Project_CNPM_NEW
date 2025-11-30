@@ -6,7 +6,6 @@ import MapComponent from "./components/MapComponent";
 import StudentManagementPage from "./pages/maincontent/Student_management/StudentManagementPage";
 import RouteManagementPage from "./pages/maincontent/Route_management/RouteManagementPage";
 
-import AddRoute from "./pages/maincontent/Route_management/component/AddRoute";
 function App() {
 
   const [showModal, setShowModal] = useState(false);
@@ -69,7 +68,7 @@ function App() {
 
             {/* Bản đồ */}
             <div className="map">
-              <MapComponent />
+              map component here
             </div>
           </>
         )}
@@ -77,7 +76,7 @@ function App() {
         {/* component Tracking */}
         {activePage === "THEO DÕI XE BUÝT" && <Tracking />}
         {activePage === "QUẢN LÝ HỌC SINH" && <StudentManagementPage />}
-        {activePage === "QUẢN LÝ TUYẾN XE" && <AddRoute/>}
+        {activePage === "QUẢN LÝ TUYẾN XE" && <RouteManagementPage/>}
       </div>
     </div>
   );

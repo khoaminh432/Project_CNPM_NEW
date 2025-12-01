@@ -3,6 +3,7 @@ import { createRoute } from "../../api/GoongDirection";
 import { Source,Layer } from "@goongmaps/goong-map-react";
 function DrawRoute({origin,destination,setViewport=()=>{},styleDrawView={}}){
     // Layer style cho route
+    
   const routeLayer = {
     id: 'route',
     type: 'line',
@@ -18,6 +19,7 @@ function DrawRoute({origin,destination,setViewport=()=>{},styleDrawView={}}){
   };
     const [routeData,setRouteData] = useState(null)
     const decodePolyline = (str, precision = 5) => {
+      
   let index = 0,
     lat = 0,
     lng = 0,

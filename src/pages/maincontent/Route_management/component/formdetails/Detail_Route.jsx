@@ -10,19 +10,7 @@ import './detail_route.css';
 
 export function RouteDetail({ route = {}, onSave = () => {}, onClose = () => {} }) {
   const [editing, setEditing] = useState(false);
-  const [form, setForm] = useState({
-    route_id: route.route_id ?? route.route_id,
-    route_code: route.route_code ?? "",
-    route_name: route.route_name ?? "",
-    start_location: route.start_location ?? "",
-    end_location: route.end_location ?? "",
-    planned_start: route.planned_start ?? "",
-    planned_end: route.planned_end ?? "",
-    total_students: route.total_students ?? 0,
-    distance_km: route.distance_km ?? "",
-    estimated_duration_minutes: route.estimated_duration_minutes ?? "",
-    status: route.status ?? "active",
-  });
+  const [form, setForm] = useState(route);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -37,19 +25,6 @@ export function RouteDetail({ route = {}, onSave = () => {}, onClose = () => {} 
 
   const handleCancel = () => {
     // reset form to original route values and exit edit mode
-    setForm({
-      route_id: route.route_id ?? route.route_id,
-      route_code: route.route_code ?? "",
-      route_name: route.route_name ?? "",
-      start_location: route.start_location ?? "",
-      end_location: route.end_location ?? "",
-      planned_start: route.planned_start ?? "",
-      planned_end: route.planned_end ?? "",
-      total_students: route.total_students ?? 0,
-      distance_km: route.distance_km ?? "",
-      estimated_duration_minutes: route.estimated_duration_minutes ?? "",
-      status: route.status ?? "active",
-    });
     setEditing(false);
   };
 

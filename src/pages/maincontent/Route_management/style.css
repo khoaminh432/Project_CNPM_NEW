@@ -16,6 +16,7 @@
 .container-route-management{
   width: 100%;
   padding: 18px;
+  height: 100%;
   box-sizing: border-box;
   font-family: Inter, "Segoe UI", Roboto, system-ui, -apple-system, "Helvetica Neue", Arial;
 }

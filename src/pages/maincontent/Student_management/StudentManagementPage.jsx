@@ -3,13 +3,15 @@ import Style from "./../styleMain.module.css";
 import React, { useRef,useEffect, useState, useMemo } from "react";
 import "./style.css";
 import "./../searchbar.css";
-import { Student } from "../../../models/Student";
+import { Student,defaultStudents } from "../../../models/Student";
 import Detail_Student from "./component/formdetails/Detail_Student";
+import AddStudent from "./component/addStudent";
+
 function renderStudentsTable(students, onDetails) {
   return(students.length > 0 ? (
           students.map((student) => (
             <TempStudent 
-              key={student.id}
+              key={student.student_id}
               Tempstudent={student}
               onDetails={onDetails}
             />
@@ -22,13 +24,11 @@ function renderStudentsTable(students, onDetails) {
 }
 function StudentManagementPage() {
   const [students, setStudents] = useState([]);
+  const [showaddstudent, setShowAddStudent] = useState(false);
   const [filter, setFilter] = useState('all'); // filter by route
   const [searchQuery, setSearchQuery] = useState(''); // search by name
   const [pagestudent, setPageStudent] = useState({}); // page state: default, detail
   const boxRef = useRef(null);
-  const hide = () => {
-    boxRef.current.style.display = "none";
-  };
 
   const showgrid = () => {
     boxRef.current.style.display = "grid";
@@ -39,19 +39,7 @@ function StudentManagementPage() {
   useEffect(() => {
     // ví dụ: lấy từ API hoặc dữ liệu tĩnh
     
-    setStudents([
-      new Student({ id: "001", name: "Nguyễn Văn A", route: "Tuyến 1", address: "123 Đường A, Quận B", time: "07:30 AM", avatarUrl: null }),
-      new Student({ id: "002", name: "Trần Thị B", route: "Tuyến 2", address: "456 Đường C, Quận D", time: "07:45 AM", avatarUrl: null }),
-      new Student({ id: "003", name: "Lê Văn C", route: "Tuyến 1", address: "789 Đường E, Quận F", time: "08:00 AM", avatarUrl: null }),
-      new Student({ id: "004", name: "Phạm Thị D", route: "Tuyến 3", address: "321 Đường G, Quận H", time: "08:15 AM", avatarUrl: null }),
-      new Student({ id: "005", name: "Hoàng Văn E", route: "Tuyến 2", address: "654 Đường I, Quận J", time: "08:30 AM", avatarUrl: null }),
-      new Student({ id: "006", name: "Vũ Thị F", route: "Tuyến 3", address: "987 Đường K, Quận L", time: "08:45 AM", avatarUrl: null }),
-      new Student({ id: "007", name: "Đặng Văn G", route: "Tuyến 1", address: "147 Đường M, Quận N", time: "09:00 AM", avatarUrl: null }),
-      new Student({ id: "008", name: "Bùi Thị H", route: "Tuyến 2", address: "258 Đường O, Quận P", time: "09:15 AM", avatarUrl: null }),
-      new Student({ id: "009", name: "Ngô Văn I", route: "Tuyến 3", address: "369 Đường Q, Quận R", time: "09:30 AM", avatarUrl: null }),
-      new Student({ id: "010", name: "Trịnh Thị K", route: "Tuyến 1", address: "159 Đường S, Quận T", time: "09:45 AM", avatarUrl: null }),
-      new Student({ id: "011", name: "Lý Văn L", route: "Tuyến 2", address: "753 Đường U, Quận V", time: "10:00 AM", avatarUrl: null }),
-    ]);
+    setStudents(defaultStudents);
     setPageStudent({key: "default", value: null});
   }, []);
 
@@ -61,48 +49,24 @@ function StudentManagementPage() {
 
     // filter by route
     if (filter !== 'all') {
-      result = result.filter(s => s.route === filter);
+      result = result.filter(s => s.route_id === filter);
     }
 
     // search by name or id
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       result = result.filter(s => 
-        s.name.toLowerCase().includes(q) || 
-        s.id.includes(q)
+        s.full_name.toLowerCase().includes(q) || 
+        s.student_id.includes(q)
       );
     }
 
     return result;
   }, [students, filter, searchQuery]);
-  function handleSwitchPage(){
-    switch(pagestudent.key){
-      case "detail":
-        return <Detail_Student tempStudent={pagestudent.value} backToList={goBackToList}/>;
-      default:
-        
-        return renderStudentsTable(filteredStudents, handleStudentDetails);
-    }
-  }
-  // helper functions
+  function showDefaultPage(){
 
-  const handleAddStudent = () => {
-    showdetail()
-    
-  };
-
-  const handleStudentDetails = (student) => {
-    showdetail()
-    setPageStudent({key: "detail", value: student});
-    console.log('View details for student', pagestudent);
-  };
-  const goBackToList = () => {
-    showgrid()
-    setPageStudent({key: "default", value: null});
-  }
-  return (
-    <div className={Style.content_main_center + " " + Style.column_direction}>
-      {/* Header */}
+    return (
+      <>
       <header style={{width:"100%"}}>
         <div className={Style.row_direction} style={{justifyContent: "space-between", alignItems: "center" }}>
           <div>
@@ -110,7 +74,7 @@ function StudentManagementPage() {
             <p className="description">Quản lý và theo dõi danh sách học sinh đi xe buýt</p>
           </div>
           <div>
-            <button style={{ color: "white" }} onClick={handleAddStudent}>➕ Thêm Học Sinh</button>
+            <button style={{ color: "white" }} onClick={()=>handleAddStudent(true)}>➕ Thêm Học Sinh</button>
           </div>
         </div>
       </header>
@@ -151,6 +115,40 @@ function StudentManagementPage() {
       <div className="card-grid" ref={boxRef}>
         {handleSwitchPage()}
       </div>
+      </>
+    )
+  }
+  function handleSwitchPage(){
+    switch(pagestudent.key){
+      case "detail":
+        return <Detail_Student tempStudent={pagestudent.value} backToList={goBackToList}/>;
+      default:
+        return renderStudentsTable(filteredStudents, handleStudentDetails);
+    }
+  }
+  // helper functions
+
+  const handleAddStudent = (bool) => {
+    setShowAddStudent(bool);
+  };
+  
+
+  const handleStudentDetails = (student) => {
+    showdetail()
+    setPageStudent({key: "detail", value: student});
+    console.log('View details for student', pagestudent);
+  };
+  const goBackToList = () => {
+    showgrid()
+    setPageStudent({key: "default", value: null});
+  }
+  return (
+    <div className={Style.content_main_center + " " + Style.column_direction}>
+      {/* Header */}
+      {!showaddstudent && showDefaultPage()}
+      {showaddstudent && <>
+      <AddStudent onClose={handleAddStudent}/>
+      </>}
     </div>
   );
 }

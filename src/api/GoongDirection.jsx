@@ -4,8 +4,8 @@ export async function getDirection({ origin, destination, vehicle = "bike" }) {
     const res = await GoongClient.get("/Direction", {
       params: {
         api_key: process.env.REACT_APP_GOONG_API_KEY,
-        origin: `${origin.lat},${origin.lng}`,
-        destination: `${destination.lat},${destination.lng}`,
+        origin: `${origin.lat||origin.latitude},${origin.lng||origin.longitude}`,
+        destination: `${destination.lat||destination.latitude},${destination.lng||destination.longitude}`,
         vehicle,
       },
     });

@@ -40,9 +40,10 @@ function App() {
       <div className="App min-h-screen bg-gray-100"> {/* Thêm style Tailwind nếu có */}
         <Routes>
           {/* Routes cơ bản từ main */}
+          <Route path="/busline-detail" element={<BusLineDetail />} />
           <Route path="/" element={<Login />} />
           <Route path="/home" element={<Home />} />
-          <Route path="/busline-detail" element={<BusLineDetail />} />
+          
           <Route path="/bus-tracking" element={<BusTracking />} />
 
           {/* Route từ qlxb-code */}

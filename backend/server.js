@@ -51,10 +51,10 @@ cron.schedule('* * * * *', async () => {
         // 1. Gửi tin (Copy vào bảng recipients)
         let recipientIds = [];
         if (notif.recipient_type === 'driver') {
-            const [drivers] = await connection.query("SELECT driver_id FROM bus_map_driver");
+            const [drivers] = await connection.query("SELECT driver_id FROM driver");
             recipientIds = drivers.map(d => d.driver_id);
         } else if (notif.recipient_type === 'parent') {
-            const [parents] = await connection.query("SELECT parent_id FROM bus_map_parent");
+            const [parents] = await connection.query("SELECT parent_id FROM parent");
             recipientIds = parents.map(p => p.parent_id);
         } else if (notif.recipient_type === 'bus') recipientIds = ['admin'];
         if (recipientIds.length > 0) {

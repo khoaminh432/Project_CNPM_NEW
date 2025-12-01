@@ -72,8 +72,8 @@ export default function NextWeekScheduler({ isOpen, onClose, drivers = [] }) {
                 });
             };
 
-            const fetchVehicles = secureFetch('http://localhost:3001/api/buses');
-            const fetchSchedules = secureFetch(`http://localhost:3001/api/schedules?startDate=${startDate}&endDate=${endDate}`);
+            const fetchVehicles = secureFetch('http://localhost:5000/api/buses');
+            const fetchSchedules = secureFetch(`http://localhost:5000/api/schedules?startDate=${startDate}&endDate=${endDate}`);
 
             Promise.all([fetchVehicles, fetchSchedules])
                 .then(([vehiclesData, schedulesData]) => {
@@ -162,7 +162,7 @@ export default function NextWeekScheduler({ isOpen, onClose, drivers = [] }) {
         setFastAssignSummary(null); 
 
         try {
-            const response = await fetch('http://localhost:3001/api/schedules/generate-fast-match', {
+            const response = await fetch('http://localhost:5000/api/schedules/generate-fast-match', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -216,10 +216,13 @@ export default function NextWeekScheduler({ isOpen, onClose, drivers = [] }) {
                     for (const dayKey in scheduleMatrix[busId]) {
                         const driverId = scheduleMatrix[busId][dayKey];
                         const dayObj = daysOfWeek.find(d => d.key === dayKey);
-                        if (dayObj) {
+                        
+                        // CHỈ LƯU KHI CÓ DRIVER ID ===
+                        // Kiểm tra: Phải có dayObj VÀ driverId không được rỗng
+                        if (dayObj && driverId && driverId !== "") {
                             schedulesToSave.push({
                                 bus_id: busId,
-                                driver_id: driverId || null, 
+                                driver_id: driverId, 
                                 schedule_date: dayObj.dateISO
                             });
                         }
@@ -227,7 +230,7 @@ export default function NextWeekScheduler({ isOpen, onClose, drivers = [] }) {
                 }
             }
 
-            const response = await fetch('http://localhost:3001/api/schedules', {
+            const response = await fetch('http://localhost:5000/api/schedules', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

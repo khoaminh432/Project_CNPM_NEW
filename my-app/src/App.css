@@ -14,16 +14,17 @@ body {
 /* Sidebar */
 .sidebar {
   width: 200px;
-  color: #333;                /* màu chữ tối nhưng dịu */
+  background-color:#f0f7ff;                /* màu chữ tối nhưng dịu */
   text-align: center;          /* căn giữa chữ menu */
   border-right: 1px solid #ddd; /* đường viền bên phải */
-  box-shadow: 2px 0 5px rgba(0,0,0,0.1); /* tạo hiệu ứng nổi */
+  box-shadow: 4px 0 10px rgba(0,0,0,0.1); /* tạo hiệu ứng nổi */
   height: 100vh;               /* full chiều cao */
   position: fixed;             /* fixed để không scroll */
   left: 0;
   top: 0;
   overflow-y: auto;            /* scroll nếu menu dài */
   z-index: 1000;               /* nổi trên content */
+  padding: 20px 15px;
 }
 
 .sidebar h2 {
@@ -32,7 +33,8 @@ body {
   align-items: center;
   font-size: 2rem;
   font-weight: bold;
-  color: #007bff;
+  /* color: #007bff; */
+  
   text-transform: uppercase;
   letter-spacing: 1px;
   border-bottom: 4px solid #007bff;
@@ -211,6 +213,10 @@ body {
   /* FIX: Push right of sidebar (if used instead of .main) */
   margin-left: 200px;
   min-height: 100vh;
+  margin-left: 240px; /* Phải khớp với width của sidebar ở trên */
+  background-color: #f8fafc; /* Nền tổng thể trang cũng nên sáng nhẹ */
+  min-height: 100vh;
+  transition: margin-left 0.3s ease;
 }
 
 /* Body */
@@ -299,4 +305,43 @@ body {
 
 .search-btn:hover {
   background-color: #0056b3;
+}
+.nav-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* Khoảng cách giữa các nút */
+  margin-top: 10px;
+}
+
+/* --- 3. Style cho từng nút bấm (Button) --- */
+.nav-menu button {
+  width: 100%;
+  padding: 14px 20px;
+  background-color: #d7e8f6; /* Mặc định trong suốt để ăn theo nền */
+  border: none;
+  border-radius: 12px; /* Bo góc mềm mại */
+  color: #475569; /* Màu chữ xám xanh đậm (dễ đọc) */
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left; /* Căn chữ sang trái */
+  cursor: pointer;
+  transition: all 0.3s ease; /* Hiệu ứng chuyển động mượt */
+  display: flex;
+  align-items: center;
+  text-transform: uppercase;
+}
+
+
+.nav-menu button:hover {
+  background-color: #dbeafe; /* Nền xanh dương nhạt */
+  color: #1e40af; /* Chữ chuyển màu xanh đậm */
+  transform: translateX(5px); /* Nút trượt nhẹ sang phải */
+}
+
+/* --- 4. Trạng thái nút ĐANG CHỌN (Active) --- */
+.nav-menu button.active {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); /* Màu xanh đậm gradient */
+  color: #ffffff; /* Chữ trắng nổi bật */
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); /* Bóng đổ cho nút active */
+  font-weight: 700;
 }

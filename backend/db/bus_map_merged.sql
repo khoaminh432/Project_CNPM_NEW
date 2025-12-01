@@ -28,13 +28,14 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `bus` (
-  `bus_id` varchar(255) NOT NULL,
-  `license_plate` varchar(255) DEFAULT NULL,
+  `bus_id` varchar(20) NOT NULL,
+  `license_plate` varchar(50) DEFAULT NULL,
   `capacity` int(11) DEFAULT NULL,
-  `default_route_id` varchar(255) DEFAULT NULL,
+  `default_route_id` varchar(20) DEFAULT NULL,
   `status` varchar(100) DEFAULT 'Ngưng hoạt động',
   `departure_status` varchar(100) DEFAULT 'Chưa xuất phát',
-  `registry` date DEFAULT NULL
+  `registry` date DEFAULT NULL,
+  PRIMARY KEY (`bus_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -58,14 +59,15 @@ INSERT INTO `bus` (`bus_id`, `license_plate`, `capacity`, `default_route_id`, `s
 --
 
 CREATE TABLE `bus_location` (
-  `location_id` int(11) NOT NULL,
-  `bus_id` varchar(255) DEFAULT NULL,
+  `location_id` int(11) NOT NULL AUTO_INCREMENT,
+  `bus_id` varchar(20) DEFAULT NULL,
   `latitude` decimal(10,8) DEFAULT NULL,
   `longitude` decimal(11,8) DEFAULT NULL,
   `vi_tri_text` varchar(255) DEFAULT NULL,
   `timestamp` datetime DEFAULT NULL,
   `is_latest` tinyint(1) DEFAULT 0,
-  `nearest_stop_id` varchar(255) DEFAULT NULL
+  `nearest_stop_id` varchar(20) DEFAULT NULL,
+  PRIMARY KEY (`location_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -83,13 +85,14 @@ INSERT INTO `bus_location` (`location_id`, `bus_id`, `latitude`, `longitude`, `v
 --
 
 CREATE TABLE `bus_schedule` (
-  `schedule_id` varchar(255) NOT NULL,
-  `route_id` varchar(255) DEFAULT NULL,
-  `bus_id` varchar(255) DEFAULT NULL,
-  `driver_id` varchar(255) DEFAULT NULL,
+  `schedule_id` varchar(50) NOT NULL,
+  `route_id` varchar(20) DEFAULT NULL,
+  `bus_id` varchar(20) DEFAULT NULL,
+  `driver_id` varchar(20) DEFAULT NULL,
   `schedule_date` date DEFAULT NULL,
   `start_time` time DEFAULT NULL,
-  `end_time` time DEFAULT NULL
+  `end_time` time DEFAULT NULL,
+  PRIMARY KEY (`schedule_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -97,8 +100,8 @@ CREATE TABLE `bus_schedule` (
 --
 
 INSERT INTO `bus_schedule` (`schedule_id`, `route_id`, `bus_id`, `driver_id`, `schedule_date`, `start_time`, `end_time`) VALUES
-('LT1', 'TD1', 'XB1', 'TX1', '2025-11-28', '20:13:00', '19:54:00'),
-('LT2', 'TD2', 'XB2', 'TX2', '2025-11-27', '03:41:00', '18:26:30'),
+('LT1', 'TD1', 'XB1', 'TX001', '2025-11-28', '06:15:00', '07:45:00'),
+('LT2', 'TD2', 'XB2', 'TX002', '2025-11-27', '06:45:00', '08:15:00'),
 ('XE001-01-11-2025', 'R01', 'XE001', 'TX003', '2025-11-01', '06:00:00', '07:15:00');
 
 -- --------------------------------------------------------
@@ -108,10 +111,11 @@ INSERT INTO `bus_schedule` (`schedule_id`, `route_id`, `bus_id`, `driver_id`, `s
 --
 
 CREATE TABLE `bus_status_history` (
-  `id` int(11) NOT NULL,
-  `bus_id` varchar(255) NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `bus_id` varchar(20) NOT NULL,
   `status` enum('running','stopped','inactive') NOT NULL DEFAULT 'inactive',
-  `updated_at` datetime NOT NULL DEFAULT current_timestamp()
+  `updated_at` datetime NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -130,11 +134,12 @@ INSERT INTO `bus_status_history` (`id`, `bus_id`, `status`, `updated_at`) VALUES
 --
 
 CREATE TABLE `bus_stop` (
-  `stop_id` varchar(255) NOT NULL,
-  `route_id` varchar(255) DEFAULT NULL,
-  `stop_name` varchar(255) DEFAULT NULL,
+  `stop_id` varchar(20) NOT NULL,
+  `route_id` varchar(20) DEFAULT NULL,
+  `stop_name` varchar(100) DEFAULT NULL,
   `address` varchar(255) DEFAULT NULL,
-  `stop_order` int(11) DEFAULT NULL
+  `stop_order` int(11) DEFAULT NULL,
+  PRIMARY KEY (`stop_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -164,28 +169,34 @@ INSERT INTO `bus_stop` (`stop_id`, `route_id`, `stop_name`, `address`, `stop_ord
 --
 
 CREATE TABLE `driver` (
-  `driver_id` varchar(255) NOT NULL,
-  `name` varchar(255) DEFAULT NULL,
-  `phone` varchar(255) DEFAULT NULL,
+  `driver_id` varchar(20) NOT NULL,
+  `user_id` int(11) DEFAULT NULL,
+  `name` varchar(100) DEFAULT NULL,
+  `phone` varchar(15) DEFAULT NULL,
   `address` varchar(255) DEFAULT NULL,
+  `email` varchar(100) DEFAULT NULL,
+  `dob` date DEFAULT NULL,
+  `gender` enum('Nam','Nữ','Khác') DEFAULT NULL,
+  `id_card` varchar(20) DEFAULT NULL,
+  `rating` decimal(2,1) DEFAULT 5.0,
   `status` varchar(50) DEFAULT 'Rảnh',
   `license_class` varchar(10) DEFAULT 'B2',
-  `work_schedule` set('MON','TUE','WED','THU','FRI','SAT','SUN') DEFAULT NULL
+  `work_schedule` set('MON','TUE','WED','THU','FRI','SAT','SUN') DEFAULT NULL,
+  `profile_image` varchar(500) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`driver_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `driver`
 --
 
-INSERT INTO `driver` (`driver_id`, `name`, `phone`, `address`, `status`, `license_class`, `work_schedule`) VALUES
-('TX001', 'Nguyễn Văn Hùng', '0459276157', 'Lê Hồng Phong', 'Rảnh', 'B2', 'MON,TUE,WED,FRI,SAT'),
-('TX002', 'Trần Văn Trí', '0745128698', 'Trần Xuân Soạn', 'Rảnh', 'B2', 'MON,TUE,WED,THU,FRI'),
-('TX003', 'Lê Hùng Dũng', '0789425698', 'Võ Văn Kiệt', 'Rảnh', 'B2', 'TUE,WED,THU,FRI,SAT'),
-('TX004', 'Phạm Anh Đức', '0785158496', 'Nguyễn Trãi', 'Đang hoạt động', 'B2', 'TUE,WED,THU,FRI'),
-('TX005', 'Ngô Thị Minh Thi', '0978425987', 'Đức Trọng', 'Nghỉ phép', 'B2', 'MON,TUE,WED,THU,FRI,SAT,SUN'),
-('TX1', 'Nguyễn Văn C', '0912345678', NULL, 'Rảnh', 'B2', NULL),
-('TX2', 'Nguyễn Thị D', '0900000000', NULL, 'Rảnh', 'B2', NULL),
-('TX3', 'Nguyễn Văn A', '0901234567', NULL, 'Rảnh', 'B2', NULL);
+INSERT INTO `driver` (`driver_id`, `user_id`, `name`, `phone`, `address`, `email`, `dob`, `gender`, `id_card`, `rating`, `status`, `license_class`, `work_schedule`, `profile_image`, `created_at`) VALUES
+('TX001', NULL, 'Nguyễn Văn Hùng', '0459276157', 'Lê Hồng Phong', 'hung.nguyen@gmail.com', '1985-03-15', 'Nam', '123456789012', 4.5, 'Rảnh', 'B2', 'MON,TUE,WED,FRI,SAT', NULL, '2025-11-01 08:00:00'),
+('TX002', NULL, 'Trần Văn Trí', '0745128698', 'Trần Xuân Soạn', 'tri.tran@gmail.com', '1988-07-22', 'Nam', '234567890123', 4.8, 'Rảnh', 'B2', 'MON,TUE,WED,THU,FRI', NULL, '2025-11-01 08:30:00'),
+('TX003', NULL, 'Lê Hùng Dũng', '0789425698', 'Võ Văn Kiệt', 'dung.le@gmail.com', '1990-12-10', 'Nam', '345678901234', 4.2, 'Rảnh', 'B2', 'TUE,WED,THU,FRI,SAT', NULL, '2025-11-01 09:00:00'),
+('TX004', NULL, 'Phạm Anh Đức', '0785158496', 'Nguyễn Trãi', 'duc.pham@gmail.com', '1987-05-08', 'Nam', '456789012345', 4.9, 'Đang hoạt động', 'B2', 'TUE,WED,THU,FRI', NULL, '2025-11-01 09:30:00'),
+('TX005', NULL, 'Ngô Thị Minh Thi', '0978425987', 'Đức Trọng', 'thi.ngo@gmail.com', '1992-09-18', 'Nữ', '567890123456', 4.7, 'Nghỉ phép', 'B2', 'MON,TUE,WED,THU,FRI,SAT,SUN', NULL, '2025-11-01 10:00:00');
 
 -- --------------------------------------------------------
 
@@ -194,7 +205,7 @@ INSERT INTO `driver` (`driver_id`, `name`, `phone`, `address`, `status`, `licens
 --
 
 CREATE TABLE `notification` (
-  `id` int(11) NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `recipient_type` enum('bus','driver','parent','system') NOT NULL,
   `title` varchar(255) NOT NULL,
   `content` text NOT NULL,
@@ -204,7 +215,8 @@ CREATE TABLE `notification` (
   `recurrence_days` varchar(50) DEFAULT NULL,
   `status_sent` enum('pending','sent') DEFAULT 'sent',
   `created_at` datetime DEFAULT current_timestamp(),
-  `status` enum('unread','read') NOT NULL DEFAULT 'unread'
+  `status` enum('unread','read') NOT NULL DEFAULT 'unread',
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -226,12 +238,13 @@ INSERT INTO `notification` (`id`, `recipient_type`, `title`, `content`, `type`, 
 --
 
 CREATE TABLE `notification_recipients` (
-  `id` int(11) NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `notification_id` int(11) NOT NULL,
-  `recipient_id` varchar(255) NOT NULL,
+  `recipient_id` varchar(20) NOT NULL,
   `recipient_type` varchar(50) DEFAULT NULL,
   `status` enum('unread','read') DEFAULT 'unread',
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -249,20 +262,22 @@ INSERT INTO `notification_recipients` (`id`, `notification_id`, `recipient_id`, 
 --
 
 CREATE TABLE `parent` (
-  `parent_id` varchar(255) NOT NULL,
-  `name` varchar(255) DEFAULT NULL,
-  `phone` varchar(255) DEFAULT NULL
+  `parent_id` varchar(20) NOT NULL,
+  `user_id` int(11) DEFAULT NULL,
+  `name` varchar(100) DEFAULT NULL,
+  `phone` varchar(15) DEFAULT NULL,
+  PRIMARY KEY (`parent_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `parent`
 --
 
-INSERT INTO `parent` (`parent_id`, `name`, `phone`) VALUES
-('PH001', 'Nguyễn Ngọc Lan', '0964123534'),
-('PH002', 'Trần Hữu Phát', '0987123765'),
-('PH1', 'Mỹ Hằng', '0901234567'),
-('PH2', 'Minh Thi', '0912345678');
+INSERT INTO `parent` (`parent_id`, `user_id`, `name`, `phone`) VALUES
+('PH001', NULL, 'Nguyễn Ngọc Lan', '0964123534'),
+('PH002', NULL, 'Trần Hữu Phát', '0987123765'),
+('PH003', NULL, 'Mỹ Hằng', '0901234567'),
+('PH004', NULL, 'Minh Thi', '0912345678');
 
 -- --------------------------------------------------------
 
@@ -271,23 +286,29 @@ INSERT INTO `parent` (`parent_id`, `name`, `phone`) VALUES
 --
 
 CREATE TABLE `route` (
-  `route_id` varchar(255) NOT NULL,
-  `route_name` varchar(255) DEFAULT NULL,
-  `start_point` varchar(255) DEFAULT NULL,
-  `end_point` varchar(255) DEFAULT NULL
+  `route_id` varchar(20) NOT NULL,
+  `route_name` varchar(100) DEFAULT NULL,
+  `start_point` varchar(150) DEFAULT NULL,
+  `end_point` varchar(150) DEFAULT NULL,
+  `planned_start` time DEFAULT NULL,
+  `planned_end` time DEFAULT NULL,
+  `total_students` int(11) DEFAULT 0,
+  `status` enum('Đang hoạt động','Ngưng hoạt động','Bảo trì') DEFAULT 'Đang hoạt động',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`route_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `route`
 --
 
-INSERT INTO `route` (`route_id`, `route_name`, `start_point`, `end_point`) VALUES
-('R01', 'Q1->Q5', 'SGU_csc', 'SGU_cs2'),
-('R02', 'q1->q3', 'SGU_csc', 'SGU_cs1'),
-('R03', 'sgu->ktx', 'SGU-csc', 'ktx-SGu'),
-('TD1', 'Tuyến 1', 'Trường THPT A', 'Khu dân cư Hưng Phú'),
-('TD2', 'Tuyến 2', 'Trường Tiểu học B', 'Khu phố An Lạc'),
-('TD3', 'Tuyến 3', 'A', 'B');
+INSERT INTO `route` (`route_id`, `route_name`, `start_point`, `end_point`, `planned_start`, `planned_end`, `total_students`, `status`, `created_at`) VALUES
+('R01', 'Q1->Q5', 'SGU_csc', 'SGU_cs2', '06:00:00', '07:30:00', 15, 'Đang hoạt động', '2025-10-01 08:00:00'),
+('R02', 'q1->q3', 'SGU_csc', 'SGU_cs1', '06:30:00', '08:00:00', 12, 'Đang hoạt động', '2025-10-01 08:30:00'),
+('R03', 'sgu->ktx', 'SGU-csc', 'ktx-SGu', '07:00:00', '08:30:00', 8, 'Bảo trì', '2025-10-01 09:00:00'),
+('TD1', 'Tuyến 1', 'Trường THPT A', 'Khu dân cư Hưng Phú', '06:15:00', '07:45:00', 20, 'Đang hoạt động', '2025-10-01 09:30:00'),
+('TD2', 'Tuyến 2', 'Trường Tiểu học B', 'Khu phố An Lạc', '06:45:00', '08:15:00', 18, 'Đang hoạt động', '2025-10-01 10:00:00'),
+('TD3', 'Tuyến 3', 'A', 'B', '07:15:00', '08:45:00', 10, 'Ngưng hoạt động', '2025-10-01 10:30:00');
 
 -- --------------------------------------------------------
 
@@ -296,20 +317,24 @@ INSERT INTO `route` (`route_id`, `route_name`, `start_point`, `end_point`) VALUE
 --
 
 CREATE TABLE `student` (
-  `student_id` varchar(255) NOT NULL,
-  `parent_id` varchar(255) DEFAULT NULL,
-  `stop_id` varchar(255) DEFAULT NULL,
-  `dropoff_stop_id` varchar(255) DEFAULT NULL,
-  `name` varchar(255) DEFAULT NULL
+  `student_id` varchar(20) NOT NULL,
+  `parent_id` varchar(20) DEFAULT NULL,
+  `stop_id` varchar(20) DEFAULT NULL,
+  `dropoff_stop_id` varchar(20) DEFAULT NULL,
+  `name` varchar(100) DEFAULT NULL,
+  `school_name` varchar(150) DEFAULT NULL,
+  `class_name` varchar(100) DEFAULT NULL,
+  `gender` enum('Nam','Nữ','Khác') DEFAULT NULL,
+  PRIMARY KEY (`student_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `student`
 --
 
-INSERT INTO `student` (`student_id`, `parent_id`, `stop_id`, `dropoff_stop_id`, `name`) VALUES
-('HS1', 'PH1', 'STOP1', 'STOP2', 'Nguyễn Văn An'),
-('HS2', 'PH2', 'STOP1', 'STOP2', 'Trần Thị Bình');
+INSERT INTO `student` (`student_id`, `parent_id`, `stop_id`, `dropoff_stop_id`, `name`, `school_name`, `class_name`, `gender`) VALUES
+('HS001', 'PH003', 'STOP1', 'STOP2', 'Nguyễn Văn An', 'Trường Tiểu học Nguyễn Trãi', '5A1', 'Nam'),
+('HS002', 'PH004', 'STOP1', 'STOP2', 'Trần Thị Bình', 'Trường Tiểu học Lê Lợi', '4B2', 'Nữ');
 
 -- --------------------------------------------------------
 
@@ -318,14 +343,15 @@ INSERT INTO `student` (`student_id`, `parent_id`, `stop_id`, `dropoff_stop_id`, 
 --
 
 CREATE TABLE `student_pickup` (
-  `pickup_id` varchar(255) NOT NULL,
-  `student_id` varchar(255) DEFAULT NULL,
-  `driver_id` varchar(255) DEFAULT NULL,
-  `schedule_id` varchar(255) DEFAULT NULL,
-  `stop_id` varchar(255) DEFAULT NULL,
+  `pickup_id` varchar(30) NOT NULL,
+  `student_id` varchar(20) DEFAULT NULL,
+  `driver_id` varchar(20) DEFAULT NULL,
+  `schedule_id` varchar(50) DEFAULT NULL,
+  `stop_id` varchar(20) DEFAULT NULL,
   `pickup_time` datetime DEFAULT NULL,
   `dropoff_time` datetime DEFAULT NULL,
-  `status` varchar(255) DEFAULT NULL
+  `status` varchar(50) DEFAULT NULL,
+  PRIMARY KEY (`pickup_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -333,8 +359,8 @@ CREATE TABLE `student_pickup` (
 --
 
 INSERT INTO `student_pickup` (`pickup_id`, `student_id`, `driver_id`, `schedule_id`, `stop_id`, `pickup_time`, `dropoff_time`, `status`) VALUES
-('DT1', 'HS1', NULL, 'LT1', NULL, '2025-11-14 06:35:00', '2025-11-14 07:25:00', 'DA_DON'),
-('DT2', 'HS2', NULL, 'LT2', NULL, NULL, NULL, 'CHO_DON');
+('DT001', 'HS001', 'TX001', 'LT1', 'STOP1', '2025-11-14 06:35:00', '2025-11-14 07:25:00', 'DA_DON'),
+('DT002', 'HS002', 'TX002', 'LT2', 'STOP1', NULL, NULL, 'CHO_DON');
 
 -- --------------------------------------------------------
 
@@ -343,21 +369,23 @@ INSERT INTO `student_pickup` (`pickup_id`, `student_id`, `driver_id`, `schedule_
 --
 
 CREATE TABLE `users` (
-  `user_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL AUTO_INCREMENT,
   `username` varchar(50) NOT NULL,
   `password` varchar(255) NOT NULL,
   `role` enum('admin','driver','parent') NOT NULL,
-  `linked_id` varchar(255) DEFAULT NULL COMMENT 'ID liên kết với driver hoặc parent'
+  `linked_id` varchar(20) DEFAULT NULL COMMENT 'ID liên kết với driver hoặc parent',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`user_id`, `username`, `password`, `role`, `linked_id`) VALUES
-(1, 'admin', 'g5bus', 'admin', NULL),
-(2, 'driver', 'g5bus', 'driver', NULL),
-(3, 'parent', 'g5bus', 'parent', NULL);
+INSERT INTO `users` (`user_id`, `username`, `password`, `role`, `linked_id`, `created_at`) VALUES
+(1, 'admin', 'g5bus', 'admin', NULL, '2025-10-01 08:00:00'),
+(2, 'driver', 'g5bus', 'driver', NULL, '2025-10-01 08:30:00'),
+(3, 'parent', 'g5bus', 'parent', NULL, '2025-10-01 09:00:00');
 
 --
 -- Indexes for dumped tables
@@ -367,21 +395,19 @@ INSERT INTO `users` (`user_id`, `username`, `password`, `role`, `linked_id`) VAL
 -- Indexes for table `bus`
 --
 ALTER TABLE `bus`
-  ADD PRIMARY KEY (`bus_id`),
   ADD KEY `default_route_id` (`default_route_id`);
 
 --
 -- Indexes for table `bus_location`
 --
 ALTER TABLE `bus_location`
-  ADD PRIMARY KEY (`location_id`),
-  ADD KEY `bus_id` (`bus_id`);
+  ADD KEY `bus_id` (`bus_id`),
+  ADD KEY `nearest_stop_id` (`nearest_stop_id`);
 
 --
 -- Indexes for table `bus_schedule`
 --
 ALTER TABLE `bus_schedule`
-  ADD PRIMARY KEY (`schedule_id`),
   ADD KEY `route_id` (`route_id`),
   ADD KEY `bus_id` (`bus_id`),
   ADD KEY `driver_id` (`driver_id`);
@@ -390,69 +416,63 @@ ALTER TABLE `bus_schedule`
 -- Indexes for table `bus_status_history`
 --
 ALTER TABLE `bus_status_history`
-  ADD PRIMARY KEY (`id`),
   ADD KEY `bus_id` (`bus_id`);
 
 --
 -- Indexes for table `bus_stop`
 --
 ALTER TABLE `bus_stop`
-  ADD PRIMARY KEY (`stop_id`),
   ADD KEY `route_id` (`route_id`);
 
 --
 -- Indexes for table `driver`
 --
 ALTER TABLE `driver`
-  ADD PRIMARY KEY (`driver_id`);
+  ADD KEY `user_id` (`user_id`),
+  ADD UNIQUE KEY `id_card` (`id_card`),
+  ADD UNIQUE KEY `email` (`email`);
 
 --
 -- Indexes for table `notification`
 --
-ALTER TABLE `notification`
-  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `notification_recipients`
 --
 ALTER TABLE `notification_recipients`
-  ADD PRIMARY KEY (`id`),
   ADD KEY `notification_id` (`notification_id`);
 
 --
 -- Indexes for table `parent`
 --
 ALTER TABLE `parent`
-  ADD PRIMARY KEY (`parent_id`);
+  ADD KEY `user_id` (`user_id`);
 
 --
 -- Indexes for table `route`
 --
-ALTER TABLE `route`
-  ADD PRIMARY KEY (`route_id`);
 
 --
 -- Indexes for table `student`
 --
 ALTER TABLE `student`
-  ADD PRIMARY KEY (`student_id`),
   ADD KEY `parent_id` (`parent_id`),
-  ADD KEY `stop_id` (`stop_id`);
+  ADD KEY `stop_id` (`stop_id`),
+  ADD KEY `dropoff_stop_id` (`dropoff_stop_id`);
 
 --
 -- Indexes for table `student_pickup`
 --
 ALTER TABLE `student_pickup`
-  ADD PRIMARY KEY (`pickup_id`),
   ADD KEY `student_id` (`student_id`),
   ADD KEY `driver_id` (`driver_id`),
-  ADD KEY `schedule_id` (`schedule_id`);
+  ADD KEY `schedule_id` (`schedule_id`),
+  ADD KEY `stop_id` (`stop_id`);
 
 --
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
-  ADD PRIMARY KEY (`user_id`),
   ADD UNIQUE KEY `username` (`username`);
 
 --
@@ -497,21 +517,22 @@ ALTER TABLE `users`
 -- Constraints for table `bus`
 --
 ALTER TABLE `bus`
-  ADD CONSTRAINT `bus_ibfk_1` FOREIGN KEY (`default_route_id`) REFERENCES `route` (`route_id`);
+  ADD CONSTRAINT `bus_ibfk_1` FOREIGN KEY (`default_route_id`) REFERENCES `route` (`route_id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `bus_location`
 --
 ALTER TABLE `bus_location`
-  ADD CONSTRAINT `bus_location_ibfk_1` FOREIGN KEY (`bus_id`) REFERENCES `bus` (`bus_id`);
+  ADD CONSTRAINT `bus_location_ibfk_1` FOREIGN KEY (`bus_id`) REFERENCES `bus` (`bus_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `bus_location_ibfk_2` FOREIGN KEY (`nearest_stop_id`) REFERENCES `bus_stop` (`stop_id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `bus_schedule`
 --
 ALTER TABLE `bus_schedule`
-  ADD CONSTRAINT `bus_schedule_ibfk_1` FOREIGN KEY (`route_id`) REFERENCES `route` (`route_id`),
-  ADD CONSTRAINT `bus_schedule_ibfk_2` FOREIGN KEY (`bus_id`) REFERENCES `bus` (`bus_id`),
-  ADD CONSTRAINT `bus_schedule_ibfk_3` FOREIGN KEY (`driver_id`) REFERENCES `driver` (`driver_id`);
+  ADD CONSTRAINT `bus_schedule_ibfk_1` FOREIGN KEY (`route_id`) REFERENCES `route` (`route_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `bus_schedule_ibfk_2` FOREIGN KEY (`bus_id`) REFERENCES `bus` (`bus_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `bus_schedule_ibfk_3` FOREIGN KEY (`driver_id`) REFERENCES `driver` (`driver_id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `bus_status_history`
@@ -523,7 +544,13 @@ ALTER TABLE `bus_status_history`
 -- Constraints for table `bus_stop`
 --
 ALTER TABLE `bus_stop`
-  ADD CONSTRAINT `bus_stop_ibfk_1` FOREIGN KEY (`route_id`) REFERENCES `route` (`route_id`);
+  ADD CONSTRAINT `bus_stop_ibfk_1` FOREIGN KEY (`route_id`) REFERENCES `route` (`route_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `driver`
+--
+ALTER TABLE `driver`
+  ADD CONSTRAINT `driver_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `notification_recipients`
@@ -532,19 +559,27 @@ ALTER TABLE `notification_recipients`
   ADD CONSTRAINT `notification_recipients_ibfk_1` FOREIGN KEY (`notification_id`) REFERENCES `notification` (`id`) ON DELETE CASCADE;
 
 --
+-- Constraints for table `parent`
+--
+ALTER TABLE `parent`
+  ADD CONSTRAINT `parent_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL;
+
+--
 -- Constraints for table `student`
 --
 ALTER TABLE `student`
-  ADD CONSTRAINT `student_ibfk_1` FOREIGN KEY (`parent_id`) REFERENCES `parent` (`parent_id`),
-  ADD CONSTRAINT `student_ibfk_2` FOREIGN KEY (`stop_id`) REFERENCES `bus_stop` (`stop_id`);
+  ADD CONSTRAINT `student_ibfk_1` FOREIGN KEY (`parent_id`) REFERENCES `parent` (`parent_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `student_ibfk_2` FOREIGN KEY (`stop_id`) REFERENCES `bus_stop` (`stop_id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `student_ibfk_3` FOREIGN KEY (`dropoff_stop_id`) REFERENCES `bus_stop` (`stop_id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `student_pickup`
 --
 ALTER TABLE `student_pickup`
-  ADD CONSTRAINT `student_pickup_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `student` (`student_id`),
-  ADD CONSTRAINT `student_pickup_ibfk_2` FOREIGN KEY (`driver_id`) REFERENCES `driver` (`driver_id`),
-  ADD CONSTRAINT `student_pickup_ibfk_3` FOREIGN KEY (`schedule_id`) REFERENCES `bus_schedule` (`schedule_id`);
+  ADD CONSTRAINT `student_pickup_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `student` (`student_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `student_pickup_ibfk_2` FOREIGN KEY (`driver_id`) REFERENCES `driver` (`driver_id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `student_pickup_ibfk_3` FOREIGN KEY (`schedule_id`) REFERENCES `bus_schedule` (`schedule_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `student_pickup_ibfk_4` FOREIGN KEY (`stop_id`) REFERENCES `bus_stop` (`stop_id`) ON DELETE SET NULL;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

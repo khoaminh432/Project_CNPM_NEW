@@ -1,6 +1,7 @@
 // ...existing code...
-import React, { use, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import './addRoute.css';
+
 import StyleMain from "./../../styleMain.module.css";
 import MapComponent from "./../../../../components/MapComponent"
 import SearchSuggestAddress from '../../../../components/MapHandle/SearchSuggestAddress';
@@ -29,7 +30,6 @@ function AddRoute({onclose=()=>{}}) {
     
     if(geometry){
       setPosition(pos=>({...pos,start:geometry}))
-      console.log("xin chao")
     }
     
   }
@@ -71,7 +71,12 @@ function AddRoute({onclose=()=>{}}) {
 
   const selectedList = Array.from(selectedStations)
   const routeDisplay = routeName || "";
-
+  const mapRel = useRef(null);
+  useEffect(()=>{
+    if(!mapRel.current){
+      mapRel.current = <MapComponent positionCurrent={positions} stops={[...selectedStations]}/>
+    }
+  },[positions,selectedStations])
   return (
     <div className="add-route-wrap" >
       <header className="add-route-header">
@@ -106,7 +111,10 @@ function AddRoute({onclose=()=>{}}) {
       <div className="add-route-main">
         <section className="left-card">
           <form className="form-card" onSubmit={handleSave} style={{width:"auto"}}>
-            <h2 className="section-title">Tạo Tuyến xe mới <button>+Thêm trạm</button></h2>
+            <h2 className="section-title">Tạo Tuyến xe mới 
+              <span style={{width:"100%",border:"3px red solid"}}>
+            <button>+Thêm trạm</button>
+            <button>🗑️Xóa trạm</button></span></h2>
               <input
                 className="text-input"
                 type="text"

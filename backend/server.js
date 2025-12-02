@@ -9,7 +9,7 @@ const busRoutes = require('./route/bus.js');
 const scheduleRoutes = require('./route/schedule.js');
 const routeRoutes = require('./route/route.js');
 const notificationRoutes = require('./route/notification.js');
-
+const studentRoutes = require('./route/student.js');
 const app = express();
 const PORT = 3001; 
 
@@ -22,6 +22,7 @@ app.use('/api/buses', busRoutes);
 app.use('/api/schedules', scheduleRoutes);
 app.use('/api/routes', routeRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/students', studentRoutes);
 
 /* ==================================================================
  * CRON JOB: TỰ ĐỘNG QUÉT VÀ GỬI THÔNG BÁO (CHẠY MỖI PHÚT)

@@ -271,4 +271,84 @@ router.get('/recent/:driver_id', async (req, res) => {
   }
 });
 
+// Get earliest schedule for today
+router.get('/today/earliest/:driver_id', async (req, res) => {
+  try {
+    const { driver_id } = req.params;
+    const today = new Date();
+    const todayString = today.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+    
+    console.log('Fetching schedule for driver:', driver_id, 'on date:', todayString);
+    
+    const [schedules] = await db.query(`
+      SELECT 
+        bs.schedule_id,
+        bs.schedule_date,
+        bs.start_time,
+        bs.end_time,
+        bs.status,
+        r.route_id,
+        r.route_name,
+        r.start_point,
+        r.end_point,
+        r.planned_start,
+        r.planned_end,
+        r.total_students
+      FROM bus_schedule bs
+      LEFT JOIN route r ON bs.route_id = r.route_id
+      WHERE bs.driver_id = ?
+        AND DATE(bs.schedule_date) = DATE(?)
+        AND bs.status IN ('Chưa bắt đầu', 'Đang thực hiện')
+      ORDER BY r.planned_start ASC
+      LIMIT 1
+    `, [driver_id, todayString]);
+    
+    console.log('Schedules found:', schedules.length);
+    
+    if (schedules.length === 0) {
+      console.log('No schedule found for today');
+      return res.json({
+        status: 'OK',
+        data: null,
+        message: 'No schedule found for today'
+      });
+    }
+    
+    // Generate simulated coordinates for start and end points
+    // Base coordinates: TP.HCM city center (10.762622, 106.660172)
+    const baseLatitude = 10.762622;
+    const baseLongitude = 106.660172;
+    
+    // Generate random offset within ~5km radius (approximately 0.045 degrees)
+    const randomOffset = () => (Math.random() - 0.5) * 0.09;
+    
+    const scheduleData = {
+      ...schedules[0],
+      start_location_lat: baseLatitude + randomOffset(),
+      start_location_lng: baseLongitude + randomOffset(),
+      end_location_lat: baseLatitude + randomOffset(),
+      end_location_lng: baseLongitude + randomOffset()
+    };
+    
+    console.log('Returning schedule with coordinates:', {
+      schedule_id: scheduleData.schedule_id,
+      start_lat: scheduleData.start_location_lat,
+      start_lng: scheduleData.start_location_lng,
+      end_lat: scheduleData.end_location_lat,
+      end_lng: scheduleData.end_location_lng
+    });
+    
+    res.json({
+      status: 'OK',
+      data: scheduleData
+    });
+  } catch (error) {
+    console.error('Error in /today/earliest:', error);
+    res.status(500).json({
+      status: 'ERROR',
+      message: error.message
+    });
+  }
+});
+
 module.exports = router;

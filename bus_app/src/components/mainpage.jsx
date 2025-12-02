@@ -1,4 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import "../Assets/CSS/mainpage.css";
 import Header from "./Header";
 
@@ -9,9 +12,6 @@ import imgEllipse1 from "../Assets/images/imgEllipse1.svg";
 import imgVector from "../Assets/images/imgVector.svg";
 import imgVector1 from "../Assets/images/imgVector1.svg";
 import imgStar1 from "../Assets/images/imgStar1.svg";
-
-// Goong map keys
-const GOONG_MAPTILES_KEY = "qZzxSh57ziQQsNzf8mUcjWzglhqIjC7pnH4xRCwr";
 
 export default function MainPage({ onNavigateToMap, onNavigateToSchedule, onNavigate }) {
   const [driverData, setDriverData] = useState(null);
@@ -110,22 +110,18 @@ export default function MainPage({ onNavigateToMap, onNavigateToSchedule, onNavi
     };
 
     fetchDriverData();
-  }, []);
 
-  // Initialize Goong map
-  useEffect(() => {
-    if (window.goongjs && !mapInstance.current && mapContainer.current) {
-      window.goongjs.accessToken = GOONG_MAPTILES_KEY;
+    // Listen for profile updates
+    const handleProfileUpdate = (event) => {
+      console.log('Profile updated event received in mainpage');
+      fetchDriverData();
+    };
 
-      mapInstance.current = new window.goongjs.Map({
-        container: mapContainer.current,
-        style: "https://tiles.goong.io/assets/goong_map_web.json",
-        center: [106.660172, 10.762622], // TPHCM default
-        zoom: 13,
-      });
+    window.addEventListener('profileUpdated', handleProfileUpdate);
 
-      mapInstance.current.addControl(new window.goongjs.NavigationControl());
-    }
+    return () => {
+      window.removeEventListener('profileUpdated', handleProfileUpdate);
+    };
   }, []);
   
   return (
@@ -226,7 +222,24 @@ export default function MainPage({ onNavigateToMap, onNavigateToSchedule, onNavi
 
         {/* Right Section - Map */}
         <div className="mp-right-panel">
-          <div ref={mapContainer} className="mp-map-container"></div>
+          <div className="mp-map-container">
+            <MapContainer 
+              center={[10.762622, 106.660172]} 
+              zoom={13} 
+              style={{ width: '100%', height: '100%' }}
+              zoomControl={true}
+            >
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              <Marker position={[10.762622, 106.660172]}>
+                <Popup>
+                  TP. Hồ Chí Minh
+                </Popup>
+              </Marker>
+            </MapContainer>
+          </div>
           <button className="mp-map-button" onClick={() => onNavigateToMap && onNavigateToMap()}>Mở bản đồ tài xế</button>
         </div>
       </div>

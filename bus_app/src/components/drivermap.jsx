@@ -1,4 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import "../Assets/CSS/index.css";
 import "../Assets/CSS/drivermap.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -13,8 +16,74 @@ import imgStar1 from "../Assets/images/imgStar1.svg";
 import imgVector3 from "../Assets/images/imgVector1.svg";
 import imgGroup104 from "../Assets/images/imgGroup104.svg";
 
-const GOONG_MAPTILES_KEY = "qZzxSh57ziQQsNzf8mUcjWzglhqIjC7pnH4xRCwr"; // hiển thị bản đồ
-const GOONG_API_KEY = "OMgqgM7ZbDGb4OPuPY5sbhjTUyPmq9Ime7kpjtMi"; // dùng cho dịch vụ khác (geocode, direction...)
+// Fix Leaflet default marker icon issue
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
+  iconUrl: require('leaflet/dist/images/marker-icon.png'),
+  shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
+});
+
+// Custom blue marker for driver
+const driverIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+// Custom green marker for start point
+const startIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+// Custom red marker for end point
+const endIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+// Custom orange marker for pickup stops
+const pickupIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+// Custom violet marker for dropoff stops
+const dropoffIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-violet.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+// Component to update map center
+function MapUpdater({ center, zoom }) {
+  const map = useMap();
+  useEffect(() => {
+    if (center) {
+      map.flyTo(center, zoom);
+    }
+  }, [center, zoom, map]);
+  return null;
+}
 
 export default function DriverMap({ onBackToMain, onNavigateToList }) {
   const [connected, setConnected] = useState(false);
@@ -28,27 +97,42 @@ export default function DriverMap({ onBackToMain, onNavigateToList }) {
     location: "Địa điểm hiện tại",
     notes: "",
   });
-  const mapContainer = useRef(null);
-  const mapInstance = useRef(null);
-  const markerRef = useRef(null);
-  const watchId = useRef(null);
+  const [currentPosition, setCurrentPosition] = useState([10.762622, 106.660172]); // TP.HCM default
+  const [mapCenter, setMapCenter] = useState([10.762622, 106.660172]);
+  const [mapZoom, setMapZoom] = useState(13);
+  const [earliestSchedule, setEarliestSchedule] = useState(null);
+  const [studentCount, setStudentCount] = useState(0);
+  const [totalStops, setTotalStops] = useState(0);
+  const [stopsDetails, setStopsDetails] = useState([]);
+  const [studentsByStop, setStudentsByStop] = useState([]);
 
-  // --- Khởi tạo bản đồ ---
-  useEffect(() => {
-    if (window.goongjs && !mapInstance.current) {
-      // Key dùng để hiển thị map
-      window.goongjs.accessToken = GOONG_MAPTILES_KEY;
+  // Helper function to format time with offset
+  const formatTimeWithOffset = (startTime, offsetMinutes) => {
+    if (!startTime) return '--:--';
+    
+    const [hours, minutes] = startTime.split(':').map(Number);
+    const totalMinutes = hours * 60 + minutes + offsetMinutes;
+    const newHours = Math.floor(totalMinutes / 60) % 24;
+    const newMinutes = totalMinutes % 60;
+    
+    return `${String(newHours).padStart(2, '0')}:${String(newMinutes).padStart(2, '0')}`;
+  };
 
-      mapInstance.current = new window.goongjs.Map({
-        container: mapContainer.current,
-        style: "https://tiles.goong.io/assets/goong_map_web.json",
-        center: [106.660172, 10.762622], // vị trí mặc định TPHCM
-        zoom: 13,
-      });
+  // Helper function to get badge text
+  const getBadgeText = (stopType, index, totalCount) => {
+    if (index === 0) return 'Bắt đầu';
+    if (index === totalCount - 1) return 'Kết thúc';
+    return stopType;
+  };
 
-      mapInstance.current.addControl(new window.goongjs.NavigationControl());
-    }
-  }, []);
+  // Helper function to get marker icon
+  const getMarkerIcon = (stopType) => {
+    if (stopType === 'start') return startIcon;
+    if (stopType === 'end') return endIcon;
+    if (stopType === 'Điểm đón') return pickupIcon;
+    if (stopType === 'Điểm trả') return dropoffIcon;
+    return driverIcon;
+  };
 
   // --- Handle Report Modal ---
   const handleReportClick = () => {
@@ -88,66 +172,186 @@ export default function DriverMap({ onBackToMain, onNavigateToList }) {
 
   // --- Khi nhấn Bật / Ngắt kết nối ---
   const handleConnectClick = async () => {
-    if (!connected) {
-      setStatus("Đang định vị...");
-      if ("geolocation" in navigator) {
-        watchId.current = navigator.geolocation.watchPosition(
-          async (pos) => {
-            const { latitude, longitude } = pos.coords;
-            const coords = [longitude, latitude];
+    try {
+      const userStr = localStorage.getItem('user');
+      if (!userStr) return;
 
-            // Nếu chưa có marker thì tạo mới
-            if (!markerRef.current) {
-              markerRef.current = new window.goongjs.Marker({
-                color: "#0073FB", // màu xanh cho tài xế
-              })
-                .setLngLat(coords)
-                .addTo(mapInstance.current);
-            } else {
-              markerRef.current.setLngLat(coords);
-            }
+      const user = JSON.parse(userStr);
+      const driverId = user.driver_id;
 
-            // Zoom và căn giữa bản đồ
-            mapInstance.current.flyTo({ center: coords, zoom: 15 });
+      if (!driverId) return;
 
-            // --- Ví dụ: gọi Goong API (Geocoding) ---
+      const newStatus = !connected ? 'Đang hoạt động' : 'Tạm nghỉ';
+      
+      const response = await fetch(`http://localhost:5000/api/drivers/${driverId}/status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      const data = await response.json();
+
+      if (data.status === 'OK') {
+        setConnected(!connected);
+        setStatus(!connected ? 'Bạn đang online.' : 'Bạn đang offline.');
+        
+        // If connecting, fetch earliest schedule
+        if (!connected) {
+          console.log('Fetching earliest schedule for driver:', driverId);
+          const scheduleResponse = await fetch(`http://localhost:5000/api/schedules/today/earliest/${driverId}`);
+          const scheduleData = await scheduleResponse.json();
+          
+          console.log('Schedule data received:', scheduleData);
+          
+          if (scheduleData.status === 'OK' && scheduleData.data) {
+            setEarliestSchedule(scheduleData.data);
+            
+            console.log('Start marker:', scheduleData.data.start_location_lat, scheduleData.data.start_location_lng);
+            console.log('End marker:', scheduleData.data.end_location_lat, scheduleData.data.end_location_lng);
+            
+            // Fetch student count for this schedule from student_pickup table
             try {
-              const res = await fetch(
-                `https://rsapi.goong.io/geocode?latlng=${latitude},${longitude}&api_key=${GOONG_API_KEY}`
-              );
-              const data = await res.json();
-              if (data.results && data.results.length > 0) {
-                console.log("📍 Địa chỉ hiện tại:", data.results[0].formatted_address);
+              const studentResponse = await fetch(`http://localhost:5000/api/students/schedule/${scheduleData.data.schedule_id}`);
+              const studentData = await studentResponse.json();
+              if (studentData.status === 'OK') {
+                setStudentCount(studentData.count || 0);
               }
-            } catch (err) {
-              console.error("Lỗi Goong API:", err);
+            } catch (error) {
+              console.error('Error fetching student count:', error);
             }
-
-            setStatus("Bạn đang online.");
-          },
-          (err) => {
-            console.error("Lỗi GPS:", err);
-            setStatus("Không thể truy cập GPS.");
-          },
-          { enableHighAccuracy: true }
-        );
+            
+            // Fetch total stops for this schedule
+            try {
+              const stopsResponse = await fetch(`http://localhost:5000/api/students/schedule/${scheduleData.data.schedule_id}/stops`);
+              const stopsData = await stopsResponse.json();
+              if (stopsData.status === 'OK') {
+                setTotalStops(stopsData.total_stops || 0);
+              }
+            } catch (error) {
+              console.error('Error fetching total stops:', error);
+            }
+            
+            // Fetch detailed stops information
+            try {
+              const detailsResponse = await fetch(`http://localhost:5000/api/students/schedule/${scheduleData.data.schedule_id}/stops/details`);
+              const detailsData = await detailsResponse.json();
+              console.log('Stops details received:', detailsData);
+              if (detailsData.status === 'OK') {
+                console.log('Stops array:', detailsData.data.stops);
+                setStopsDetails(detailsData.data.stops || []);
+              }
+            } catch (error) {
+              console.error('Error fetching stops details:', error);
+            }
+            
+            // Center map to show route
+            if (scheduleData.data.start_location_lat && scheduleData.data.start_location_lng) {
+              setMapCenter([scheduleData.data.start_location_lat, scheduleData.data.start_location_lng]);
+              setMapZoom(12);
+            }
+          } else {
+            console.log('No schedule found for today');
+            alert('Không có chuyến đi nào cho hôm nay.');
+          }
+        } else {
+          // Clear markers when disconnecting
+          setEarliestSchedule(null);
+          setStudentCount(0);
+          setTotalStops(0);
+          setStopsDetails([]);
+          setMapCenter([10.762622, 106.660172]);
+          setMapZoom(13);
+        }
       } else {
-        setStatus("Trình duyệt không hỗ trợ GPS.");
+        console.error('Failed to update status:', data.message);
+        alert('Không thể cập nhật trạng thái. Vui lòng thử lại.');
       }
-    } else {
-      // Khi ngắt kết nối
-      setStatus("Bạn đang offline.");
-      if (watchId.current) {
-        navigator.geolocation.clearWatch(watchId.current);
-        watchId.current = null;
-      }
-      if (markerRef.current) {
-        markerRef.current.remove();
-        markerRef.current = null;
-      }
+    } catch (error) {
+      console.error('Error updating driver status:', error);
+      alert('Lỗi kết nối. Vui lòng thử lại.');
     }
-    setConnected((prev) => !prev);
   };
+
+  // Fetch driver status on mount
+  useEffect(() => {
+    const fetchDriverStatus = async () => {
+      try {
+        const userStr = localStorage.getItem('user');
+        if (!userStr) return;
+
+        const user = JSON.parse(userStr);
+        const driverId = user.driver_id;
+
+        if (!driverId) return;
+
+        const response = await fetch(`http://localhost:5000/api/drivers/${driverId}`);
+        const data = await response.json();
+
+        if (data.status === 'OK') {
+          const isActive = data.data.status === 'Đang hoạt động';
+          setConnected(isActive);
+          setStatus(isActive ? 'Bạn đang online.' : 'Bạn đang offline.');
+          
+          // If active, fetch earliest schedule
+          if (isActive) {
+            const scheduleResponse = await fetch(`http://localhost:5000/api/schedules/today/earliest/${driverId}`);
+            const scheduleData = await scheduleResponse.json();
+            
+            if (scheduleData.status === 'OK' && scheduleData.data) {
+              setEarliestSchedule(scheduleData.data);
+              
+              // Fetch student count for this schedule from student_pickup table
+              try {
+                const studentResponse = await fetch(`http://localhost:5000/api/students/schedule/${scheduleData.data.schedule_id}`);
+                const studentData = await studentResponse.json();
+                if (studentData.status === 'OK') {
+                  setStudentCount(studentData.count || 0);
+                }
+              } catch (error) {
+                console.error('Error fetching student count:', error);
+              }
+              
+              // Fetch total stops for this schedule
+              try {
+                const stopsResponse = await fetch(`http://localhost:5000/api/students/schedule/${scheduleData.data.schedule_id}/stops`);
+                const stopsData = await stopsResponse.json();
+                if (stopsData.status === 'OK') {
+                  setTotalStops(stopsData.total_stops || 0);
+                }
+              } catch (error) {
+                console.error('Error fetching total stops:', error);
+              }
+              
+              // Fetch detailed stops information
+              try {
+                const detailsResponse = await fetch(`http://localhost:5000/api/students/schedule/${scheduleData.data.schedule_id}/stops/details`);
+                const detailsData = await detailsResponse.json();
+                console.log('Stops details received (useEffect):', detailsData);
+                if (detailsData.status === 'OK') {
+                  console.log('Stops array (useEffect):', detailsData.data.stops);
+                  setStopsDetails(detailsData.data.stops || []);
+                }
+              } catch (error) {
+                console.error('Error fetching stops details:', error);
+              }
+              
+              // Center map to show route
+              if (scheduleData.data.start_location_lat && scheduleData.data.start_location_lng) {
+                setMapCenter([scheduleData.data.start_location_lat, scheduleData.data.start_location_lng]);
+                setMapZoom(12);
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching driver status:', error);
+      }
+    };
+
+    fetchDriverStatus();
+  }, []);
 
   return (
     <div className="driver-map-root">
@@ -178,7 +382,46 @@ export default function DriverMap({ onBackToMain, onNavigateToList }) {
 
       {/* Map */}
       <main className="dm-map-container" role="region" aria-label="Bản đồ">
-        <div ref={mapContainer} className="dm-map-wrapper"></div>
+        <MapContainer
+          center={mapCenter}
+          zoom={mapZoom}
+          style={{ width: '100%', height: '100%', position: 'relative', zIndex: 1 }}
+          zoomControl={true}
+        >
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+          <MapUpdater center={mapCenter} zoom={mapZoom} />
+          
+          {/* Render all stop markers from stopsDetails */}
+          {connected && stopsDetails.length > 0 && stopsDetails.map((stop, index) => {
+            console.log(`Marker ${index}:`, stop.stop_name, stop.latitude, stop.longitude, stop.stop_type);
+            return stop.latitude && stop.longitude ? (
+              <Marker 
+                key={index} 
+                position={[stop.latitude, stop.longitude]} 
+                icon={getMarkerIcon(stop.stop_type)}
+              >
+                <Popup>
+                  <strong>{getBadgeText(stop.stop_type, index, stopsDetails.length)}</strong><br/>
+                  {stop.stop_name}<br/>
+                  {stop.student_count > 0 && (
+                    <span style={{ color: '#666' }}>{stop.student_count} học sinh</span>
+                  )}
+                </Popup>
+              </Marker>
+            ) : null;
+          })}
+          
+          {connected && currentPosition && (
+            <Marker position={currentPosition} icon={driverIcon}>
+              <Popup>
+                Vị trí hiện tại của bạn
+              </Popup>
+            </Marker>
+          )}
+        </MapContainer>
 
         {/* Center control: Connect button */}
         <div className={`dm-center-control ${connected ? 'connected-state' : ''}`}>
@@ -227,16 +470,12 @@ export default function DriverMap({ onBackToMain, onNavigateToList }) {
               >
                 <div className="dm-stop-badge">
                   <img src={imgEllipse1} alt="badge" className="dm-badge-bg" />
-                  <span className="dm-stop-number">12</span>
+                  <span className="dm-stop-number">{totalStops}</span>
                 </div>
                 <p className="dm-stop-label">Trạm dừng</p>
               </div>
 
               <div className="dm-center-info">
-                <div className="dm-current-stop">
-                  <span className="dm-stop-index">1.</span>
-                  <span className="dm-stop-name">Tạ Uyên</span>
-                </div>
                 <div className="dm-logo">SSB</div>
               </div>
             </div>
@@ -257,22 +496,27 @@ export default function DriverMap({ onBackToMain, onNavigateToList }) {
             <div className="dm-info-cards">
               <div className="dm-info-card">
                 <p className="dm-card-label">Tuyến</p>
-                <p className="dm-card-value">05</p>
+                <p className="dm-card-value">{earliestSchedule?.route_name || '--'}</p>
               </div>
 
               <div className="dm-info-card">
                 <p className="dm-card-label">Học sinh</p>
-                <p className="dm-card-value">12</p>
+                <p className="dm-card-value">{studentCount}</p>
               </div>
 
               <div className="dm-info-card dm-card-route">
-                <p className="dm-route-text">Bến xe buýt Chợ Lớn</p>
+                <p className="dm-route-text">{earliestSchedule?.start_point || 'Chưa có'}</p>
                 <p className="dm-route-divider">-</p>
-                <p className="dm-route-text">Bến xe Biên Hòa</p>
+                <p className="dm-route-text">{earliestSchedule?.end_point || 'Chưa có'}</p>
               </div>
 
               <div className="dm-info-card">
-                <p className="dm-card-time">04:50 - 17:45</p>
+                <p className="dm-card-time">
+                  {earliestSchedule?.planned_start && earliestSchedule?.planned_end 
+                    ? `${earliestSchedule.planned_start.substring(0,5)} - ${earliestSchedule.planned_end.substring(0,5)}`
+                    : '--:-- - --:--'
+                  }
+                </p>
               </div>
 
               <div className="dm-info-card dm-card-price">
@@ -419,61 +663,35 @@ export default function DriverMap({ onBackToMain, onNavigateToList }) {
 
               {/* Stops List */}
               <div className="dm-figma-stops">
-                <div className="dm-figma-stop-item">
-                  <div className="dm-figma-stop-circle">1</div>
-                  <div className="dm-figma-stop-content">
-                    <p className="dm-figma-stop-name">Tạ Uyên</p>
-                    <p className="dm-figma-stop-address">123 Tạ Uyên</p>
-                    <div className="dm-figma-stop-details">
-                      <span className="dm-figma-stop-time">07:30</span>
-                      <span className="dm-figma-stop-badge">Điểm đón</span>
-                      <span className="dm-figma-stop-count">2 học sinh</span>
+                {stopsDetails.length > 0 ? (
+                  stopsDetails.map((stop, index) => (
+                    <div key={index} className="dm-figma-stop-item">
+                      <div className="dm-figma-stop-circle">{index + 1}</div>
+                      <div className="dm-figma-stop-content">
+                        <p className="dm-figma-stop-name">{stop.stop_name}</p>
+                        <p className="dm-figma-stop-address">{stop.stop_name}</p>
+                        <div className="dm-figma-stop-details">
+                          <span className="dm-figma-stop-time">
+                            {formatTimeWithOffset(earliestSchedule?.planned_start, stop.time_offset)}
+                          </span>
+                          <span className="dm-figma-stop-badge">
+                            {getBadgeText(stop.stop_type, index, stopsDetails.length)}
+                          </span>
+                          <span className="dm-figma-stop-count">
+                            {stop.student_count > 0 ? `${stop.student_count} học sinh` : ''}
+                          </span>
+                        </div>
+                      </div>
+                      {index < stopsDetails.length - 1 && <div className="dm-figma-stop-line"></div>}
+                    </div>
+                  ))
+                ) : (
+                  <div className="dm-figma-stop-item">
+                    <div className="dm-figma-stop-content">
+                      <p className="dm-figma-stop-name">Chưa có thông tin trạm dừng</p>
                     </div>
                   </div>
-                  <div className="dm-figma-stop-line"></div>
-                </div>
-
-                <div className="dm-figma-stop-item">
-                  <div className="dm-figma-stop-circle">2</div>
-                  <div className="dm-figma-stop-content">
-                    <p className="dm-figma-stop-name">Võ Văn Kiệt</p>
-                    <p className="dm-figma-stop-address">123 Võ Văn Kiệt</p>
-                    <div className="dm-figma-stop-details">
-                      <span className="dm-figma-stop-time">07:35</span>
-                      <span className="dm-figma-stop-badge">Điểm đón</span>
-                      <span className="dm-figma-stop-count">2 học sinh</span>
-                    </div>
-                  </div>
-                  <div className="dm-figma-stop-line"></div>
-                </div>
-
-                <div className="dm-figma-stop-item">
-                  <div className="dm-figma-stop-circle">3</div>
-                  <div className="dm-figma-stop-content">
-                    <p className="dm-figma-stop-name">Nguyễn Văn Cừ</p>
-                    <p className="dm-figma-stop-address">123 Nguyễn Văn Cừ</p>
-                    <div className="dm-figma-stop-details">
-                      <span className="dm-figma-stop-time">07:42</span>
-                      <span className="dm-figma-stop-badge">Điểm đón</span>
-                      <span className="dm-figma-stop-count">3 học sinh</span>
-                    </div>
-                  </div>
-                  <div className="dm-figma-stop-line"></div>
-                </div>
-
-                <div className="dm-figma-stop-item">
-                  <div className="dm-figma-stop-circle">4</div>
-                  <div className="dm-figma-stop-content">
-                    <p className="dm-figma-stop-name">Trần Hưng Đạo</p>
-                    <p className="dm-figma-stop-address">123 Trần Hưng Đạo</p>
-                    <div className="dm-figma-stop-details">
-                      <span className="dm-figma-stop-time">07:48</span>
-                      <span className="dm-figma-stop-badge">Điểm đến</span>
-                      <span className="dm-figma-stop-count">2 học sinh</span>
-                    </div>
-                  </div>
-                  <div className="dm-figma-stop-line"></div>
-                </div>
+                )}
               </div>
             </div>
           </div>

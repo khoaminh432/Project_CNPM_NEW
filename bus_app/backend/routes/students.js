@@ -424,4 +424,182 @@ router.get('/schedule/:schedule_id', async (req, res) => {
   }
 });
 
+// Get total unique stops for a schedule (start_point + end_point + pickup + dropoff)
+router.get('/schedule/:schedule_id/stops', async (req, res) => {
+  try {
+    const { schedule_id } = req.params;
+    
+    // Count distinct stops from student pickup/dropoff
+    const [studentStops] = await db.query(`
+      SELECT COUNT(DISTINCT stop_id) as student_stops
+      FROM (
+        SELECT s.stop_id
+        FROM student_pickup sp
+        JOIN student s ON sp.student_id = s.student_id
+        WHERE sp.schedule_id = ? AND s.stop_id IS NOT NULL
+        UNION
+        SELECT s.dropoff_stop_id as stop_id
+        FROM student_pickup sp
+        JOIN student s ON sp.student_id = s.student_id
+        WHERE sp.schedule_id = ? AND s.dropoff_stop_id IS NOT NULL
+      ) as all_stops
+    `, [schedule_id, schedule_id]);
+    
+    // Add 2 for start_point and end_point
+    const total_stops = (studentStops[0].student_stops || 0) + 2;
+    
+    res.json({
+      status: 'OK',
+      total_stops: total_stops
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'ERROR',
+      message: error.message
+    });
+  }
+});
+
+// Get detailed stop information for a schedule
+router.get('/schedule/:schedule_id/stops/details', async (req, res) => {
+  try {
+    const { schedule_id } = req.params;
+    
+    // Get schedule and route info
+    const [scheduleInfo] = await db.query(`
+      SELECT 
+        bs.start_time,
+        r.start_point,
+        r.end_point,
+        r.route_id
+      FROM bus_schedule bs
+      JOIN route r ON bs.route_id = r.route_id
+      WHERE bs.schedule_id = ?
+    `, [schedule_id]);
+    
+    if (scheduleInfo.length === 0) {
+      return res.json({
+        status: 'ERROR',
+        message: 'Schedule not found'
+      });
+    }
+    
+    const { start_time, start_point, end_point, route_id } = scheduleInfo[0];
+    
+    // Get all stops with student counts (pickup and dropoff)
+    const [stops] = await db.query(`
+      SELECT 
+        stop_id,
+        stop_type,
+        stop_name,
+        COUNT(*) as student_count
+      FROM (
+        SELECT 
+          bs.stop_id,
+          'pickup' as stop_type,
+          bs.stop_name,
+          sp.student_id
+        FROM student_pickup sp
+        JOIN student s ON sp.student_id = s.student_id
+        JOIN bus_stop bs ON s.stop_id = bs.stop_id
+        WHERE sp.schedule_id = ? AND s.stop_id IS NOT NULL
+        
+        UNION ALL
+        
+        SELECT 
+          bs.stop_id,
+          'dropoff' as stop_type,
+          bs.stop_name,
+          sp.student_id
+        FROM student_pickup sp
+        JOIN student s ON sp.student_id = s.student_id
+        JOIN bus_stop bs ON s.dropoff_stop_id = bs.stop_id
+        WHERE sp.schedule_id = ? AND s.dropoff_stop_id IS NOT NULL
+      ) as all_stops
+      GROUP BY stop_id, stop_type, stop_name
+      ORDER BY stop_id, stop_type
+    `, [schedule_id, schedule_id]);
+    
+    // Helper function to generate random coordinates in TP.HCM area
+    const generateRandomCoordinates = (index, total) => {
+      // TP.HCM center coordinates with random base offset for each trip
+      const baseLatitude = 10.762622 + (Math.random() - 0.5) * 0.03;
+      const baseLongitude = 106.660172 + (Math.random() - 0.5) * 0.03;
+      
+      // Create a route with random direction
+      const progress = index / (total + 1);
+      const angle = Math.random() * Math.PI * 2; // Random angle
+      const distance = 0.08; // Max distance from center
+      
+      // Generate coordinates along a line with the random angle
+      const latOffset = Math.cos(angle) * distance * progress;
+      const lngOffset = Math.sin(angle) * distance * progress;
+      
+      // Add random variation (±0.015 degrees, roughly ±1.5km)
+      const randomLat = (Math.random() - 0.5) * 0.03;
+      const randomLng = (Math.random() - 0.5) * 0.03;
+      
+      return {
+        latitude: baseLatitude + latOffset + randomLat,
+        longitude: baseLongitude + lngOffset + randomLng
+      };
+    };
+    
+    // Build stops array with start and end points
+    const stopsArray = [];
+    const totalStops = stops.length + 2; // +2 for start and end
+    
+    // Add start point with coordinates
+    const startCoords = generateRandomCoordinates(0, totalStops);
+    stopsArray.push({
+      stop_name: start_point,
+      stop_type: 'start',
+      student_count: 0,
+      time_offset: 0,
+      latitude: startCoords.latitude,
+      longitude: startCoords.longitude
+    });
+    
+    // Add middle stops with coordinates
+    stops.forEach((stop, index) => {
+      const coords = generateRandomCoordinates(index + 1, totalStops);
+      stopsArray.push({
+        stop_name: stop.stop_name,
+        stop_type: stop.stop_type === 'pickup' ? 'Điểm đón' : 'Điểm trả',
+        student_count: stop.student_count,
+        time_offset: (index + 1) * 8,
+        latitude: coords.latitude,
+        longitude: coords.longitude
+      });
+    });
+    
+    // Add end point with coordinates
+    const endCoords = generateRandomCoordinates(totalStops - 1, totalStops);
+    stopsArray.push({
+      stop_name: end_point,
+      stop_type: 'end',
+      student_count: 0,
+      time_offset: (stops.length + 1) * 8,
+      latitude: endCoords.latitude,
+      longitude: endCoords.longitude
+    });
+    
+    res.json({
+      status: 'OK',
+      data: {
+        start_time,
+        start_point,
+        end_point,
+        stops: stopsArray
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching stop details:', error);
+    res.status(500).json({
+      status: 'ERROR',
+      message: error.message
+    });
+  }
+});
+
 module.exports = router;

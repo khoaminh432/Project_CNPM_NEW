@@ -61,7 +61,7 @@
 .dm-top-left-btn {
   position: absolute;
   top: 28px;
-  left: 20px;
+  left: 30px;
   z-index: 150;
   width: 52px;
   height: 52px;
@@ -264,9 +264,9 @@
 
 .dm-logo {
   font-family: "Raleway", sans-serif;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
-  color: black;
+  color: var(--main-color);
   line-height: 1.167;
   text-align: center;
 }
@@ -568,7 +568,7 @@
   }
 
   .dm-logo {
-    font-size: 14px;
+    font-size: 18px;
   }
 
   .dm-stop-index,
@@ -649,7 +649,7 @@
   }
 
   .dm-logo {
-    font-size: 12px;
+    font-size: 14px;
   }
 
   .dm-stop-index,
@@ -735,7 +735,7 @@
   }
 
   .dm-logo {
-    font-size: 11px;
+    font-size: 12px;
   }
 
   .dm-stop-index,

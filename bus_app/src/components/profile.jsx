@@ -140,6 +140,11 @@ export default function Profile({ onBackToMain }) {
             address: profile.address || "",
             rating: profile.rating || "5.0",
           });
+          
+          // Trigger storage event to update other components
+          window.dispatchEvent(new CustomEvent('profileUpdated', { 
+            detail: { name: profile.name } 
+          }));
         }
       } else {
         alert('Lỗi: ' + data.message);

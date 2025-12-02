@@ -405,6 +405,17 @@
   flex-shrink: 0;
   margin-left: auto;
   margin-right: 5vh;
+  position: relative;
+  z-index: 1;
+}
+
+/* Ensure Leaflet map stays below header dropdown */
+.mp-map-container .leaflet-container {
+  z-index: 1 !important;
+}
+
+.mp-map-container .leaflet-pane {
+  z-index: auto !important;
 }
 
 .mp-map-container img {

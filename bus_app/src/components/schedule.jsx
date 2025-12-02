@@ -24,6 +24,18 @@ export default function Schedule({ onNavigateToMainPage, onNavigate }) {
   // Load data from database
   useEffect(() => {
     loadData();
+
+    // Listen for profile updates
+    const handleProfileUpdate = (event) => {
+      console.log('Profile updated event received in schedule');
+      loadData();
+    };
+
+    window.addEventListener('profileUpdated', handleProfileUpdate);
+
+    return () => {
+      window.removeEventListener('profileUpdated', handleProfileUpdate);
+    };
   }, [selectedDate, showAllSchedules]);
 
   const loadData = async () => {

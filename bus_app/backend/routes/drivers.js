@@ -161,4 +161,38 @@ router.get('/:id/current-location', async (req, res) => {
   }
 });
 
+// Update driver status
+router.put('/:id/status', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    
+    // Validate status values
+    const validStatuses = ['Đang hoạt động', 'Tạm nghỉ', 'Nghỉ việc'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({
+        status: 'ERROR',
+        message: 'Invalid status value'
+      });
+    }
+    
+    await db.query(`
+      UPDATE driver 
+      SET status = ?
+      WHERE driver_id = ?
+    `, [status, id]);
+    
+    res.json({
+      status: 'OK',
+      message: 'Driver status updated successfully',
+      data: { driver_id: id, status }
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'ERROR',
+      message: error.message
+    });
+  }
+});
+
 module.exports = router;

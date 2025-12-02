@@ -13,7 +13,6 @@ const BusLine = () => {
       .catch(err => console.error(err));
   }, []);
 
-  // BusLineDetail
   if (selectedRouteId) {
     return (
       <div>

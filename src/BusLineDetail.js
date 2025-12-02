@@ -93,8 +93,6 @@ const BusLineDetail = ({ routeId: propRouteId }) => {
           alert("Chưa có lịch trình hoạt động.");
           return;
       }
-
-      // Cập nhật hiển thị ngay lập tức (Optimistic UI)
       setStudents(prev => prev.map(s => s.student_id === studentId ? {...s, pickup_status: newStatus} : s));
 
       const payload = { 

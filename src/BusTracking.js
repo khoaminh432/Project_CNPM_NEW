@@ -64,7 +64,6 @@ const BusTracking = ({ propRouteId }) => {
   const fetchDetailedRoute = (coordinates) => {
       if(coordinates.length < 2) return;
       const waypoints = coordinates.map(coord => `${coord[1]},${coord[0]}`).join(';');
-      // Gọi OSRM để lấy đường vẽ màu xanh
       const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${waypoints}?overview=full&geometries=geojson`;
 
       fetch(osrmUrl)

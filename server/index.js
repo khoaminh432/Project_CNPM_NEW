@@ -21,7 +21,7 @@ db.connect((err) => {
     }
 });
 
-// ======================= 1. CÁC API HỆ THỐNG =======================
+//1. CÁC API HỆ THỐNG =======================
 
 // LOGIN
 app.post('/api/login', (req, res) => {

@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 
 const Profile = ({ userInfo, setUserInfo, isEditing, setIsEditing }) => {
   const [students, setStudents] = useState([]);
-  
-  // State quản lý form thêm mới (Có thêm school và gender)
   const [newStudent, setNewStudent] = useState({ name: '', class: '', school: '', gender: 'Nam' });
   const [showStudentForm, setShowStudentForm] = useState(false);
 

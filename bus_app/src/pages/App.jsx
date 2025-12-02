@@ -20,10 +20,14 @@ function ProtectedRoute({ children }) {
 function MainApp() {
   const [currentPage, setCurrentPage] = useState("mainpage");
   const [previousPage, setPreviousPage] = useState(null);
+  const [selectedScheduleId, setSelectedScheduleId] = useState(null);
 
-  const handleNavigate = (page) => {
+  const handleNavigate = (page, scheduleId = null) => {
     setPreviousPage(currentPage);
     setCurrentPage(page);
+    if (scheduleId) {
+      setSelectedScheduleId(scheduleId);
+    }
   };
 
   return (
@@ -47,6 +51,7 @@ function MainApp() {
           onNavigateToMap={() => setCurrentPage("drivermap")} 
           onNavigate={handleNavigate}
           fromDriverMap={previousPage === "drivermap"}
+          scheduleId={selectedScheduleId}
         />
       )}
       {currentPage === "notification" && (

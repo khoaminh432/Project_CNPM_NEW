@@ -10,7 +10,7 @@ import imgEllipse1 from "../Assets/images/imgEllipse1.svg";
 import imgVector from "../Assets/images/imgVector.svg";
 import imgVector1 from "../Assets/images/imgVector1.svg";
 
-export default function List({ onNavigateToMainPage, onNavigateToMap, onNavigate, fromDriverMap, routeId = 1 }) {
+export default function List({ onNavigateToMainPage, onNavigateToMap, onNavigate, fromDriverMap, routeId = 'TD1', scheduleId }) {
   const [students, setStudents] = useState([]);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [selectedGender, setSelectedGender] = useState("male");
@@ -19,56 +19,62 @@ export default function List({ onNavigateToMainPage, onNavigateToMap, onNavigate
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchStudents();
-    fetchRouteInfo();
-  }, [routeId]);
+    if (scheduleId) {
+      fetchStudents();
+    } else {
+      setLoading(false);
+    }
+  }, [scheduleId]);
 
   const fetchStudents = async () => {
     try {
-      console.log('Fetching students for route:', routeId);
-      const response = await fetch(`http://localhost:5000/api/students/route/${routeId}`);
+      setLoading(true);
+      
+      if (!scheduleId) {
+        setError('Vui lòng chọn chuyến đi từ trang lịch trình');
+        setLoading(false);
+        return;
+      }
+
+      // Fetch students for this schedule
+      const response = await fetch(`http://localhost:5000/api/students/schedule/${scheduleId}`);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
       const data = await response.json();
-      console.log('Students response:', data);
       
-      if (data.status === 'OK') {
-        setStudents(data.data);
-        if (data.data.length > 0) {
-          setSelectedStudent(data.data[0]);
+      if (data.status === 'OK' && data.data.length > 0) {
+        // Normalize status: if null or undefined, set to 'CHO_DON'
+        const normalizedData = data.data.map(student => ({
+          ...student,
+          pickup_status: student.pickup_status || 'CHO_DON'
+        }));
+        
+        setStudents(normalizedData);
+        setSelectedStudent(normalizedData[0]);
+        
+        // Set route info from first student's stops
+        if (normalizedData[0]) {
+          setRouteInfo({
+            route_code: routeId,
+            route_name: `Tuyến ${routeId}`,
+            start_location: normalizedData[0].pickup_stop || 'Chưa xác định',
+            end_location: normalizedData[0].dropoff_stop || 'Chưa xác định',
+            planned_start: '06:00',
+            planned_end: '07:30'
+          });
         }
       } else {
-        console.error('API returned error:', data.message);
-        setError('Failed to load students');
+        setStudents([]);
+        setError('Không có học sinh nào cần đón');
       }
     } catch (error) {
       console.error('Error fetching students:', error);
-      setError('Failed to connect to server');
+      setError('Không thể kết nối tới server');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchRouteInfo = async () => {
-    try {
-      console.log('Fetching route info for:', routeId);
-      const response = await fetch(`http://localhost:5000/api/routes/${routeId}`);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      console.log('Route response:', data);
-      
-      if (data.status === 'OK') {
-        setRouteInfo(data.data);
-      }
-    } catch (error) {
-      console.error('Error fetching route info:', error);
     }
   };
 
@@ -94,10 +100,74 @@ export default function List({ onNavigateToMainPage, onNavigateToMap, onNavigate
     }
   };
 
+  const handleStatusUpdate = async (pickupId, newStatus) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/students/pickup/${pickupId}/status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          status: newStatus,
+          pickup_time: newStatus === 'DA_DON' ? new Date().toISOString() : null,
+          dropoff_time: newStatus === 'DA_THA' ? new Date().toISOString() : null,
+          schedule_id: scheduleId
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update status');
+      }
+
+      const data = await response.json();
+
+      // Update local state
+      setStudents(prev => prev.map(s => 
+        s.pickup_id === pickupId ? { ...s, pickup_status: newStatus } : s
+      ));
+
+      // Update selected student if it's the one being updated
+      if (selectedStudent?.pickup_id === pickupId) {
+        setSelectedStudent(prev => ({ ...prev, pickup_status: newStatus }));
+      }
+
+      console.log('Status updated successfully');
+      
+      // Check if schedule was auto-completed or cancelled
+      if (data.scheduleCompleted) {
+        if (data.scheduleCancelled) {
+          alert('Tất cả học sinh đã hủy chuyến. Chuyến đi đã được đánh dấu hủy!');
+        } else {
+          alert('Tất cả học sinh đã được thả hoặc hủy. Chuyến đi đã được đánh dấu hoàn thành!');
+        }
+      }
+    } catch (error) {
+      console.error('Error updating status:', error);
+      alert('Không thể cập nhật trạng thái');
+    }
+  };
+
   const handleStudentPickup = (studentId) => {
-    // TODO: Update student pickup status in backend
     console.log('Student picked up:', studentId);
     setStudents(prev => prev.filter(s => s.student_id !== studentId));
+    // Update selected student if the picked up student was selected
+    if (selectedStudent?.student_id === studentId) {
+      const remainingStudents = students.filter(s => s.student_id !== studentId);
+      setSelectedStudent(remainingStudents.length > 0 ? remainingStudents[0] : null);
+    }
+  };
+
+  const handleStudentSelect = (student) => {
+    setSelectedStudent(student);
+    // Update route info to show selected student's pickup/dropoff stops
+    setRouteInfo({
+      route_code: routeId,
+      route_name: `Tuyến ${routeId}`,
+      start_location: student.pickup_stop || 'Chưa xác định',
+      end_location: student.dropoff_stop || 'Chưa xác định',
+      planned_start: '06:00',
+      planned_end: '07:30'
+    });
   };
 
   return (
@@ -129,7 +199,9 @@ export default function List({ onNavigateToMainPage, onNavigateToMap, onNavigate
           {/* Pickup/Destination Section */}
           <h2 className="list-section-title">Điểm đón và điểm đến</h2>
           <div className="list-location-card">
-            {routeInfo ? (
+            {loading ? (
+              <div className="list-loading">Đang tải thông tin tuyến...</div>
+            ) : routeInfo ? (
               <>
                 <div className="list-location-item">
                   <img src={imgPhBusLight} alt="bus" className="list-bus-icon" />
@@ -139,14 +211,10 @@ export default function List({ onNavigateToMainPage, onNavigateToMap, onNavigate
                   <img src={imgPhBusLight} alt="bus" className="list-bus-icon" />
                   <span className="list-location-text">{routeInfo.end_location}</span>
                 </div>
-                <div className="list-route-info">
-                  <p className="list-route-label">Tuyến: {routeInfo.route_code}</p>
-                  <p className="list-route-name">{routeInfo.route_name}</p>
-                  <p className="list-route-time">{routeInfo.planned_start} - {routeInfo.planned_end}</p>
-                </div>
+                {/* route info removed per request */}
               </>
             ) : (
-              <div className="list-loading-route">Đang tải thông tin tuyến...</div>
+              <div className="list-error">Không có thông tin tuyến</div>
             )}
           </div>
 
@@ -155,8 +223,37 @@ export default function List({ onNavigateToMainPage, onNavigateToMap, onNavigate
           
           {loading ? (
             <div className="list-loading">Đang tải thông tin học sinh...</div>
+          ) : !scheduleId ? (
+            <div className="list-error" style={{ 
+              textAlign: 'center', 
+              padding: '60px 20px', 
+              fontSize: '18px',
+              color: '#6c757d',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '20px'
+            }}>
+              <div style={{ fontSize: '64px' }}>📅</div>
+              <div>Vui lòng chọn chuyến đi từ trang lịch trình để hiển thị danh sách học sinh</div>
+              <button 
+                onClick={() => handleNavigate('schedule')}
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: '#007bff',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  cursor: 'pointer',
+                  marginTop: '10px'
+                }}
+              >
+                Đi đến trang lịch trình
+              </button>
+            </div>
           ) : error ? (
-            <div className="list-error">Lỗi: {error}</div>
+            <div className="list-error">{error}</div>
           ) : selectedStudent ? (
             <div className="list-info-form">
               <div className="list-form-row">
@@ -168,13 +265,13 @@ export default function List({ onNavigateToMainPage, onNavigateToMap, onNavigate
                   <label className="list-label">Giới tính</label>
                   <div className="list-gender-selector">
                     <button 
-                      className={`list-gender-btn ${selectedStudent.gender === 'male' ? 'active' : ''}`}
+                      className={`list-gender-btn ${selectedStudent.gender === 'Nam' || selectedStudent.gender === 'male' ? 'active' : ''}`}
                       disabled
                     >
                       <img src={imgMaterialSymbolsMale} alt="male" className="list-gender-icon" />
                     </button>
                     <button 
-                      className={`list-gender-btn ${selectedStudent.gender === 'female' ? 'active' : ''}`}
+                      className={`list-gender-btn ${selectedStudent.gender === 'Nữ' || selectedStudent.gender === 'female' ? 'active' : ''}`}
                       disabled
                     >
                       <img src={imgMaterialSymbolsFemale} alt="female" className="list-gender-icon" />
@@ -185,19 +282,19 @@ export default function List({ onNavigateToMainPage, onNavigateToMap, onNavigate
 
               <div className="list-form-row">
                 <div className="list-form-group">
-                  <label className="list-label">Tuổi</label>
-                  <div className="list-input list-input-small">{calculateAge(selectedStudent.date_of_birth)}</div>
+                  <label className="list-label">Trường</label>
+                  <div className="list-input list-input-medium">{selectedStudent.school_name || 'Chưa xác định'}</div>
                 </div>
                 <div className="list-form-group">
                   <label className="list-label">Lớp</label>
-                  <div className="list-input list-input-medium">{selectedStudent.class_name}</div>
+                  <div className="list-input list-input-small">{selectedStudent.class_name}</div>
                 </div>
               </div>
 
               <div className="list-form-row">
                 <div className="list-form-group">
-                  <label className="list-label">Điểm đón</label>
-                  <div className="list-input list-input-medium">{selectedStudent.pickup_stop || 'Chưa xác định'}</div>
+                  <label className="list-label">Phụ huynh</label>
+                  <div className="list-input list-input-medium">{selectedStudent.parent_name || selectedStudent.parent_phone || 'Chưa xác định'}</div>
                 </div>
                 <div className="list-form-group">
                   <label className="list-label">Số điện thoại PH</label>
@@ -217,46 +314,93 @@ export default function List({ onNavigateToMainPage, onNavigateToMap, onNavigate
             <div className="list-students-scroll">
               {loading ? (
                 <div className="list-loading">Đang tải danh sách học sinh...</div>
-              ) : error ? (
-                <div className="list-error">Lỗi: {error}</div>
               ) : students.length === 0 ? (
-                <div className="list-no-students">Không có học sinh nào cần đón</div>
+                <div className="list-no-students">{error || 'Không có học sinh nào cần đón'}</div>
               ) : (
                 students.map((student) => (
                   <div 
                     key={student.student_id}
                     className={`list-student-card ${selectedStudent?.student_id === student.student_id ? 'selected' : ''}`}
-                    onClick={() => setSelectedStudent(student)}
+                    onClick={() => handleStudentSelect(student)}
                   >
                     <div className="list-student-info">
                       <p className="list-student-name">{student.full_name}</p>
                       <p className="list-student-detail">Lớp {student.class_name}</p>
                       <p className="list-student-detail">{student.pickup_stop || 'Điểm đón chưa xác định'}</p>
-                      <p className="list-student-detail">Thứ tự: {student.pickup_order || 'N/A'}</p>
+                      <p className="list-student-detail">
+                        Trạng thái: {student.pickup_status === 'CHO_DON' && 'Chờ đón'}
+                        {student.pickup_status === 'DA_DON' && 'Đã đón'}
+                        {student.pickup_status === 'DA_THA' && 'Đã thả'}
+                        {student.pickup_status === 'HUY_CHUYEN' && 'Hủy chuyến'}
+                        {!student.pickup_status && 'Chưa xác định'}
+                      </p>
                     </div>
                     <div className="list-student-action">
-                      <button 
-                        className="list-pickup-btn"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleStudentPickup(student.student_id);
-                        }}
-                      >
-                        Đã đón
-                      </button>
+                      {student.pickup_status === 'CHO_DON' && (
+                        <button 
+                          className="list-pickup-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleStatusUpdate(student.pickup_id, 'DA_DON');
+                          }}
+                        >
+                          Đã đón
+                        </button>
+                      )}
+                      {student.pickup_status === 'DA_DON' && (
+                        <button 
+                          className="list-pickup-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleStatusUpdate(student.pickup_id, 'DA_THA');
+                          }}
+                        >
+                          Đã thả
+                        </button>
+                      )}
+                      {(student.pickup_status === 'DA_THA' || student.pickup_status === 'HUY_CHUYEN') && (
+                        <button 
+                          className="list-pickup-btn"
+                          style={{ opacity: 0.5, cursor: 'default' }}
+                          disabled
+                        >
+                          {student.pickup_status === 'DA_THA' ? 'Đã hoàn thành' : 'Đã hủy'}
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))
               )}
             </div>
           </div>
-          {selectedStudent && (
-            <button 
-              className="list-picked-btn"
-              onClick={() => handleStudentPickup(selectedStudent.student_id)}
-            >
-              Đánh dấu đã đón: {selectedStudent.full_name}
-            </button>
+          {selectedStudent && selectedStudent.pickup_status !== 'DA_THA' && selectedStudent.pickup_status !== 'HUY_CHUYEN' && (
+            <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
+              <button 
+                className="list-picked-btn"
+                style={{ flex: 1 }}
+                onClick={() => {
+                  const nextStatus = selectedStudent.pickup_status === 'CHO_DON' ? 'DA_DON' : 'DA_THA';
+                  handleStatusUpdate(selectedStudent.pickup_id, nextStatus);
+                }}
+              >
+                {selectedStudent.pickup_status === 'CHO_DON' ? 'Đánh dấu đã đón' : 'Đánh dấu đã thả'}: {selectedStudent.full_name}
+              </button>
+              <button 
+                className="list-picked-btn"
+                style={{ flex: 0.4, backgroundColor: '#ff6776ff', border: 'none' }}
+                onClick={() => {
+                  if (selectedStudent.pickup_status === 'DA_DON') {
+                    alert('Học sinh đã được đón, không thể hủy chuyến!');
+                    return;
+                  }
+                  if (window.confirm(`Xác nhận hủy chuyến cho học sinh ${selectedStudent.full_name}?`)) {
+                    handleStatusUpdate(selectedStudent.pickup_id, 'HUY_CHUYEN');
+                  }
+                }}
+              >
+                Hủy chuyến
+              </button>
+            </div>
           )}
         </div>
       </div>

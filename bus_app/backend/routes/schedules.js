@@ -6,46 +6,52 @@ const db = require('../config/database');
 // Get all schedules for a date
 router.get('/', async (req, res) => {
   try {
-    const { date } = req.query;
+    const { date, driver_id } = req.query;
     
     let query = `
       SELECT 
-        s.schedule_id,
-        s.driver_id,
-        s.schedule_date,
-        s.day_of_week,
-        s.status,
-        s.actual_start_time,
-        s.actual_end_time,
-        s.total_students_expected,
-        s.total_students_actual,
-        r.route_code,
+        bs.schedule_id,
+        bs.schedule_date,
+        bs.start_time,
+        bs.end_time,
+        bs.status,
+        d.driver_id,
+        d.name as driver_name,
+        d.rating,
+        r.route_id,
         r.route_name,
+        r.start_point,
+        r.end_point,
         r.planned_start,
         r.planned_end,
-        d.full_name,
-        d.driver_code
-      FROM schedules s
-      JOIN routes r ON s.route_id = r.route_id
-      JOIN drivers d ON s.driver_id = d.driver_id
+        r.total_students,
+        (SELECT COUNT(*) FROM student_pickup sp WHERE sp.schedule_id = bs.schedule_id) as actual_student_count,
+        (SELECT COUNT(*) FROM student_pickup sp WHERE sp.schedule_id = bs.schedule_id AND sp.status = 'DA_THA') as actual_dropped_count
+      FROM bus_schedule bs
+      LEFT JOIN driver d ON bs.driver_id = d.driver_id
+      LEFT JOIN route r ON bs.route_id = r.route_id
+      WHERE 1=1
     `;
     
     let params = [];
     
     if (date) {
-      query += ` WHERE s.schedule_date = ?`;
+      query += ` AND bs.schedule_date = ?`;
       params.push(date);
     }
     
-    query += ` ORDER BY r.planned_start, d.full_name`;
+    if (driver_id) {
+      query += ` AND bs.driver_id = ?`;
+      params.push(driver_id);
+    }
     
-    const connection = await db.getConnection();
-    const [schedules] = await connection.query(query, params);
-    connection.release();
+    query += ` ORDER BY bs.schedule_date DESC, bs.start_time ASC`;
+    
+    const [schedules] = await db.query(query, params);
     
     res.json({
-      status: 'OK',
-      data: schedules,
+      success: true,
+      schedules: schedules,
       count: schedules.length
     });
   } catch (error) {
@@ -143,6 +149,119 @@ router.put('/:id/status', async (req, res) => {
     res.json({
       status: 'OK',
       message: 'Schedule updated successfully'
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'ERROR',
+      message: error.message
+    });
+  }
+});
+
+// Get statistics for driver (completion rate, cancel rate)
+router.get('/stats/:driver_id', async (req, res) => {
+  try {
+    const { driver_id } = req.params;
+    const currentMonth = new Date().getMonth() + 1;
+    const currentYear = new Date().getFullYear();
+    
+    const [stats] = await db.query(`
+      SELECT 
+        COUNT(*) as total,
+        SUM(CASE WHEN status = 'Hoàn thành' THEN 1 ELSE 0 END) as completed,
+        SUM(CASE WHEN status = 'Đã hủy' THEN 1 ELSE 0 END) as cancelled
+      FROM bus_schedule
+      WHERE driver_id = ?
+        AND MONTH(schedule_date) = ?
+        AND YEAR(schedule_date) = ?
+    `, [driver_id, currentMonth, currentYear]);
+    
+    res.json({
+      status: 'OK',
+      data: {
+        total: stats[0].total || 0,
+        completed: stats[0].completed || 0,
+        cancelled: stats[0].cancelled || 0
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'ERROR',
+      message: error.message
+    });
+  }
+});
+
+// Cancel schedule and update all related student pickups
+router.put('/:schedule_id/cancel', async (req, res) => {
+  try {
+    const { schedule_id } = req.params;
+    
+    // Start transaction
+    const connection = await db.getConnection();
+    await connection.beginTransaction();
+    
+    try {
+      // Update schedule status to cancelled and set end_time
+      await connection.query(`
+        UPDATE bus_schedule 
+        SET status = 'Đã hủy', end_time = NOW()
+        WHERE schedule_id = ?
+      `, [schedule_id]);
+      
+      // Update all student pickups for this schedule to cancelled status
+      await connection.query(`
+        UPDATE student_pickup 
+        SET status = 'HUY_CHUYEN'
+        WHERE schedule_id = ?
+      `, [schedule_id]);
+      
+      // Commit transaction
+      await connection.commit();
+      connection.release();
+      
+      res.json({
+        status: 'OK',
+        message: 'Schedule and all related student pickups cancelled successfully'
+      });
+    } catch (error) {
+      // Rollback on error
+      await connection.rollback();
+      connection.release();
+      throw error;
+    }
+  } catch (error) {
+    res.status(500).json({
+      status: 'ERROR',
+      message: error.message
+    });
+  }
+});
+
+// Get recent completed schedules for a driver
+router.get('/recent/:driver_id', async (req, res) => {
+  try {
+    const { driver_id } = req.params;
+    
+    const [schedules] = await db.query(`
+      SELECT 
+        bs.schedule_id,
+        bs.end_time,
+        r.start_point,
+        r.end_point,
+        r.route_name
+      FROM bus_schedule bs
+      LEFT JOIN route r ON bs.route_id = r.route_id
+      WHERE bs.driver_id = ?
+        AND bs.status = 'Hoàn thành'
+        AND bs.end_time IS NOT NULL
+      ORDER BY bs.end_time DESC
+      LIMIT 5
+    `, [driver_id]);
+    
+    res.json({
+      status: 'OK',
+      data: schedules
     });
   } catch (error) {
     res.status(500).json({

@@ -41,18 +41,23 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const connection = await db.getConnection();
-    const [driver] = await connection.query(`
+    
+    const [driver] = await db.query(`
       SELECT 
-        d.*,
-        u.username,
-        u.email as account_email,
-        u.user_role
-      FROM drivers d
-      JOIN users u ON d.user_id = u.user_id
+        d.driver_id,
+        d.name,
+        d.phone,
+        d.email,
+        d.rating,
+        d.status,
+        d.profile_image,
+        d.created_at,
+        d.address,
+        d.gender,
+        d.license_class
+      FROM driver d
       WHERE d.driver_id = ?
     `, [id]);
-    connection.release();
     
     if (driver.length === 0) {
       return res.status(404).json({

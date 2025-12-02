@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "../Assets/CSS/mainpage.css";
 import Header from "./Header";
 
@@ -14,6 +14,10 @@ import imgStar1 from "../Assets/images/imgStar1.svg";
 const GOONG_MAPTILES_KEY = "qZzxSh57ziQQsNzf8mUcjWzglhqIjC7pnH4xRCwr";
 
 export default function MainPage({ onNavigateToMap, onNavigateToSchedule, onNavigate }) {
+  const [driverData, setDriverData] = useState(null);
+  const [stats, setStats] = useState({ completionRate: 0, onTimeRate: 0 });
+  const [loading, setLoading] = useState(true);
+  const [recentActivities, setRecentActivities] = useState([]);
   const handleNavigate = (page) => {
     if (page === 'schedule' && onNavigateToSchedule) {
       onNavigateToSchedule();
@@ -25,6 +29,88 @@ export default function MainPage({ onNavigateToMap, onNavigateToSchedule, onNavi
   };
   const mapContainer = useRef(null);
   const mapInstance = useRef(null);
+
+  // Calculate relative time
+  const getRelativeTime = (endTime) => {
+    if (!endTime) return 'Chưa xác định';
+    
+    const now = new Date();
+    const end = new Date(endTime);
+    const diffMs = now - end;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    
+    if (diffMins < 60) {
+      return `${diffMins} phút trước`;
+    } else if (diffHours < 24) {
+      return `${diffHours} giờ trước`;
+    } else {
+      return `${diffDays} ngày trước`;
+    }
+  };
+
+  // Fetch driver data and statistics
+  useEffect(() => {
+    const fetchDriverData = async () => {
+      try {
+        const userStr = localStorage.getItem('user');
+        if (!userStr) {
+          console.error('No user found');
+          setLoading(false);
+          return;
+        }
+
+        const user = JSON.parse(userStr);
+        const driverId = user.driver_id;
+
+        if (!driverId) {
+          console.error('No driver_id found');
+          setLoading(false);
+          return;
+        }
+
+        // Fetch driver info
+        const driverResponse = await fetch(`http://localhost:5000/api/drivers/${driverId}`);
+        const driverData = await driverResponse.json();
+
+        if (driverData.status === 'OK') {
+          setDriverData(driverData.data);
+        }
+
+        // Fetch schedule statistics
+        const statsResponse = await fetch(`http://localhost:5000/api/schedules/stats/${driverId}`);
+        const statsData = await statsResponse.json();
+
+        if (statsData.status === 'OK') {
+          const { completed, cancelled, total } = statsData.data;
+          const completionRate = total > 0 ? ((completed / total) * 100).toFixed(1) : 0;
+          const cancelRate = total > 0 ? ((cancelled / total) * 100).toFixed(1) : 0;
+          
+          setStats({
+            completionRate,
+            cancelRate,
+            onTimeRate: 87.2 // Placeholder for now
+          });
+        }
+
+        // Fetch recent completed schedules
+        const activitiesResponse = await fetch(`http://localhost:5000/api/schedules/recent/${driverId}`);
+        const activitiesData = await activitiesResponse.json();
+
+        if (activitiesData.status === 'OK') {
+          setRecentActivities(activitiesData.data);
+        }
+
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching driver data:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchDriverData();
+  }, []);
 
   // Initialize Goong map
   useEffect(() => {
@@ -69,17 +155,22 @@ export default function MainPage({ onNavigateToMap, onNavigateToSchedule, onNavi
                 onClick={() => handleNavigate('profile')}
                 style={{ cursor: 'pointer' }}
               >
-                <img alt="driver avatar" src={imgAvatar} />
+                <img alt="driver avatar" src={driverData?.profile_image || imgAvatar} />
               </div>
               
               {/* Center Section - Driver Info */}
               <div className="mp-card-info">
                 <div className="mp-card-name-section">
-                  <h2 className="mp-driver-name">Lê Văn A</h2>
+                  <h2 className="mp-driver-name">{driverData?.name || 'Lê Văn A'}</h2>
                   <img alt="star" src={imgStar1} className="mp-star-icon" />
-                  <span className="mp-rating">5.00</span>
+                  <span className="mp-rating">{driverData?.rating || '5.00'}</span>
                 </div>
-                <p className="mp-join-date">Gia nhập tháng 8 2025 | BUSDR-023</p>
+                <p className="mp-join-date">
+                  {driverData?.created_at 
+                    ? `Gia nhập tháng ${new Date(driverData.created_at).getMonth() + 1} ${new Date(driverData.created_at).getFullYear()}` 
+                    : 'Gia nhập tháng 8 2025'
+                  } | {driverData?.driver_id || 'BUSDR-023'}
+                </p>
               </div>
 
               {/* Divider Line */}
@@ -100,11 +191,11 @@ export default function MainPage({ onNavigateToMap, onNavigateToSchedule, onNavi
               <div className="mp-stats-header">Hàng tháng</div>
               <div className="mp-stats-container">
                 <div className="mp-stat">
-                  <div className="mp-stat-value">100%</div>
+                  <div className="mp-stat-value">{stats.completionRate}%</div>
                   <div className="mp-stat-label">Chuyến hoàn thành</div>
                 </div>
                 <div className="mp-stat">
-                  <div className="mp-stat-value">87.2%</div>
+                  <div className="mp-stat-value">{stats.onTimeRate}%</div>
                   <div className="mp-stat-label">Tỉ lệ đúng giờ</div>
                 </div>
               </div>
@@ -115,18 +206,20 @@ export default function MainPage({ onNavigateToMap, onNavigateToSchedule, onNavi
           <div className="mp-activity-card">
             <h3 className="mp-activity-title">Hoạt động gần đây</h3>
             <div className="mp-activity-list">
-              {[
-                { time: "3 giờ trước", driver: "Tạ Uyên", location: "Trường THPT ABC" },
-                { time: "3 giờ trước", driver: "Tạ Uyên", location: "Trường THPT ABC" },
-                { time: "3 giờ trước", driver: "Tạ Uyên", location: "Trường THPT ABC" },
-              ].map((item, idx) => (
-                <div key={idx} className="mp-activity-item">
-                  <span className="mp-activity-time">{item.time}</span>
-                  <span className="mp-activity-driver">{item.driver}</span>
-                  <span className="mp-activity-dots">...................</span>
-                  <span className="mp-activity-location">{item.location}</span>
+              {recentActivities.length > 0 ? (
+                recentActivities.map((activity, idx) => (
+                  <div key={idx} className="mp-activity-item">
+                    <span className="mp-activity-time">{getRelativeTime(activity.end_time)}</span>
+                    <span className="mp-activity-driver">{activity.start_point}</span>
+                    <span className="mp-activity-dots">...................</span>
+                    <span className="mp-activity-location">{activity.end_point}</span>
+                  </div>
+                ))
+              ) : (
+                <div style={{ textAlign: 'center', padding: '20px', color: '#6c757d' }}>
+                  <p>Chưa có hoạt động gần đây</p>
                 </div>
-              ))}
+              )}
             </div>
           </div>
         </div>

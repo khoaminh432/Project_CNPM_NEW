@@ -89,17 +89,18 @@ CREATE TABLE `bus_schedule` (
   `driver_id` varchar(20) DEFAULT NULL,
   `schedule_date` date DEFAULT NULL,
   `start_time` time DEFAULT NULL,
-  `end_time` time DEFAULT NULL
+  `end_time` time DEFAULT NULL,
+  `status` enum('Chưa bắt đầu','Đang thực hiện','Hoàn thành','Đã hủy') NOT NULL DEFAULT 'Chưa bắt đầu' COMMENT 'Trạng thái lịch trình'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `bus_schedule`
 --
 
-INSERT INTO `bus_schedule` (`schedule_id`, `route_id`, `bus_id`, `driver_id`, `schedule_date`, `start_time`, `end_time`) VALUES
-('LT1', 'TD1', 'XB1', 'TX001', '2025-11-28', '06:15:00', '07:45:00'),
-('LT2', 'TD2', 'XB2', 'TX002', '2025-11-27', '06:45:00', '08:15:00'),
-('XE001-01-11-2025', 'R01', 'XE001', 'TX003', '2025-11-01', '06:00:00', '07:15:00');
+INSERT INTO `bus_schedule` (`schedule_id`, `route_id`, `bus_id`, `driver_id`, `schedule_date`, `start_time`, `end_time`, `status`) VALUES
+('LT1', 'TD1', 'XB1', 'TX001', '2025-11-28', '06:15:00', '07:45:00', 'completed'),
+('LT2', 'TD2', 'XB2', 'TX002', '2025-11-27', '06:45:00', '08:15:00', 'in_progress'),
+('XE001-01-11-2025', 'R01', 'XE001', 'TX003', '2025-11-01', '06:00:00', '07:15:00', 'scheduled');
 
 -- --------------------------------------------------------
 
@@ -593,6 +594,72 @@ ALTER TABLE `student_pickup`
   ADD CONSTRAINT `student_pickup_ibfk_2` FOREIGN KEY (`driver_id`) REFERENCES `driver` (`driver_id`) ON DELETE SET NULL,
   ADD CONSTRAINT `student_pickup_ibfk_3` FOREIGN KEY (`schedule_id`) REFERENCES `bus_schedule` (`schedule_id`) ON DELETE CASCADE,
   ADD CONSTRAINT `student_pickup_ibfk_4` FOREIGN KEY (`stop_id`) REFERENCES `bus_stop` (`stop_id`) ON DELETE SET NULL;
+--
+-- Additional sample data added by developer
+--
+
+-- New users for more drivers and parents
+INSERT INTO `users` (`user_id`, `username`, `password`, `role`, `linked_id`, `created_at`) VALUES
+(13, 'tx006', '12345', 'driver', NULL, '2025-12-02 07:00:00'),
+(14, 'tx007', '12345', 'driver', NULL, '2025-12-02 07:00:00'),
+(15, 'tx008', '12345', 'driver', NULL, '2025-12-02 07:00:00'),
+(16, 'ph005', '12345', 'parent', NULL, '2025-12-02 07:05:00'),
+(17, 'ph006', '12345', 'parent', NULL, '2025-12-02 07:05:00');
+
+-- New drivers
+INSERT INTO `driver` (`driver_id`, `user_id`, `name`, `phone`, `address`, `email`, `dob`, `gender`, `id_card`, `rating`, `status`, `license_class`, `work_schedule`, `profile_image`, `created_at`) VALUES
+('TX006', 13, 'Hoàng Văn Long', '0912345670', 'Đường Lê Lợi', 'long.hoang@gmail.com', '1986-02-02', 'Nam', '678901234567', 4.6, 'Rảnh', 'B2', 'MON,TUE,WED,THU,FRI', NULL, '2025-12-02 07:00:00'),
+('TX007', 14, 'Lý Thị Hoa', '0912345671', 'Đường Trần Hưng Đạo', 'hoa.ly@gmail.com', '1991-05-12', 'Nữ', '789012345678', 4.4, 'Rảnh', 'B2', 'MON,TUE,WED,THU,FRI', NULL, '2025-12-02 07:00:00'),
+('TX008', 15, 'Nguyễn Minh Tú', '0912345672', 'Đường Nguyễn Thái Học', 'tu.nguyen@gmail.com', '1989-08-21', 'Nam', '890123456789', 4.3, 'Rảnh', 'B2', 'MON,TUE,WED,THU,FRI', NULL, '2025-12-02 07:00:00');
+
+-- New parents
+INSERT INTO `parent` (`parent_id`, `user_id`, `name`, `phone`, `age`, `sex`, `email`) VALUES
+('PH005', 16, 'Nguyễn Thị Xinh', '0901122334', 34, 'Nữ', 'xinh.nguyen@gmail.com'),
+('PH006', 17, 'Trần Văn Nam', '0902233445', 36, 'Nam', 'nam.tran@gmail.com');
+
+-- New buses
+-- New routes
+INSERT INTO `route` (`route_id`, `route_name`, `start_point`, `end_point`, `planned_start`, `planned_end`, `total_students`, `status`, `created_at`) VALUES
+('R02', 'R02 - North Loop', 'School A', 'Residence B', '06:30:00', '07:45:00', 12, 'Đang hoạt động', '2025-11-15 08:00:00'),
+('R03', 'R03 - East Loop', 'School C', 'Residence D', '06:20:00', '07:50:00', 14, 'Đang hoạt động', '2025-11-16 09:00:00');
+
+-- New buses
+INSERT INTO `bus` (`bus_id`, `license_plate`, `capacity`, `default_route_id`, `status`, `departure_status`, `registry`) VALUES
+('XE006', '59D-11111', 18, 'R02', 'Đang hoạt động', 'Chưa xuất phát', NULL),
+('XE007', '59D-22222', 18, 'R03', 'Đang hoạt động', 'Chưa xuất phát', NULL),
+('XE008', '59D-33333', 22, 'TD1', 'Đang hoạt động', 'Chưa xuất phát', NULL);
+
+-- New bus schedules referencing new drivers / buses / routes
+INSERT INTO `bus_schedule` (`schedule_id`, `route_id`, `bus_id`, `driver_id`, `schedule_date`, `start_time`, `end_time`, `status`) VALUES
+('LT3', 'R02', 'XE006', 'TX006', '2025-12-01', '06:30:00', '07:40:00', 'Chưa bắt đầu'),
+('LT4', 'R03', 'XE007', 'TX007', '2025-12-01', '06:20:00', '07:50:00', 'Đang thực hiện'),
+('LT5', 'TD1', 'XE008', 'TX008', '2025-12-02', '07:15:00', '08:45:00', 'Hoàn thành');
+
+-- New students
+INSERT INTO `student` (`student_id`, `parent_id`, `stop_id`, `dropoff_stop_id`, `name`, `school_name`, `class_name`, `gender`) VALUES
+('HS003', 'PH005', 'STOP1', 'STOP2', 'Phạm Văn Khoa', 'Trường Tiểu học Nguyễn Trãi', '3C1', 'Nam'),
+('HS004', 'PH006', 'STOP_T1', 'STOP_T2', 'Võ Thị Lan', 'Trường Tiểu học Lê Lợi', '2A2', 'Nữ');
+
+-- New student pickup records
+INSERT INTO `student_pickup` (`pickup_id`, `student_id`, `driver_id`, `schedule_id`, `stop_id`, `pickup_time`, `dropoff_time`, `status`) VALUES
+('DT003', 'HS003', 'TX006', 'LT3', 'STOP1', '2025-12-01 06:35:00', '2025-12-01 07:30:00', 'DA_DON'),
+('DT004', 'HS004', 'TX007', 'LT4', 'STOP_T1', NULL, NULL, 'CHO_DON');
+
+-- New notifications
+INSERT INTO `notification` (`id`, `recipient_type`, `title`, `content`, `type`, `scheduled_time`, `is_recurring`, `recurrence_days`, `status_sent`, `created_at`, `status`) VALUES
+(7, 'driver', 'Thay đổi giờ', 'Hôm nay lịch trình có thay đổi, khởi hành sớm hơn 10 phút.', 'manual', NULL, 0, NULL, 'sent', '2025-12-01 05:00:00', 'unread'),
+(8, 'parent', 'Nhắc lịch', 'Nhắc phụ huynh: ngày mai có lịch họp phụ huynh lúc 17:00.', 'manual', NULL, 0, NULL, 'sent', '2025-12-01 06:00:00', 'unread');
+
+-- New notification recipients
+INSERT INTO `notification_recipients` (`id`, `notification_id`, `recipient_id`, `recipient_type`, `status`, `created_at`) VALUES
+(3, 7, 'TX006', 'driver', 'unread', '2025-12-01 05:00:00'),
+(4, 8, 'PH005', 'parent', 'unread', '2025-12-01 06:00:00');
+
+-- New bus locations
+INSERT INTO `bus_location` (`location_id`, `bus_id`, `latitude`, `longitude`, `vi_tri_text`, `timestamp`, `is_latest`, `nearest_stop_id`) VALUES
+(3, 'XE006', 10.762622, 106.660172, 'Gần cổng trường School A', '2025-12-01 06:35:00', 1, 'STOP1'),
+(4, 'XE007', 10.763000, 106.661000, 'Đoạn trước Công viên', '2025-12-01 06:40:00', 1, 'STOP_T1');
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

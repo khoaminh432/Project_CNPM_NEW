@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../Assets/CSS/schedule.css";
 import Header from "./Header";
+import { getSchedules } from '../services/scheduleService';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCalendar } from "@fortawesome/free-solid-svg-icons";
 import { faLocationDot } from "@fortawesome/free-solid-svg-icons";
@@ -14,62 +15,76 @@ import imgStar1 from "../Assets/images/imgStar1.svg";
 export default function Schedule({ onNavigateToMainPage, onNavigate }) {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [schedules, setSchedules] = useState([]);
+  const [currentDriver, setCurrentDriver] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedStatuses, setSelectedStatuses] = useState(['Čhua bắt đầu', 'Đang thực hiện', 'Hoàn thành', 'Đã hủy']);
+  const [showAllSchedules, setShowAllSchedules] = useState(false);
 
-  // Mock data for frontend preview
-  const schedules = [
-    {
-      schedule_id: 1,
-      full_name: "Nguyễn Văn A",
-      route_name: "Tuyến 01 - Quận 1",
-      route_code: "T01",
-      planned_start: "07:00:00",
-      planned_end: "08:30:00",
-      total_students_expected: 25,
-      status: "scheduled",
-      actual_start_time: null
-    },
-    {
-      schedule_id: 2,
-      full_name: "Trần Thị B",
-      route_name: "Tuyến 02 - Quận 3",
-      route_code: "T02",
-      planned_start: "07:30:00",
-      planned_end: "09:00:00",
-      total_students_expected: 30,
-      status: "in_progress",
-      actual_start_time: "07:32:00",
-      actual_end_time: null,
-      actual_students: null
-    },
-    {
-      schedule_id: 3,
-      full_name: "Lê Văn C",
-      route_name: "Tuyến 03 - Quận 5",
-      route_code: "T03",
-      planned_start: "06:30:00",
-      planned_end: "08:00:00",
-      total_students_expected: 20,
-      status: "completed",
-      actual_start_time: "06:28:00",
-      actual_end_time: "07:55:00",
-      actual_students: 18
+  // Load data from database
+  useEffect(() => {
+    loadData();
+  }, [selectedDate, showAllSchedules]);
+
+  const loadData = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Get user info from localStorage
+      const userStr = localStorage.getItem('user');
+      if (!userStr) {
+        console.error('No user found');
+        setIsLoading(false);
+        return;
+      }
+
+      const user = JSON.parse(userStr);
+      
+      // Set current driver info
+      if (user.role === 'driver') {
+        setCurrentDriver({
+          full_name: user.name || 'Driver',
+          driver_code: user.driver_id || 'N/A',
+          rating: user.rating || '5.0',
+          profile_image_url: user.profile_image
+        });
+        
+        // Fetch schedules for this driver
+        const data = showAllSchedules 
+          ? await getSchedules(null, user.driver_id) 
+          : await getSchedules(selectedDate, user.driver_id);
+        
+        if (data.success) {
+          setSchedules(data.schedules);
+        } else {
+          console.error('Failed to load schedules:', data.message);
+          setSchedules([]);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading data:', error);
+      setSchedules([]);
+    } finally {
+      setIsLoading(false);
     }
-  ];
-
-  const currentDriver = {
-    full_name: "Nguyễn Văn Tài Xế",
-    driver_code: "TX001",
-    rating: "4.85",
-    profile_image_url: null
   };
 
   const getStatusClass = (status) => {
     switch (status) {
-      case 'scheduled': return 'sc-item-not-started';
-      case 'in_progress': return 'sc-item-in-progress';
-      case 'completed': return 'sc-item-completed';
-      case 'cancelled': return 'sc-item-cancelled';
-      default: return 'sc-item-not-started';
+      case 'Chưa bắt đầu': 
+      case 'scheduled': 
+        return 'sc-item-not-started';
+      case 'Đang thực hiện':
+      case 'in_progress': 
+        return 'sc-item-in-progress';
+      case 'Hoàn thành':
+      case 'completed': 
+        return 'sc-item-completed';
+      case 'Đã hủy':
+      case 'cancelled': 
+        return 'sc-item-cancelled';
+      default: 
+        return 'sc-item-not-started';
     }
   };
 
@@ -84,6 +99,41 @@ export default function Schedule({ onNavigateToMainPage, onNavigate }) {
     const dayName = days[date.getDay()];
     return `${dayName}, ${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
   };
+
+  const handleStatusToggle = (statusText) => {
+    setSelectedStatuses(prev => {
+      if (prev.includes(statusText)) {
+        // Remove status if already selected
+        return prev.filter(s => s !== statusText);
+      } else {
+        // Add status if not selected
+        return [...prev, statusText];
+      }
+    });
+  };
+
+  const normalizeStatus = (status) => {
+    switch (status) {
+      case 'scheduled':
+      case 'Chưa bắt đầu':
+        return 'Chưa bắt đầu';
+      case 'in_progress':
+      case 'Đang thực hiện':
+        return 'Đang thực hiện';
+      case 'completed':
+      case 'Hoàn thành':
+        return 'Hoàn thành';
+      case 'cancelled':
+      case 'Đã hủy':
+        return 'Đã hủy';
+      default:
+        return 'Chưa bắt đầu';
+    }
+  };
+
+  const filteredSchedules = schedules.filter(schedule => 
+    selectedStatuses.includes(normalizeStatus(schedule.status))
+  );
 
   const handleNavigate = (page) => {
     if (page === "mainpage" && onNavigateToMainPage) {
@@ -107,6 +157,36 @@ export default function Schedule({ onNavigateToMainPage, onNavigate }) {
     setShowDatePicker(false);
   };
 
+  const handleCancelTrip = async (e, scheduleId) => {
+    e.stopPropagation(); // Prevent navigation to list page
+    
+    if (!window.confirm('Bạn có chắc chắn muốn hủy chuyến này? Tất cả học sinh trong chuyến sẽ được đánh dấu là hủy chuyến.')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:5000/api/schedules/${scheduleId}/cancel`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const data = await response.json();
+
+      if (data.status === 'OK') {
+        // Reload schedules to reflect the change
+        loadData();
+        alert('Hủy chuyến thành công!');
+      } else {
+        alert('Không thể hủy chuyến: ' + data.message);
+      }
+    } catch (error) {
+      console.error('Error cancelling trip:', error);
+      alert('Không thể hủy chuyến. Vui lòng thử lại.');
+    }
+  };
+
   return (
     <div className="sc-root">
       {/* Header */}
@@ -124,53 +204,93 @@ export default function Schedule({ onNavigateToMainPage, onNavigate }) {
         <div className="sc-left-panel">
           {/* Driver Info Card */}
           <div className="sc-driver-card">
-            <div className="sc-date-section" onClick={handleDateClick}>
-              <FontAwesomeIcon icon={faCalendar} className="sc-calendar-icon" />
-              {showDatePicker ? (
-                <input
-                  type="date"
-                  value={selectedDate}
-                  onChange={handleDateChange}
-                  onBlur={handleDatePickerBlur}
-                  className="sc-date-picker"
-                  autoFocus
-                />
-              ) : (
-                <span className="sc-date-text">{formatDate(selectedDate)}</span>
-              )}
+            <div className="sc-date-section">
+              <div onClick={handleDateClick} style={{ display: 'flex', alignItems: 'center', flex: 1, cursor: 'pointer' }}>
+                <FontAwesomeIcon icon={faCalendar} className="sc-calendar-icon" />
+                {showDatePicker ? (
+                  <input
+                    type="date"
+                    value={selectedDate}
+                    onChange={handleDateChange}
+                    onBlur={handleDatePickerBlur}
+                    className="sc-date-picker"
+                    autoFocus
+                  />
+                ) : (
+                  <span className="sc-date-text">
+                    {showAllSchedules ? 'Tất cả lịch trình' : formatDate(selectedDate)}
+                  </span>
+                )}
+              </div>
+              <button
+                onClick={() => setShowAllSchedules(!showAllSchedules)}
+                style={{
+                  padding: '6px 12px',
+                  backgroundColor: showAllSchedules ? '#28a745' : '#007bff',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  marginLeft: '10px',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                {showAllSchedules ? 'Theo ngày' : 'Tất cả'}
+              </button>
             </div>
             <div className="sc-driver-info">
               <div className="sc-driver-avatar">
-                <img alt="driver avatar" src={currentDriver.profile_image_url || imgAvatar} />
+                <img alt="driver avatar" src={currentDriver?.profile_image_url || imgAvatar} />
               </div>
               <div className="sc-driver-details">
                 <div className="sc-driver-name-section">
-                  <h3 className="sc-driver-name">{currentDriver.full_name}</h3>
+                  <h3 className="sc-driver-name">{currentDriver?.full_name || 'Driver'}</h3>
                   <div className="sc-driver-rating">
                     <img src={imgStar1} alt="star" className="sc-star-icon" />
-                    <span className="sc-rating-text">{currentDriver.rating}</span>
+                    <span className="sc-rating-text">{currentDriver?.rating || '5.0'}</span>
                   </div>
                 </div>
-                <p className="sc-driver-id">{currentDriver.driver_code}</p>
+                <p className="sc-driver-id">{currentDriver?.driver_code || 'N/A'}</p>
               </div>
             </div>
           </div>
 
           {/* Status Legend */}
           <div className="sc-status-legend">
-            <h3 className="sc-legend-title">Trạng thái</h3>
+            <h3 className="sc-legend-title">Lọc trạng thái</h3>
             <div className="sc-legend-items">
-              <div className="sc-legend-item">
+              <div 
+                className={`sc-legend-item ${selectedStatuses.includes('Chưa bắt đầu') ? 'active' : 'inactive'}`}
+                onClick={() => handleStatusToggle('Chưa bắt đầu')}
+                style={{ cursor: 'pointer' }}
+              >
                 <div className="sc-legend-color sc-color-red"></div>
                 <span className="sc-legend-text">Chưa bắt đầu</span>
               </div>
-              <div className="sc-legend-item">
+              <div 
+                className={`sc-legend-item ${selectedStatuses.includes('Đang thực hiện') ? 'active' : 'inactive'}`}
+                onClick={() => handleStatusToggle('Đang thực hiện')}
+                style={{ cursor: 'pointer' }}
+              >
                 <div className="sc-legend-color sc-color-green"></div>
                 <span className="sc-legend-text">Đang thực hiện</span>
               </div>
-              <div className="sc-legend-item">
+              <div 
+                className={`sc-legend-item ${selectedStatuses.includes('Hoàn thành') ? 'active' : 'inactive'}`}
+                onClick={() => handleStatusToggle('Hoàn thành')}
+                style={{ cursor: 'pointer' }}
+              >
                 <div className="sc-legend-color sc-color-blue"></div>
                 <span className="sc-legend-text">Hoàn thành</span>
+              </div>
+              <div 
+                className={`sc-legend-item ${selectedStatuses.includes('Đã hủy') ? 'active' : 'inactive'}`}
+                onClick={() => handleStatusToggle('Đã hủy')}
+                style={{ cursor: 'pointer' }}
+              >
+                <div className="sc-legend-color sc-color-gray"></div>
+                <span className="sc-legend-text">Đã hủy</span>
               </div>
             </div>
           </div>
@@ -178,15 +298,32 @@ export default function Schedule({ onNavigateToMainPage, onNavigate }) {
 
         {/* Right Panel - Schedule Items */}
         <div className="sc-right-panel">
-          {schedules.map((schedule) => (
-            <div key={schedule.schedule_id} className={`sc-schedule-item ${getStatusClass(schedule.status)}`}>
+          {isLoading ? (
+            <div style={{ textAlign: 'center', padding: '40px', color: '#6c757d' }}>
+              <p>Đang tải lịch trình...</p>
+            </div>
+          ) : filteredSchedules.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '40px', color: '#6c757d' }}>
+              <p style={{ fontSize: '48px', margin: '0' }}>📅</p>
+              <p style={{ marginTop: '20px', fontSize: '16px' }}>
+                {schedules.length === 0 ? 'Không có lịch trình cho ngày này' : 'Không có lịch trình với trạng thái đã chọn'}
+              </p>
+            </div>
+          ) : (
+            filteredSchedules.map((schedule) => (
+            <div 
+              key={schedule.schedule_id} 
+              className={`sc-schedule-item ${getStatusClass(schedule.status)}`}
+              onClick={() => onNavigate && onNavigate('list', schedule.schedule_id)}
+              style={{ cursor: 'pointer' }}
+            >
                 <div className="sc-item-header">
                   <div className="sc-item-driver-info">
                     <div className="sc-item-avatar">
                       <img src={imgAvatar} alt="driver" />
                     </div>
                     <div className="sc-item-driver-details">
-                      <p className="sc-item-driver-name">{schedule.full_name}</p>
+                      <p className="sc-item-driver-name">{schedule.driver_name}</p>
                       <p className="sc-item-driver-route">{schedule.route_name}</p>
                     </div>
                   </div>
@@ -204,44 +341,65 @@ export default function Schedule({ onNavigateToMainPage, onNavigate }) {
                     </div>
                     <div className="sc-time-group">
                       <span className="sc-time-label">Số lượng học sinh:</span>
-                      <span className="sc-time-value">{schedule.total_students_expected}</span>
+                      <span className="sc-time-value">{schedule.actual_student_count || 0}</span>
                     </div>
                   </div>
                   <div className="sc-item-location">
                     <FontAwesomeIcon icon={faLocationDot} className="sc-location-icon" />
-                    <span className="sc-location-text">{schedule.route_code} - {schedule.route_name}</span>
+                    <span className="sc-location-text">{schedule.start_point} → {schedule.end_point}</span>
                   </div>
                   <div className="sc-item-footer">
-                    <span className="sc-item-status">
-                      {schedule.status === 'scheduled' && 'Chưa bắt đầu'}
-                      {schedule.status === 'in_progress' && 'Đang thực hiện'}
-                      {schedule.status === 'completed' && 'Hoàn thành'}
-                      {schedule.status === 'cancelled' && 'Đã hủy'}
-                    </span>
-                    {schedule.actual_start_time && (
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                      <span className="sc-item-status">
+                        {(schedule.status === 'scheduled' || schedule.status === 'Chưa bắt đầu') && 'Chưa bắt đầu'}
+                        {(schedule.status === 'in_progress' || schedule.status === 'Đang thực hiện') && 'Đang thực hiện'}
+                        {(schedule.status === 'completed' || schedule.status === 'Hoàn thành') && 'Hoàn thành'}
+                        {(schedule.status === 'cancelled' || schedule.status === 'Đã hủy') && 'Đã hủy'}
+                      </span>
+                      {(schedule.status === 'scheduled' || schedule.status === 'Chưa bắt đầu' || 
+                        schedule.status === 'in_progress' || schedule.status === 'Đang thực hiện') && (
+                        <button
+                          onClick={(e) => handleCancelTrip(e, schedule.schedule_id)}
+                          style={{
+                            padding: '6px 22px',
+                            backgroundColor: '#dc3545',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '6px',
+                            fontSize: '13px',
+                            cursor: 'pointer',
+                            marginRight: '10px'
+                          }}
+                        >
+                          Hủy chuyến
+                        </button>
+                      )}
+                    </div>
+                    {schedule.start_time && (schedule.status === 'in_progress' || schedule.status === 'Đang thực hiện' || schedule.status === 'completed' || schedule.status === 'Hoàn thành') && (
                       <div className="sc-actual-info">
                         <div className="sc-actual-row">
                           <span className="sc-actual-label">Bắt đầu thực tế:</span>
-                          <span className="sc-actual-value">{formatTime(schedule.actual_start_time)}</span>
+                          <span className="sc-actual-value">{formatTime(schedule.start_time)}</span>
                         </div>
-                        {schedule.actual_end_time && (
-                          <div className="sc-actual-row">
-                            <span className="sc-actual-label">Kết thúc thực tế:</span>
-                            <span className="sc-actual-value">{formatTime(schedule.actual_end_time)}</span>
-                          </div>
-                        )}
-                        {schedule.actual_students !== null && schedule.actual_students !== undefined && (
-                          <div className="sc-actual-row">
-                            <span className="sc-actual-label">Học sinh thực tế:</span>
-                            <span className="sc-actual-value">{schedule.actual_students}/{schedule.total_students_expected}</span>
-                          </div>
+                        {(schedule.status === 'completed' || schedule.status === 'Hoàn thành') && schedule.end_time && (
+                          <>
+                            <div className="sc-actual-row">
+                              <span className="sc-actual-label">Kết thúc thực tế:</span>
+                              <span className="sc-actual-value">{formatTime(schedule.end_time)}</span>
+                            </div>
+                            <div className="sc-actual-row">
+                              <span className="sc-actual-label">Học sinh thực tế:</span>
+                              <span className="sc-actual-value">{schedule.actual_dropped_count || 0}</span>
+                            </div>
+                          </>
                         )}
                       </div>
                     )}
                   </div>
                 </div>
               </div>
-            ))}
+            ))
+          )}
         </div>
       </div>
     </div>

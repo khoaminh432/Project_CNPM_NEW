@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "../Assets/CSS/header.css";
 
 export default function Header({ 
@@ -9,6 +10,7 @@ export default function Header({
   imgVector1 
 }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const navigate = useNavigate();
 
   const handleNavClick = (e, page) => {
     e.preventDefault();
@@ -19,6 +21,13 @@ export default function Header({
 
   const toggleDropdown = () => {
     setIsDropdownOpen(!isDropdownOpen);
+  };
+
+  const handleLogout = () => {
+    // Clear user data from localStorage
+    localStorage.removeItem('user');
+    // Redirect to login page
+    navigate('/login');
   };
 
   return (
@@ -78,7 +87,7 @@ export default function Header({
         {isDropdownOpen && (
           <div className="app-profile-dropdown-menu">
             <button className="app-dropdown-item">Đổi mật khẩu</button>
-            <button className="app-dropdown-item">Đăng xuất</button>
+            <button className="app-dropdown-item" onClick={handleLogout}>Đăng xuất</button>
           </div>
         )}
       </div>

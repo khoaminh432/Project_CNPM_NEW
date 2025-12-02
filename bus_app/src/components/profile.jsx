@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../Assets/CSS/profile.css";
 
 // Import local images
@@ -9,17 +9,68 @@ import imgCamera from "../Assets/images/camera.svg";
 
 export default function Profile({ onBackToMain }) {
   const [profileData, setProfileData] = useState({
-    driverId: "BUSDR-023",
-    licenseType: "Bằng B1",
+    driverId: "",
+    licenseType: "",
     name: "",
     phone: "",
     gender: "",
     email: "",
     birthDate: "",
     idCard: "",
+    address: "",
+    rating: "5.0",
   });
 
   const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [userRole, setUserRole] = useState("");
+
+  // Load user profile from API
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const userStr = localStorage.getItem('user');
+        if (!userStr) {
+          console.error('No user found in localStorage');
+          return;
+        }
+
+        const user = JSON.parse(userStr);
+        setUserRole(user.role);
+
+        const response = await fetch(
+          `http://localhost:5000/api/auth/profile?user_id=${user.user_id}&role=${user.role}`
+        );
+        const data = await response.json();
+
+        if (data.success) {
+          const profile = data.profile;
+          
+          // Map database fields to component state
+          setProfileData({
+            driverId: profile.driver_id || profile.parent_id || "",
+            licenseType: profile.license_class || "N/A",
+            name: profile.name || "",
+            phone: profile.phone || "",
+            gender: profile.gender || profile.sex || "",
+            email: profile.email || "",
+            birthDate: profile.dob ? profile.dob.split('T')[0] : "",
+            idCard: profile.id_card || "",
+            address: profile.address || "",
+            rating: profile.rating || "5.0",
+          });
+        } else {
+          console.error('Failed to load profile:', data.message);
+        }
+      } catch (error) {
+        console.error('Error loading profile:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadProfile();
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -29,10 +80,74 @@ export default function Profile({ onBackToMain }) {
     });
   };
 
-  const handleUpdate = () => {
-    console.log("Profile updated:", profileData);
-    setIsEditing(false);
-    // Handle update logic here
+  const handleUpdate = async () => {
+    try {
+      const userStr = localStorage.getItem('user');
+      const user = JSON.parse(userStr);
+
+      console.log('Updating profile with data:', {
+        user_id: user.user_id,
+        role: user.role,
+        name: profileData.name,
+        phone: profileData.phone,
+        email: profileData.email,
+        dob: profileData.birthDate,
+        gender: profileData.gender,
+        id_card: profileData.idCard,
+        address: profileData.address,
+      });
+
+      const response = await fetch('http://localhost:5000/api/auth/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: user.user_id,
+          role: user.role,
+          name: profileData.name,
+          phone: profileData.phone,
+          email: profileData.email,
+          dob: profileData.birthDate,
+          gender: profileData.gender,
+          id_card: profileData.idCard,
+          address: profileData.address,
+        })
+      });
+
+      const data = await response.json();
+      console.log('Server response:', data);
+      
+      if (data.success) {
+        alert('Cập nhật thông tin thành công!');
+        setIsEditing(false);
+        
+        // Reload profile data from server
+        const reloadResponse = await fetch(
+          `http://localhost:5000/api/auth/profile?user_id=${user.user_id}&role=${user.role}`
+        );
+        const reloadData = await reloadResponse.json();
+        
+        if (reloadData.success) {
+          const profile = reloadData.profile;
+          setProfileData({
+            driverId: profile.driver_id || profile.parent_id || "",
+            licenseType: profile.license_class || "N/A",
+            name: profile.name || "",
+            phone: profile.phone || "",
+            gender: profile.gender || profile.sex || "",
+            email: profile.email || "",
+            birthDate: profile.dob ? profile.dob.split('T')[0] : "",
+            idCard: profile.id_card || "",
+            address: profile.address || "",
+            rating: profile.rating || "5.0",
+          });
+        }
+      } else {
+        alert('Lỗi: ' + data.message);
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      alert('Lỗi khi cập nhật thông tin!');
+    }
   };
 
   return (
@@ -46,21 +161,30 @@ export default function Profile({ onBackToMain }) {
         </button>
       </div>
 
-      {/* Main Content */}
-      <div className="profile-container">
-        {/* Avatar Section */}
-        <div className="profile-avatar-section">
-        <div className="profile-avatar-wrapper">
-          <img src={imgAvatar} alt="avatar" className="profile-avatar" />
-          <div className="profile-avatar-badge">
-            <img src={imgCamera} alt="camera" className="profile-badge-icon" />
-          </div>
-        </div>          {/* Rating */}
-          <div className="profile-rating">
-            <img src={imgStar1} alt="star" className="profile-star-icon" />
-            <span className="profile-rating-text">5.00</span>
-          </div>
+      {/* Loading State */}
+      {isLoading ? (
+        <div style={{ textAlign: 'center', padding: '50px' }}>
+          <p>Đang tải thông tin...</p>
         </div>
+      ) : (
+        /* Main Content */
+        <div className="profile-container">
+          {/* Avatar Section */}
+          <div className="profile-avatar-section">
+            <div className="profile-avatar-wrapper">
+              <img src={imgAvatar} alt="avatar" className="profile-avatar" />
+              <div className="profile-avatar-badge">
+                <img src={imgCamera} alt="camera" className="profile-badge-icon" />
+              </div>
+            </div>
+            {/* Rating - Only show for drivers */}
+            {userRole === 'driver' && (
+              <div className="profile-rating">
+                <img src={imgStar1} alt="star" className="profile-star-icon" />
+                <span className="profile-rating-text">{profileData.rating}</span>
+              </div>
+            )}
+          </div>
 
         {/* Form Section */}
         <div className="profile-form">
@@ -126,9 +250,9 @@ export default function Profile({ onBackToMain }) {
                 className="profile-form-select"
               >
                 <option value="">Vui lòng chọn giới tính</option>
-                <option value="male">Nam</option>
-                <option value="female">Nữ</option>
-                <option value="other">Khác</option>
+                <option value="Nam">Nam</option>
+                <option value="Nữ">Nữ</option>
+                <option value="Khác">Khác</option>
               </select>
             </div>
           </div>
@@ -201,7 +325,8 @@ export default function Profile({ onBackToMain }) {
             )}
           </div>
         </div>
-      </div>
+        </div>
+      )}
     </div>
   );
 }

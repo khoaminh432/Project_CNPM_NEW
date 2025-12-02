@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import "../Assets/CSS/schedule.css";
 import Header from "./Header";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -12,65 +12,55 @@ import imgVector1 from "../Assets/images/imgVector1.svg";
 import imgStar1 from "../Assets/images/imgStar1.svg";
 
 export default function Schedule({ onNavigateToMainPage, onNavigate }) {
-  const [schedules, setSchedules] = useState([]);
-  const [currentDriver, setCurrentDriver] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [showDatePicker, setShowDatePicker] = useState(false);
 
-  // Fetch schedules data from API
-  useEffect(() => {
-    fetchSchedules();
-    fetchDriverInfo();
-  }, [selectedDate]);
-
-  const fetchSchedules = async () => {
-    try {
-      console.log('Fetching schedules for date:', selectedDate);
-      const response = await fetch(`http://localhost:5000/api/schedules?date=${selectedDate}`);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      console.log('Schedules response:', data);
-      
-      if (data.status === 'OK') {
-        setSchedules(data.data);
-      } else {
-        console.error('API returned error:', data.message);
-        setSchedules([]);
-      }
-    } catch (error) {
-      console.error('Error fetching schedules:', error);
-      setSchedules([]);
-    } finally {
-      setLoading(false);
+  // Mock data for frontend preview
+  const schedules = [
+    {
+      schedule_id: 1,
+      full_name: "Nguyễn Văn A",
+      route_name: "Tuyến 01 - Quận 1",
+      route_code: "T01",
+      planned_start: "07:00:00",
+      planned_end: "08:30:00",
+      total_students_expected: 25,
+      status: "scheduled",
+      actual_start_time: null
+    },
+    {
+      schedule_id: 2,
+      full_name: "Trần Thị B",
+      route_name: "Tuyến 02 - Quận 3",
+      route_code: "T02",
+      planned_start: "07:30:00",
+      planned_end: "09:00:00",
+      total_students_expected: 30,
+      status: "in_progress",
+      actual_start_time: "07:32:00",
+      actual_end_time: null,
+      actual_students: null
+    },
+    {
+      schedule_id: 3,
+      full_name: "Lê Văn C",
+      route_name: "Tuyến 03 - Quận 5",
+      route_code: "T03",
+      planned_start: "06:30:00",
+      planned_end: "08:00:00",
+      total_students_expected: 20,
+      status: "completed",
+      actual_start_time: "06:28:00",
+      actual_end_time: "07:55:00",
+      actual_students: 18
     }
-  };
+  ];
 
-  const fetchDriverInfo = async () => {
-    try {
-      // Assuming driver ID 1 for now (should come from auth context)
-      console.log('Fetching driver info...');
-      const response = await fetch('http://localhost:5000/api/drivers/1');
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      console.log('Driver response:', data);
-      
-      if (data.status === 'OK') {
-        setCurrentDriver(data.data);
-      } else {
-        console.error('API returned error:', data.message);
-      }
-    } catch (error) {
-      console.error('Error fetching driver info:', error);
-    }
+  const currentDriver = {
+    full_name: "Nguyễn Văn Tài Xế",
+    driver_code: "TX001",
+    rating: "4.85",
+    profile_image_url: null
   };
 
   const getStatusClass = (status) => {
@@ -111,7 +101,6 @@ export default function Schedule({ onNavigateToMainPage, onNavigate }) {
     const newDate = event.target.value;
     setSelectedDate(newDate);
     setShowDatePicker(false);
-    setLoading(true);
   };
 
   const handleDatePickerBlur = () => {
@@ -152,17 +141,17 @@ export default function Schedule({ onNavigateToMainPage, onNavigate }) {
             </div>
             <div className="sc-driver-info">
               <div className="sc-driver-avatar">
-                <img alt="driver avatar" src={currentDriver?.profile_image_url || imgAvatar} />
+                <img alt="driver avatar" src={currentDriver.profile_image_url || imgAvatar} />
               </div>
               <div className="sc-driver-details">
                 <div className="sc-driver-name-section">
-                  <h3 className="sc-driver-name">{currentDriver?.full_name || 'Loading...'}</h3>
+                  <h3 className="sc-driver-name">{currentDriver.full_name}</h3>
                   <div className="sc-driver-rating">
                     <img src={imgStar1} alt="star" className="sc-star-icon" />
-                    <span className="sc-rating-text">{currentDriver?.rating || '5.00'}</span>
+                    <span className="sc-rating-text">{currentDriver.rating}</span>
                   </div>
                 </div>
-                <p className="sc-driver-id">{currentDriver?.driver_code || 'Loading...'}</p>
+                <p className="sc-driver-id">{currentDriver.driver_code}</p>
               </div>
             </div>
           </div>
@@ -189,13 +178,8 @@ export default function Schedule({ onNavigateToMainPage, onNavigate }) {
 
         {/* Right Panel - Schedule Items */}
         <div className="sc-right-panel">
-          {loading ? (
-            <div className="sc-loading">Loading schedules...</div>
-          ) : schedules.length === 0 ? (
-            <div className="sc-no-data">No schedules found for this date</div>
-          ) : (
-            schedules.map((schedule) => (
-              <div key={schedule.schedule_id} className={`sc-schedule-item ${getStatusClass(schedule.status)}`}>
+          {schedules.map((schedule) => (
+            <div key={schedule.schedule_id} className={`sc-schedule-item ${getStatusClass(schedule.status)}`}>
                 <div className="sc-item-header">
                   <div className="sc-item-driver-info">
                     <div className="sc-item-avatar">
@@ -235,15 +219,29 @@ export default function Schedule({ onNavigateToMainPage, onNavigate }) {
                       {schedule.status === 'cancelled' && 'Đã hủy'}
                     </span>
                     {schedule.actual_start_time && (
-                      <span className="sc-actual-time">
-                        Thực tế: {formatTime(schedule.actual_start_time)}
-                      </span>
+                      <div className="sc-actual-info">
+                        <div className="sc-actual-row">
+                          <span className="sc-actual-label">Bắt đầu thực tế:</span>
+                          <span className="sc-actual-value">{formatTime(schedule.actual_start_time)}</span>
+                        </div>
+                        {schedule.actual_end_time && (
+                          <div className="sc-actual-row">
+                            <span className="sc-actual-label">Kết thúc thực tế:</span>
+                            <span className="sc-actual-value">{formatTime(schedule.actual_end_time)}</span>
+                          </div>
+                        )}
+                        {schedule.actual_students !== null && schedule.actual_students !== undefined && (
+                          <div className="sc-actual-row">
+                            <span className="sc-actual-label">Học sinh thực tế:</span>
+                            <span className="sc-actual-value">{schedule.actual_students}/{schedule.total_students_expected}</span>
+                          </div>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>
               </div>
-            ))
-          )}
+            ))}
         </div>
       </div>
     </div>

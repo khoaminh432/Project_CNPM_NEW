@@ -48,6 +48,7 @@ app.get('/api/db-test', async (req, res) => {
 });
 
 // API Routes
+app.use('/api/auth', require('./routes/auth'));
 app.use('/api/drivers', require('./routes/drivers'));
 app.use('/api/schedules', require('./routes/schedules'));
 app.use('/api/bus-locations', require('./routes/busLocations'));
@@ -55,7 +56,6 @@ app.use('/api/routes', require('./routes/routes'));
 app.use('/api/students', require('./routes/students'));
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/setup', require('./routes/setup'));
-// app.use('/api/auth', require('./routes/auth')); // To be implemented
 
 // 404 handler
 app.use((req, res) => {

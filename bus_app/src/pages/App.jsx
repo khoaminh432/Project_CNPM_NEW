@@ -1,5 +1,7 @@
 // App.jsx
 import React, { useState } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import Login from "../components/login";
 import DriverMap from "../components/drivermap";
 import MainPage from "../components/mainpage";
 import Schedule from "../components/schedule";
@@ -8,8 +10,14 @@ import Noti from "../components/noti";
 import Profile from "../components/profile";
 import '../Assets/CSS/index.css';
 
+// Protected Route Component
+function ProtectedRoute({ children }) {
+  const user = localStorage.getItem('user');
+  return user ? children : <Navigate to="/login" replace />;
+}
 
-function App() {
+// Main App Component
+function MainApp() {
   const [currentPage, setCurrentPage] = useState("mainpage");
   const [previousPage, setPreviousPage] = useState(null);
 
@@ -62,6 +70,25 @@ function App() {
         />
       )}
     </div>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route 
+          path="/home" 
+          element={
+            <ProtectedRoute>
+              <MainApp />
+            </ProtectedRoute>
+          } 
+        />
+        <Route path="/" element={<Navigate to="/login" replace />} />
+      </Routes>
+    </Router>
   );
 }
 

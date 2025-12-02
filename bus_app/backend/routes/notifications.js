@@ -3,6 +3,213 @@ const express = require('express');
 const router = express.Router();
 const db = require('../config/database');
 
+/**
+ * GET /api/notifications
+ * Get all notifications for a specific user based on their role
+ */
+router.get('/', async (req, res) => {
+  try {
+    const { user_id, role } = req.query;
+
+    if (!user_id || !role) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing user_id or role'
+      });
+    }
+
+    // Get notifications based on recipient_type matching user role
+    const [notifications] = await db.query(
+      `SELECT id, recipient_type, title, content, type, scheduled_time, 
+              is_recurring, status_sent, created_at, status
+       FROM notification 
+       WHERE recipient_type = ? OR recipient_type = 'system'
+       ORDER BY created_at DESC`,
+      [role]
+    );
+
+    res.json({
+      success: true,
+      notifications: notifications
+    });
+
+  } catch (error) {
+    console.error('Get notifications error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching notifications',
+      error: error.message
+    });
+  }
+});
+
+/**
+ * PUT /api/notifications/:id/read
+ * Mark a notification as read
+ */
+router.put('/:id/read', async (req, res) => {
+  try {
+    const notificationId = req.params.id;
+    const { user_id, driver_id } = req.body;
+
+    // Update notification table
+    await db.query(
+      `UPDATE notification 
+       SET status = 'read' 
+       WHERE id = ?`,
+      [notificationId]
+    );
+
+    // Update notification_recipients table if recipient info provided
+    if (driver_id) {
+      await db.query(
+        `UPDATE notification_recipients 
+         SET status = 'read' 
+         WHERE notification_id = ? AND recipient_id = ?`,
+        [notificationId, driver_id]
+      );
+    }
+
+    res.json({
+      success: true,
+      message: 'Notification marked as read'
+    });
+
+  } catch (error) {
+    console.error('Mark notification as read error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error updating notification',
+      error: error.message
+    });
+  }
+});
+
+/**
+ * PUT /api/notifications/mark-all-read
+ * Mark all notifications as read for a user
+ */
+router.put('/mark-all-read', async (req, res) => {
+  try {
+    const { role, driver_id } = req.body;
+
+    if (!role) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing role'
+      });
+    }
+
+    // Update notification table
+    await db.query(
+      `UPDATE notification 
+       SET status = 'read' 
+       WHERE (recipient_type = ? OR recipient_type = 'system') 
+       AND status = 'unread'`,
+      [role]
+    );
+
+    // Update notification_recipients table if driver_id provided
+    if (driver_id) {
+      await db.query(
+        `UPDATE notification_recipients 
+         SET status = 'read' 
+         WHERE recipient_id = ? AND status = 'unread'`,
+        [driver_id]
+      );
+    }
+
+    res.json({
+      success: true,
+      message: 'All notifications marked as read'
+    });
+
+  } catch (error) {
+    console.error('Mark all as read error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error updating notifications',
+      error: error.message
+    });
+  }
+});
+
+/**
+ * DELETE /api/notifications/:id
+ * Delete a notification
+ */
+router.delete('/:id', async (req, res) => {
+  try {
+    const notificationId = req.params.id;
+
+    await db.query(
+      'DELETE FROM notification WHERE id = ?',
+      [notificationId]
+    );
+
+    res.json({
+      success: true,
+      message: 'Notification deleted'
+    });
+
+  } catch (error) {
+    console.error('Delete notification error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error deleting notification',
+      error: error.message
+    });
+  }
+});
+
+/**
+ * DELETE /api/notifications/delete-read
+ * Delete all read notifications for a user
+ */
+router.delete('/delete-read/all', async (req, res) => {
+  try {
+    const { role, driver_id } = req.body;
+
+    if (!role) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing role'
+      });
+    }
+
+    // Delete read notifications for the user's role
+    await db.query(
+      `DELETE FROM notification 
+       WHERE (recipient_type = ? OR recipient_type = 'system') 
+       AND status = 'read'`,
+      [role]
+    );
+
+    // Delete from notification_recipients if driver_id provided
+    if (driver_id) {
+      await db.query(
+        `DELETE FROM notification_recipients 
+         WHERE recipient_id = ? AND status = 'read'`,
+        [driver_id]
+      );
+    }
+
+    res.json({
+      success: true,
+      message: 'All read notifications deleted'
+    });
+
+  } catch (error) {
+    console.error('Delete read notifications error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error deleting notifications',
+      error: error.message
+    });
+  }
+});
+
+// Legacy routes for backward compatibility
 // Get notifications for a user
 router.get('/user/:user_id', async (req, res) => {
   try {

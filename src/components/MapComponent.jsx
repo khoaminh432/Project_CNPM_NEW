@@ -90,6 +90,8 @@ const MapComponent = ({ positionCurrent = { start: null, end: null }, stops = []
         zoom: Math.max(prev.zoom, 15)
       }));
     }
+  }, [positionCurrent.start?.lat, positionCurrent.start?.lng]);
+  useEffect(()=>{
     if (isValidCoord(positionCurrent.end)) {
       setViewport(prev => ({
         ...prev,
@@ -98,9 +100,7 @@ const MapComponent = ({ positionCurrent = { start: null, end: null }, stops = []
         zoom: Math.max(prev.zoom, 15)
       }));
     }
-  }, [positionCurrent.start?.lat, positionCurrent.start?.lng, 
-      positionCurrent.end?.lat, positionCurrent.end?.lng]);
-
+  },[positionCurrent.start?.lat,positionCurrent.end?.lng])
   // Update viewport khi last stop thay đổi
   useEffect(() => {
     const lastStop = validStops[validStops.length - 1];
@@ -191,32 +191,9 @@ const MapComponent = ({ positionCurrent = { start: null, end: null }, stops = []
         width="100%"
         onClick={handleMapChoose}
       >
-        {/* Draw sequential routes between stops */}
-        {routePairs.map((pair, idx) => (
-          <DrawRoute
-            key={`route-${idx}`}
-            origin={pair.origin}
-            destination={pair.destination}
-            styleDrawView={{
-              lineColor: pair.color,
-              lineWidth: 4,
-              lineOpacity: 0.75
-            }}
-          />
-        ))}
+        
 
-        {/* Draw main start->end route */}
-        {isValidCoord(positionCurrent.start) && isValidCoord(positionCurrent.end) && (
-          <DrawRoute
-            origin={positionCurrent.start}
-            destination={positionCurrent.end}
-            styleDrawView={{
-              lineColor: '#111827',
-              lineWidth: 6,
-              lineOpacity: 0.9
-            }}
-          />
-        )}
+        
 
         {/* Stop markers */}
         {validStops.map((stop, idx) => (

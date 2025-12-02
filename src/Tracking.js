@@ -1,5 +1,4 @@
-
-import React, { useState, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import MapComponent from "./components/MapTracking/MapComponent";
 import "./Tracking.css";
 

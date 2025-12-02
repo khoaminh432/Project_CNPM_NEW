@@ -34,7 +34,7 @@
   display:flex;
   gap:8px;
   align-items:center;
-  flex-wrap:wrap;
+  
 }
 .search-input{
   flex:1 1 220px;
@@ -49,7 +49,7 @@
   box-shadow:0 4px 14px rgba(37,99,235,0.08);
   border-color:var(--accent);
 }
-.search-btn{
+.search-address-btn{
   background:var(--accent);
   color:#fff;
   border:none;
@@ -58,11 +58,13 @@
   cursor:pointer;
   font-weight:600;
 }
-.search-btn:hover{opacity:.95}
+.search-address-btn:hover{opacity:.95}
 
 /* main layout */
 .add-route-main{
   display:flex;
+  min-height:85%;
+  
   gap:18px;
   align-items:stretch;
   width: 100% ;
@@ -79,6 +81,7 @@
   background:var(--card);
   border:1px solid var(--border);
   border-radius:10px;
+  height: 100%;
   padding:14px;
   box-shadow:0 6px 18px rgba(12,13,16,0.03);
 }
@@ -101,7 +104,7 @@
   gap:8px;
   margin-top:8px;
    /* limit to 2 rows; overflow scroll when more items */
-  max-height: calc(var(--station-item-height) * 2 + 8px); /* + gap compensation */
+  max-height: calc(var(--station-item-height) * 2 + 60px); /* + gap compensation */
   overflow-y: auto;
   padding-right: 6px; /* space for scrollbar so content doesn't hide */
   box-sizing: border-box;
@@ -138,7 +141,7 @@
 /* preview */
 .route-preview{ margin-top:12px; padding:10px; border-radius:8px; background:linear-gradient(180deg, #fafbff, #fff); border:1px solid var(--border); }
 .route-name-preview{ font-weight:700; margin-top:6px; }
-.stations-preview{ max-height: 80px;     /* chiều cao tối đa trước khi cuộn */
+.stations-preview{ max-height: 150px;     /* chiều cao tối đa trước khi cuộn */
   overflow-y: auto;     /* bật scroll dọc */
   padding: 6px 10px;
   border: 1px solid #ddd;

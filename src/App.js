@@ -1,62 +1,84 @@
-import React from "react";
-import "leaflet/dist/leaflet.css"; // Cho Leaflet map từ main
-import "mapbox-gl/dist/mapbox-gl.css"; // Thêm cho mapbox nếu dùng Tracking (từ TCTDADMIN)
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-
-// Imports từ main và merge khoa
-import Login from "./Login";
-import BusLineDetail from "./BusLineDetail"; // Case: BusLine (L capital)
-import BusTracking from "./BusTracking"; // Từ khoa, kiểm tra tồn tại
-
-// Import từ qlxb-code
-import QuanLyXeBuyt from "./frontend/QuanLyXeBuyt"; // Case: QuanLyXeBuyt
-
-// Import từ TCTDADMIN
-import Tracking from "./Tracking"; // Nếu thiếu, fallback bên dưới
-
-// Fallback cho Home nếu thiếu (từ main)
-function Home() {
-  return (
-    <div style={{ padding: "20px", fontSize: "18px" }}>
-      <h1>Trang Chủ</h1>
-      <p>Chào mừng đến ứng dụng quản lý xe buýt! (Tạo Home.js để chi tiết hơn)</p>
-    </div>
-  );
-}
-
-// Fallback cho Tracking nếu thiếu (từ TCTDADMIN)
-function TrackingFallback() {
-  return (
-    <div style={{ padding: "20px" }}>
-      <h1>Tracking Bus</h1>
-      <p>Component Tracking đang được phát triển. Sử dụng mapbox/leaflet để theo dõi vị trí xe buýt.</p>
-    </div>
-  );
-}
+import React, { useState } from "react";
+import "./App.css";
+import Info from "./Info";
+import Tracking from "./Tracking";
+import MapComponent from "./components/MapComponent";
+import StudentManagementPage from "./pages/maincontent/Student_management/StudentManagementPage";
+import RouteManagementPage from "./pages/maincontent/Route_management/RouteManagementPage";
 
 function App() {
+
+  const [showModal, setShowModal] = useState(false);
+  const [modalTitle, setModalTitle] = useState("");
+  const [modalValue, setModalValue] = useState("");
+  const [activePage, setActivePage] = useState("TRANG CHỦ");
+
+  const handleCardClick = (title, value) => {
+    setModalTitle(title);
+    setModalValue(value);
+    setShowModal(true);
+  };
+
   return (
-    <Router>
-      <div className="App min-h-screen bg-gray-100"> {/* Thêm style Tailwind nếu có */}
-        <Routes>
-          {/* Routes cơ bản từ main */}
-          <Route path="/busline-detail" element={<BusLineDetail />} />
-          <Route path="/" element={<Login />} />
-          <Route path="/home" element={<Home />} />
-          
-          <Route path="/bus-tracking" element={<BusTracking />} />
-
-          {/* Route từ qlxb-code */}
-          <Route path="/quanly-xebuyt" element={<QuanLyXeBuyt />} />
-
-          {/* Route từ TCTDADMIN */}
-          <Route path="/tracking" element={Tracking ? <Tracking /> : <TrackingFallback />} />
-
-          {/* Route fallback 404 */}
-          <Route path="*" element={<div>404 - Trang không tồn tại</div>} />
-        </Routes>
+    <div className="container">
+      {/* Sidebar */}
+      <div className="sidebar">
+        <h2>ADMIN</h2>
+        <ul>
+          <li onClick={() => setActivePage("TRANG CHỦ")}>Trang chủ</li>
+          <li onClick={() => setActivePage("THEO DÕI XE BUÝT")}>Theo dõi xe buýt</li>
+          <li onClick={() => setActivePage("QUẢN LÝ HỌC SINH")}>Quản lý học sinh</li>
+          <li onClick={() => setActivePage("QUẢN LÝ TUYẾN XE")}>Quản lý tuyến xe</li>
+        </ul>
       </div>
-    </Router>
+
+      <div className="main">
+        <div className="header">
+          <h1>{activePage.toUpperCase()}</h1>
+          <div className="profile">
+            <button className="avatar"></button>
+            <span>Profile ▼</span>
+          </div>
+        </div>
+
+        {activePage === "TRANG CHỦ" && (
+          <>
+            <div className="stats">
+              <div className="card" onClick={() => handleCardClick("Xe Buýt", 35)}>
+                Xe Buýt <br /> <b>35</b>
+              </div>
+              <div className="card" onClick={() => handleCardClick("Tài Xế", 19)}>
+                Tài Xế <br /> <b>19</b>
+              </div>
+              <div className="card" onClick={() => handleCardClick("Học Sinh", 4)}>
+                Học Sinh <br /> <b>4</b>
+              </div>
+              <div className="card" onClick={() => handleCardClick("Tuyến Đường", 12)}>
+                Tuyến Đường <br /> <b>12</b>
+              </div>
+            </div>
+
+            {/* Bảng thông tin chi tiết */}
+            <Info
+              show={showModal}
+              onClose={() => setShowModal(false)}
+              title={modalTitle}
+              value={modalValue}
+            />
+
+            {/* Bản đồ */}
+            <div className="map">
+              map component here
+            </div>
+          </>
+        )}
+
+        {/* component Tracking */}
+        {activePage === "THEO DÕI XE BUÝT" && <Tracking />}
+        {activePage === "QUẢN LÝ HỌC SINH" && <StudentManagementPage />}
+        {activePage === "QUẢN LÝ TUYẾN XE" && <RouteManagementPage/>}
+      </div>
+    </div>
   );
 }
 

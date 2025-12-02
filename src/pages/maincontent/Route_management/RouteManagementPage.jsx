@@ -118,7 +118,7 @@ function RouteManagementPage() {
             <h1 className={StyleMain.setTitle_h1}><i className="fas fa-route" /> Quản Lý Tuyến Xe</h1>
             <p className="description">Quản lý và theo dõi các tuyến xe hiện có một cách hiệu quả và trực quan</p>
           </div>
-          <div><button style={{ color: "white" }} onClick={()=>setShowAddRoute(true)}>➕ Thêm Tuyến xe</button></div>
+          <div><button style={{ color: "white" }} onClick={()=>{setShowAddRoute(true);console.log("hello"+process.env.REACT_APP_GOONG_API_KEY)}}>➕ Thêm Tuyến xe</button></div>
         </div>
       </header>
 

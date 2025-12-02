@@ -98,7 +98,7 @@
 }
 .routes-table tbody {
   display: block;
-  max-height: calc(4 * 58px + 8px); /* 4 rows × ~56px + gap */
+  max-height: calc(7 * 58px + 8px); /* 4 rows × ~56px + gap */
   overflow-y: auto;
 }
 

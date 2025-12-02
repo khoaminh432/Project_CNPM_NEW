@@ -102,7 +102,7 @@ function AddRoute({onclose=()=>{}}) {
         <form className="search-row" onSubmit={(e) => e.preventDefault()}>
           <SearchSuggestAddress placeholderinput="nhập địa chỉ bắt đầu" className="search-input"  onAddressSelect={handleStartLocation}/>
           <SearchSuggestAddress placeholderinput="nhập địa chỉ kết thúc" className="search-input" onAddressSelect={handleEndLocation}/>
-          <button className="search-btn" type="button" onClick={() => console.log(positions)}>
+          <button className="search-address-btn" type="button" onClick={() => console.log(positions)}>
             Tìm tuyến
           </button>
         </form>
@@ -111,10 +111,9 @@ function AddRoute({onclose=()=>{}}) {
       <div className="add-route-main">
         <section className="left-card">
           <form className="form-card" onSubmit={handleSave} style={{width:"auto"}}>
-            <h2 className="section-title">Tạo Tuyến xe mới 
-              <span style={{width:"100%",border:"3px red solid"}}>
+            <h2 className="section-title">Tạo Tuyến xe mới</h2>
             <button>+Thêm trạm</button>
-            <button>🗑️Xóa trạm</button></span></h2>
+            <button>🗑️Xóa trạm</button>
               <input
                 className="text-input"
                 type="text"

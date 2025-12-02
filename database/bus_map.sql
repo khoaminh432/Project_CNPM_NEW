@@ -2,10 +2,10 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Máy chủ: 127.0.0.1
--- Thời gian đã tạo: Th10 22, 2025 lúc 10:17 AM
--- Phiên bản máy phục vụ: 10.4.32-MariaDB
--- Phiên bản PHP: 8.2.12
+-- Host: 127.0.0.1
+-- Generation Time: Nov 29, 2025 at 06:38 PM
+-- Server version: 10.4.32-MariaDB
+-- PHP Version: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,527 +18,568 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Cơ sở dữ liệu: `bus_map`
+-- Database: `bus_map_merged`
 --
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `bus`
+-- Table structure for table `bus`
 --
 
 CREATE TABLE `bus` (
-  `bus_id` varchar(255) NOT NULL,
-  `license_plate` varchar(255) DEFAULT NULL,
+  `bus_id` varchar(20) NOT NULL,
+  `license_plate` varchar(50) DEFAULT NULL,
   `capacity` int(11) DEFAULT NULL,
-  `default_route_id` varchar(255) DEFAULT NULL,
-  `status` enum('Đang hoạt động','Đang bảo trì','Ngưng hoạt động','') NOT NULL DEFAULT 'Ngưng hoạt động',
+  `default_route_id` varchar(20) DEFAULT NULL,
+  `status` varchar(100) DEFAULT 'Ngưng hoạt động',
   `departure_status` varchar(100) DEFAULT 'Chưa xuất phát',
   `registry` date DEFAULT NULL,
-  `driver_id` varchar(255) DEFAULT NULL
+  PRIMARY KEY (`bus_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `bus`
+-- Dumping data for table `bus`
 --
 
-INSERT INTO `bus` (`bus_id`, `license_plate`, `capacity`, `default_route_id`, `status`, `departure_status`, `registry`, `driver_id`) VALUES
-('XE001', '59B-32167', 16, 'R01', 'Đang hoạt động', 'Đã xuất phát', '2027-11-10', NULL),
-('XE002', '59B-98012', 16, 'R02', 'Đang hoạt động', 'Đã xuất phát', '2026-11-03', NULL),
-('XE003', '59A-15602', 16, 'R03', 'Đang hoạt động', 'Đã xuất phát', '2029-11-15', NULL),
-('XE004', '59C-48822', 16, NULL, 'Ngưng hoạt động', 'Chưa xuất phát', '2025-11-19', NULL),
-('XE005', '59A-32512', 16, 'R03', 'Đang bảo trì', 'Chưa xuất phát', '2025-11-22', NULL);
+INSERT INTO `bus` (`bus_id`, `license_plate`, `capacity`, `default_route_id`, `status`, `departure_status`, `registry`) VALUES
+('XB1', '59B-99999', 25, NULL, 'Đang hoạt động', 'Chưa xuất phát', NULL),
+('XB2', '59A-12345', 20, NULL, 'Đang hoạt động', 'Chưa xuất phát', NULL),
+('XB3', '59C-88888', 10, NULL, 'Ngưng hoạt động', 'Chưa xuất phát', NULL),
+('XE001', '59B-32167', 16, 'R01', 'Đang hoạt động', 'Đã xuất phát', '2027-11-10'),
+('XE002', '59B-98012', 16, 'R02', 'Đang hoạt động', 'Chưa xuất phát', '2026-11-03'),
+('XE003', '59-15602', 16, 'R03', 'Đang bảo trì', 'Đã kết thúc', '2029-11-15'),
+('XE004', '59C-48822', 16, NULL, 'Ngưng hoạt động', 'Chưa xuất phát', '2025-11-19'),
+('XE005', '59A-32512', NULL, 'R01', 'Đang hoạt động', 'Đã xuất phát', '2025-11-22');
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `bus_location`
+-- Table structure for table `bus_location`
 --
 
 CREATE TABLE `bus_location` (
-  `location_id` int(11) NOT NULL,
-  `bus_id` varchar(255) DEFAULT NULL,
+  `location_id` int(11) NOT NULL AUTO_INCREMENT,
+  `bus_id` varchar(20) DEFAULT NULL,
   `latitude` decimal(10,8) DEFAULT NULL,
   `longitude` decimal(11,8) DEFAULT NULL,
+  `vi_tri_text` varchar(255) DEFAULT NULL,
   `timestamp` datetime DEFAULT NULL,
-  `nearest_stop_id` varchar(255) DEFAULT NULL
+  `is_latest` tinyint(1) DEFAULT 0,
+  `nearest_stop_id` varchar(20) DEFAULT NULL,
+  PRIMARY KEY (`location_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `bus_location`
+-- Dumping data for table `bus_location`
 --
 
-INSERT INTO `bus_location` (`location_id`, `bus_id`, `latitude`, `longitude`, `timestamp`, `nearest_stop_id`) VALUES
-(1, 'XE001', 10.77362000, 106.68952100, '2025-11-22 16:15:34', NULL),
-(2, 'XE002', 10.77771600, 106.69133200, '2025-11-22 16:15:34', NULL),
-(3, 'XE003', 10.72850700, 106.62359300, '2025-11-22 16:15:34', NULL);
+INSERT INTO `bus_location` (`location_id`, `bus_id`, `latitude`, `longitude`, `vi_tri_text`, `timestamp`, `is_latest`, `nearest_stop_id`) VALUES
+(1, 'XB1', NULL, NULL, 'Gần cổng trường THPT A', '2025-11-14 07:00:00', 1, NULL),
+(2, 'XB2', NULL, NULL, 'Ngã tư Nguyễn Trãi - Lê Lợi', '2025-11-14 07:10:00', 1, NULL);
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `bus_schedule`
+-- Table structure for table `bus_schedule`
 --
 
 CREATE TABLE `bus_schedule` (
-  `schedule_id` varchar(255) NOT NULL,
-  `route_id` varchar(255) DEFAULT NULL,
-  `bus_id` varchar(255) DEFAULT NULL,
-  `driver_id` varchar(255) DEFAULT NULL,
+  `schedule_id` varchar(50) NOT NULL,
+  `route_id` varchar(20) DEFAULT NULL,
+  `bus_id` varchar(20) DEFAULT NULL,
+  `driver_id` varchar(20) DEFAULT NULL,
   `schedule_date` date DEFAULT NULL,
   `start_time` time DEFAULT NULL,
-  `end_time` time DEFAULT NULL
+  `end_time` time DEFAULT NULL,
+  PRIMARY KEY (`schedule_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `bus_schedule`
+-- Dumping data for table `bus_schedule`
 --
 
 INSERT INTO `bus_schedule` (`schedule_id`, `route_id`, `bus_id`, `driver_id`, `schedule_date`, `start_time`, `end_time`) VALUES
-('XE001-01-11-2025', 'R01', 'XE001', 'TX003', '2025-11-01', '06:00:00', '07:15:00'),
-('XE001-03-11-2025', 'R01', 'XE001', 'TX001', '2025-11-03', '06:00:00', '07:15:00'),
-('XE001-04-11-2025', 'R01', 'XE001', 'TX002', '2025-11-04', '06:00:00', '07:15:00'),
-('XE001-05-11-2025', 'R01', 'XE001', 'TX001', '2025-11-05', '06:00:00', '07:15:00'),
-('XE001-06-11-2025', 'R01', 'XE001', 'TX004', '2025-11-06', '06:00:00', '07:15:00'),
-('XE001-07-11-2025', 'R01', 'XE001', 'TX004', '2025-11-07', '06:00:00', '07:15:00'),
-('XE001-08-11-2025', 'R01', 'XE001', 'TX003', '2025-11-08', '06:00:00', '07:15:00'),
-('XE001-10-11-2025', 'R01', 'XE001', 'TX001', '2025-11-10', '06:00:00', '07:00:00'),
-('XE001-2025-11-10', 'R01', 'XE001', 'TX001', '2025-11-10', '06:00:00', '12:00:00'),
-('XE001-2025-11-12', 'R01', 'XE001', 'TX002', '2025-11-12', '06:00:00', '12:00:00'),
-('XE001-2025-11-17', 'R01', 'XE001', 'TX002', '2025-11-17', '06:00:00', '12:00:00'),
-('XE001-2025-11-18', 'R01', 'XE001', 'TX004', '2025-11-18', '06:00:00', '12:00:00'),
-('XE001-2025-11-19', 'R01', 'XE001', 'TX004', '2025-11-19', '06:00:00', '12:00:00'),
-('XE001-2025-11-20', 'R01', 'XE001', 'TX003', '2025-11-20', '06:00:00', '12:00:00'),
-('XE001-2025-11-21', 'R01', 'XE001', 'TX002', '2025-11-21', '06:00:00', '12:00:00'),
-('XE001-2025-11-22', 'R01', 'XE001', 'TX001', '2025-11-22', '06:00:00', '12:00:00'),
-('XE001-2025-11-23', 'R01', 'XE001', 'TX001', '2025-11-23', '06:00:00', '12:00:00'),
-('XE001-2025-11-24', 'R01', 'XE001', 'TX002', '2025-11-24', '06:00:00', '12:00:00'),
-('XE001-2025-11-25', 'R01', 'XE001', 'TX004', '2025-11-25', '06:00:00', '12:00:00'),
-('XE001-2025-11-26', 'R01', 'XE001', 'TX001', '2025-11-26', '06:00:00', '12:00:00'),
-('XE001-2025-11-27', 'R01', 'XE001', 'TX003', '2025-11-27', '06:00:00', '12:00:00'),
-('XE001-2025-11-28', 'R01', 'XE001', 'TX002', '2025-11-28', '06:00:00', '12:00:00'),
-('XE001-2025-11-29', 'R01', 'XE001', 'TX005', '2025-11-29', '07:00:00', '11:00:00'),
-('XE001-2025-12-01', 'R01', 'XE001', 'TX001', '2025-12-01', '06:00:00', '12:00:00'),
-('XE001-2025-12-02', 'R01', 'XE001', 'TX004', '2025-12-02', '06:00:00', '12:00:00'),
-('XE001-2025-12-03', 'R01', 'XE001', 'TX002', '2025-12-03', '06:00:00', '12:00:00'),
-('XE001-2025-12-04', 'R01', 'XE001', 'TX003', '2025-12-04', '06:00:00', '12:00:00'),
-('XE001-2025-12-05', 'R01', 'XE001', 'TX001', '2025-12-05', '06:00:00', '12:00:00'),
-('XE001-2025-12-08', 'R01', 'XE001', 'TX004', '2025-12-08', '06:00:00', '12:00:00'),
-('XE001-2025-12-10', 'R01', 'XE001', 'TX002', '2025-12-10', '06:00:00', '12:00:00'),
-('XE001-2025-12-15', 'R01', 'XE001', 'TX005', '2025-12-15', '06:00:00', '12:00:00'),
-('XE001-27-10-2025', 'R01', 'XE001', 'TX001', '2025-10-27', '06:00:00', '07:15:00'),
-('XE001-28-10-2025', 'R01', 'XE001', 'TX002', '2025-10-28', '06:00:00', '07:15:00'),
-('XE001-29-10-2025', 'R01', 'XE001', 'TX001', '2025-10-29', '06:00:00', '07:15:00'),
-('XE001-30-10-2025', 'R01', 'XE001', 'TX004', '2025-10-30', '06:00:00', '07:15:00'),
-('XE001-31-10-2025', 'R01', 'XE001', 'TX004', '2025-10-31', '06:00:00', '07:15:00'),
-('XE002-01-11-2025', 'R02', 'XE002', 'TX001', '2025-11-01', '06:00:00', '07:15:00'),
-('XE002-03-11-2025', 'R02', 'XE002', 'TX002', '2025-11-03', '06:00:00', '07:15:00'),
-('XE002-04-11-2025', 'R02', 'XE002', 'TX003', '2025-11-04', '06:00:00', '07:15:00'),
-('XE002-05-11-2025', 'R02', 'XE002', 'TX002', '2025-11-05', '06:00:00', '07:15:00'),
-('XE002-06-11-2025', 'R02', 'XE002', 'TX002', '2025-11-06', '06:00:00', '07:15:00'),
-('XE002-07-11-2025', 'R02', 'XE002', 'TX001', '2025-11-07', '06:00:00', '07:15:00'),
-('XE002-08-11-2025', 'R02', 'XE002', 'TX001', '2025-11-08', '06:00:00', '07:15:00'),
-('XE002-11-11-2025', 'R02', 'XE002', 'TX002', '2025-11-11', '06:00:00', '07:00:00'),
-('XE002-2025-11-11', 'R02', 'XE002', 'TX002', '2025-11-11', '06:00:00', '12:00:00'),
-('XE002-2025-11-16', 'R02', 'XE002', 'TX002', '2025-11-16', '06:00:00', '07:00:00'),
-('XE002-2025-11-17', 'R02', 'XE002', 'TX005', '2025-11-17', '06:00:00', '12:00:00'),
-('XE002-2025-11-18', 'R02', 'XE002', 'TX001', '2025-11-18', '06:00:00', '12:00:00'),
-('XE002-2025-11-19', 'R02', 'XE002', 'TX005', '2025-11-19', '06:00:00', '12:00:00'),
-('XE002-2025-11-20', 'R02', 'XE002', 'TX004', '2025-11-20', '06:00:00', '12:00:00'),
-('XE002-2025-11-21', 'R02', 'XE002', 'TX003', '2025-11-21', '06:00:00', '12:00:00'),
-('XE002-2025-11-22', 'R02', 'XE002', 'TX003', '2025-11-22', '06:00:00', '12:00:00'),
-('XE002-2025-11-23', 'R02', 'XE002', NULL, '2025-11-23', '06:00:00', '12:00:00'),
-('XE002-2025-11-24', 'R02', 'XE002', 'TX003', '2025-11-24', '06:00:00', '12:00:00'),
-('XE002-2025-11-25', 'R02', 'XE002', 'TX005', '2025-11-25', '06:00:00', '12:00:00'),
-('XE002-2025-11-26', 'R02', 'XE002', 'TX002', '2025-11-26', '06:00:00', '12:00:00'),
-('XE002-2025-11-27', 'R02', 'XE002', 'TX004', '2025-11-27', '06:00:00', '12:00:00'),
-('XE002-2025-11-28', 'R02', 'XE002', 'TX001', '2025-11-28', '06:00:00', '12:00:00'),
-('XE002-2025-11-29', 'R02', 'XE002', 'TX003', '2025-11-29', '07:00:00', '11:00:00'),
-('XE002-2025-12-01', 'R02', 'XE002', 'TX002', '2025-12-01', '06:00:00', '12:00:00'),
-('XE002-2025-12-02', 'R02', 'XE002', 'TX005', '2025-12-02', '06:00:00', '12:00:00'),
-('XE002-2025-12-03', 'R02', 'XE002', 'TX001', '2025-12-03', '06:00:00', '12:00:00'),
-('XE002-2025-12-04', 'R02', 'XE002', 'TX002', '2025-12-04', '06:00:00', '12:00:00'),
-('XE002-2025-12-05', 'R02', 'XE002', 'TX003', '2025-12-05', '06:00:00', '12:00:00'),
-('XE002-2025-12-08', 'R02', 'XE002', 'TX005', '2025-12-08', '06:00:00', '12:00:00'),
-('XE002-2025-12-10', 'R02', 'XE002', 'TX003', '2025-12-10', '06:00:00', '12:00:00'),
-('XE002-2025-12-15', 'R02', 'XE002', 'TX001', '2025-12-15', '06:00:00', '12:00:00'),
-('XE002-27-10-2025', 'R02', 'XE002', 'TX002', '2025-10-27', '06:00:00', '07:15:00'),
-('XE002-28-10-2025', 'R02', 'XE002', 'TX003', '2025-10-28', '06:00:00', '07:15:00'),
-('XE002-29-10-2025', 'R02', 'XE002', 'TX002', '2025-10-29', '06:00:00', '07:15:00'),
-('XE002-30-10-2025', 'R02', 'XE002', 'TX002', '2025-10-30', '06:00:00', '07:15:00'),
-('XE002-31-10-2025', 'R02', 'XE002', 'TX001', '2025-10-31', '06:00:00', '07:15:00'),
-('XE003-01-11-2025', 'R03', 'XE003', 'TX003', '2025-11-01', '06:00:00', '07:15:00'),
-('XE003-03-11-2025', 'R03', 'XE003', 'TX001', '2025-11-03', '06:00:00', '07:15:00'),
-('XE003-04-11-2025', 'R03', 'XE003', 'TX004', '2025-11-04', '06:00:00', '07:15:00'),
-('XE003-05-11-2025', 'R03', 'XE003', 'TX003', '2025-11-05', '06:00:00', '07:15:00'),
-('XE003-06-11-2025', 'R03', 'XE003', 'TX003', '2025-11-06', '06:00:00', '07:15:00'),
-('XE003-07-11-2025', 'R03', 'XE003', 'TX002', '2025-11-07', '06:00:00', '07:15:00'),
-('XE003-08-11-2025', 'R03', 'XE003', 'TX003', '2025-11-08', '06:00:00', '07:15:00'),
-('XE003-10-11-2025', 'R03', 'XE003', 'TX002', '2025-11-10', '06:00:00', '07:00:00'),
-('XE003-11-11-2025', 'R03', 'XE003', 'TX003', '2025-11-11', '06:00:00', '12:00:00'),
-('XE003-2025-11-10', 'R03', 'XE003', 'TX002', '2025-11-10', '06:00:00', '12:00:00'),
-('XE003-2025-11-11', 'R03', 'XE003', 'TX003', '2025-11-11', '06:00:00', '12:00:00'),
-('XE003-2025-11-17', 'R03', 'XE003', 'TX003', '2025-11-17', '06:00:00', '12:00:00'),
-('XE003-2025-11-18', 'R03', 'XE003', 'TX002', '2025-11-18', '06:00:00', '12:00:00'),
-('XE003-2025-11-19', 'R03', 'XE003', 'TX001', '2025-11-19', '06:00:00', '12:00:00'),
-('XE003-2025-11-20', 'R03', 'XE003', 'TX005', '2025-11-20', '06:00:00', '12:00:00'),
-('XE003-2025-11-21', 'R03', 'XE003', 'TX004', '2025-11-21', '06:00:00', '12:00:00'),
-('XE003-2025-11-22', 'R03', 'XE003', NULL, '2025-11-22', '06:00:00', '12:00:00'),
-('XE003-2025-11-23', 'R03', 'XE003', NULL, '2025-11-23', '06:00:00', '12:00:00'),
-('XE003-2025-11-24', 'R03', 'XE003', 'TX004', '2025-11-24', '06:00:00', '12:00:00'),
-('XE003-2025-11-25', 'R03', 'XE003', 'TX001', '2025-11-25', '06:00:00', '12:00:00'),
-('XE003-2025-11-26', 'R03', 'XE003', 'TX003', '2025-11-26', '06:00:00', '12:00:00'),
-('XE003-2025-11-27', 'R03', 'XE003', 'TX005', '2025-11-27', '06:00:00', '12:00:00'),
-('XE003-2025-11-28', 'R03', 'XE003', 'TX002', '2025-11-28', '06:00:00', '12:00:00'),
-('XE003-2025-11-29', 'R03', 'XE003', 'TX004', '2025-11-29', '07:00:00', '11:00:00'),
-('XE003-2025-12-01', 'R03', 'XE003', 'TX003', '2025-12-01', '06:00:00', '12:00:00'),
-('XE003-2025-12-02', 'R03', 'XE003', 'TX001', '2025-12-02', '06:00:00', '12:00:00'),
-('XE003-2025-12-03', 'R03', 'XE003', 'TX004', '2025-12-03', '06:00:00', '12:00:00'),
-('XE003-2025-12-04', 'R03', 'XE003', 'TX005', '2025-12-04', '06:00:00', '12:00:00'),
-('XE003-2025-12-05', 'R03', 'XE003', 'TX002', '2025-12-05', '06:00:00', '12:00:00'),
-('XE003-2025-12-08', 'R03', 'XE003', 'TX001', '2025-12-08', '06:00:00', '12:00:00'),
-('XE003-2025-12-10', 'R03', 'XE003', 'TX004', '2025-12-10', '06:00:00', '12:00:00'),
-('XE003-2025-12-15', 'R03', 'XE003', 'TX002', '2025-12-15', '06:00:00', '12:00:00'),
-('XE003-27-10-2025', 'R03', 'XE003', 'TX001', '2025-10-27', '06:00:00', '07:15:00'),
-('XE003-28-10-2025', 'R03', 'XE003', 'TX004', '2025-10-28', '06:00:00', '07:15:00'),
-('XE003-29-10-2025', 'R03', 'XE003', 'TX003', '2025-10-29', '06:00:00', '07:15:00'),
-('XE003-30-10-2025', 'R03', 'XE003', 'TX003', '2025-10-30', '06:00:00', '07:15:00'),
-('XE003-31-10-2025', 'R03', 'XE003', 'TX002', '2025-10-31', '06:00:00', '07:15:00'),
-('XE004-2025-11-17', NULL, 'XE004', 'TX001', '2025-11-17', '06:00:00', '12:00:00'),
-('XE004-2025-11-18', NULL, 'XE004', 'TX003', '2025-11-18', '06:00:00', '12:00:00'),
-('XE004-2025-11-19', NULL, 'XE004', 'TX003', '2025-11-19', '06:00:00', '12:00:00'),
-('XE004-2025-11-20', NULL, 'XE004', 'TX002', '2025-11-20', '06:00:00', '12:00:00'),
-('XE004-2025-11-21', NULL, 'XE004', 'TX001', '2025-11-21', '06:00:00', '12:00:00'),
-('XE004-2025-11-22', 'R03', 'XE003', 'TX004', '2025-11-22', '06:00:00', '12:00:00'),
-('XE004-2025-11-23', NULL, 'XE004', 'TX005', '2025-11-23', '06:00:00', '12:00:00');
+('LT1', 'TD1', 'XB1', 'TX001', '2025-11-28', '06:15:00', '07:45:00'),
+('LT2', 'TD2', 'XB2', 'TX002', '2025-11-27', '06:45:00', '08:15:00'),
+('XE001-01-11-2025', 'R01', 'XE001', 'TX003', '2025-11-01', '06:00:00', '07:15:00');
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `bus_stop`
+-- Table structure for table `bus_status_history`
+--
+
+CREATE TABLE `bus_status_history` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `bus_id` varchar(20) NOT NULL,
+  `status` enum('running','stopped','inactive') NOT NULL DEFAULT 'inactive',
+  `updated_at` datetime NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `bus_status_history`
+--
+
+INSERT INTO `bus_status_history` (`id`, `bus_id`, `status`, `updated_at`) VALUES
+(1, 'XB1', 'running', '2025-11-25 00:29:33'),
+(2, 'XB2', 'stopped', '2025-11-25 00:29:33'),
+(3, 'XB3', 'inactive', '2025-11-25 00:29:33');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `bus_stop`
 --
 
 CREATE TABLE `bus_stop` (
-  `stop_id` varchar(255) NOT NULL,
-  `route_id` varchar(255) DEFAULT NULL,
-  `stop_name` varchar(255) DEFAULT NULL,
+  `stop_id` varchar(20) NOT NULL,
+  `route_id` varchar(20) DEFAULT NULL,
+  `stop_name` varchar(100) DEFAULT NULL,
   `address` varchar(255) DEFAULT NULL,
-  `lat` decimal(10,8) DEFAULT NULL,
-  `lng` decimal(11,8) NOT NULL
+  `stop_order` int(11) DEFAULT NULL,
+  PRIMARY KEY (`stop_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `bus_stop`
+-- Dumping data for table `bus_stop`
 --
 
-INSERT INTO `bus_stop` (`stop_id`, `route_id`, `stop_name`, `address`, `lat`, `lng`) VALUES
-('stop0011', 'R01', 'SGU CS2', '04 Tôn Đức Thắng, P.Bến Nghé, Q.1', 10.78050000, 106.70580000),
-('stop0012', 'R01', 'Chợ Bến Thành', 'Công trường Quách Thị Trang, Q.1', 10.77210000, 106.69830000),
-('stop0013', 'R01', 'SGU CSC', '273 An Dương Vương, P.3, Q.', 10.76013700, 106.68216600),
-('stop0021', 'R02', 'SGU CS2', '04 Tôn Đức Thắng, P.Bến Nghé, Q.1', 10.78050000, 106.70580000),
-('stop0022', 'R02', 'Hồ Con Rùa', 'Công trường Quốc tế, Q.3', 10.78250000, 106.69600000),
-('stop0023', 'R02', 'SGU CS1', '105 Bà Huyện Thanh Quan, Q.3', 10.77691500, 106.69045000),
-('stop0031', 'R03', 'SGU CSC', '273 An Dương Vương, P.3, Q.5', 10.76013700, 106.68216600),
-('stop0032', 'R03', 'Cầu Chánh Hưng', 'Phạm Hùng, Q.8', 10.75200000, 106.67500000),
-('stop0033', 'R03', 'KTX ', '99 An Dương Vương, P.16, Q.8', 10.72853200, 106.62202700);
+INSERT INTO `bus_stop` (`stop_id`, `route_id`, `stop_name`, `address`, `stop_order`) VALUES
+('STOP1', 'TD1', 'DHSG', '273 An Dương Vương', 1),
+('STOP10', 'TD3', 'PT', 'Nhà thi đấu Phú Thọ', 2),
+('STOP11', 'TD2', 'SVH', 'Sư Vạn Hạnh', 3),
+('STOP12', 'TD1', 'BNR', 'Khu Di tích Bến Nhà Rồng', 3),
+('STOP2', 'TD1', 'BVYD', 'Bệnh viện Đại học Y Dược TP.HCM', 2),
+('STOP3', 'TD1', 'TCV', 'Thảo Cầm Viên', 5),
+('STOP4', 'TD1', 'DHSG', '273 An Dương Vương', 6),
+('STOP5', 'TD1', 'DHSG 2', 'Đại học Sài Gòn (cơ sở 2)', 4),
+('STOP6', 'TD2', 'DHKHTN', 'Trường ĐH KHTN', 2),
+('STOP7', 'TD3', 'Sư Vạn Hạnh', 'Sư Vạn Hạnh', 3),
+('STOP8', 'TD3', 'NTP', 'Bệnh viện Nguyễn Tri Phương', 1),
+('STOP_T1', 'R01', 'SGU Cổng Chính', '273 An Dương Vương', 1),
+('STOP_T2', 'R01', 'Bệnh viện ĐH Y Dược', '215 Hồng Bàng', 2),
+('STOP_T3', 'R01', 'SGU Cơ sở 2', 'Nguyễn Trãi', 3);
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `driver`
+-- Table structure for table `driver`
 --
 
 CREATE TABLE `driver` (
-  `driver_id` varchar(255) NOT NULL,
-  `name` varchar(255) DEFAULT NULL,
-  `phone` varchar(255) DEFAULT NULL,
+  `driver_id` varchar(20) NOT NULL,
+  `user_id` int(11) DEFAULT NULL,
+  `name` varchar(100) DEFAULT NULL,
+  `phone` varchar(15) DEFAULT NULL,
   `address` varchar(255) DEFAULT NULL,
+  `email` varchar(100) DEFAULT NULL,
+  `dob` date DEFAULT NULL,
+  `gender` enum('Nam','Nữ','Khác') DEFAULT NULL,
+  `id_card` varchar(20) DEFAULT NULL,
+  `rating` decimal(2,1) DEFAULT 5.0,
   `status` varchar(50) DEFAULT 'Rảnh',
   `license_class` varchar(10) DEFAULT 'B2',
-  `work_schedule` set('MON','TUE','WED','THU','FRI','SAT','SUN') DEFAULT NULL COMMENT 'Lịch làm việc cố định theo ngày'
+  `work_schedule` set('MON','TUE','WED','THU','FRI','SAT','SUN') DEFAULT NULL,
+  `profile_image` varchar(500) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`driver_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `driver`
+-- Dumping data for table `driver`
 --
 
-INSERT INTO `driver` (`driver_id`, `name`, `phone`, `address`, `status`, `license_class`, `work_schedule`) VALUES
-('TX001', 'Nguyễn Văn Hùng', '0459276157', 'Lê Hồng Phong', 'Đang hoạt động', 'B2', 'MON,TUE,WED,FRI,SAT'),
-('TX002', 'Trần Văn Trí', '0745128698', 'Trần Xuân Soạn', 'Đang hoạt động', 'B2', 'MON,TUE,WED,THU,FRI'),
-('TX003', 'Lê Hùng Dũng', '0789425698', 'Võ Văn Kiệt', 'Đang hoạt động', 'B2', 'TUE,WED,THU,FRI,SAT'),
-('TX004', 'Phạm Anh Đức', '0785158496', 'Nguyễn Trãi', 'Đang hoạt động', 'B2', 'TUE,WED,THU,FRI'),
-('TX005', 'Ngô Thị Minh Thi', '0978425987', 'Đức Trọng', 'Đang hoạt động', 'B2', 'MON,TUE,WED,THU,FRI,SAT,SUN');
+INSERT INTO `driver` (`driver_id`, `user_id`, `name`, `phone`, `address`, `email`, `dob`, `gender`, `id_card`, `rating`, `status`, `license_class`, `work_schedule`, `profile_image`, `created_at`) VALUES
+('TX001', NULL, 'Nguyễn Văn Hùng', '0459276157', 'Lê Hồng Phong', 'hung.nguyen@gmail.com', '1985-03-15', 'Nam', '123456789012', 4.5, 'Rảnh', 'B2', 'MON,TUE,WED,FRI,SAT', NULL, '2025-11-01 08:00:00'),
+('TX002', NULL, 'Trần Văn Trí', '0745128698', 'Trần Xuân Soạn', 'tri.tran@gmail.com', '1988-07-22', 'Nam', '234567890123', 4.8, 'Rảnh', 'B2', 'MON,TUE,WED,THU,FRI', NULL, '2025-11-01 08:30:00'),
+('TX003', NULL, 'Lê Hùng Dũng', '0789425698', 'Võ Văn Kiệt', 'dung.le@gmail.com', '1990-12-10', 'Nam', '345678901234', 4.2, 'Rảnh', 'B2', 'TUE,WED,THU,FRI,SAT', NULL, '2025-11-01 09:00:00'),
+('TX004', NULL, 'Phạm Anh Đức', '0785158496', 'Nguyễn Trãi', 'duc.pham@gmail.com', '1987-05-08', 'Nam', '456789012345', 4.9, 'Đang hoạt động', 'B2', 'TUE,WED,THU,FRI', NULL, '2025-11-01 09:30:00'),
+('TX005', NULL, 'Ngô Thị Minh Thi', '0978425987', 'Đức Trọng', 'thi.ngo@gmail.com', '1992-09-18', 'Nữ', '567890123456', 4.7, 'Nghỉ phép', 'B2', 'MON,TUE,WED,THU,FRI,SAT,SUN', NULL, '2025-11-01 10:00:00');
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `notification`
+-- Table structure for table `notification`
 --
 
 CREATE TABLE `notification` (
-  `id` int(11) NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `recipient_type` enum('bus','driver','parent','system') NOT NULL,
   `title` varchar(255) NOT NULL,
   `content` text NOT NULL,
+  `type` enum('manual','scheduled') DEFAULT 'manual',
+  `scheduled_time` datetime DEFAULT NULL,
+  `is_recurring` tinyint(1) DEFAULT 0,
+  `recurrence_days` varchar(50) DEFAULT NULL,
+  `status_sent` enum('pending','sent') DEFAULT 'sent',
   `created_at` datetime DEFAULT current_timestamp(),
   `status` enum('unread','read') NOT NULL DEFAULT 'unread',
-  `notificationFor` enum('Tài xế','Phụ huynh','Xe buýt','Hệ thống') DEFAULT NULL
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `notification`
+-- Dumping data for table `notification`
 --
 
-INSERT INTO `notification` (`id`, `recipient_type`, `title`, `content`, `created_at`, `status`, `notificationFor`) VALUES
-(1, 'driver', 'Thông báo cho tài xế', 'Ngày mai đi sớm 15 phút.', '2025-11-17 00:35:46', 'read', 'Tài xế'),
-(2, 'parent', 'Thông báo cho phụ huynh', 'Ngày mai trời mưa, chuẩn bị áo mưa cho bé.', '2025-11-16 00:35:46', 'read', 'Phụ huynh'),
-(3, 'bus', 'Thông báo cho xe buýt', 'Xe BUS001 đi kiểm tra định kỳ.', '2025-11-17 00:35:46', 'read', 'Xe buýt'),
-(4, 'driver', 'Ngày mai nghỉ', 'Ngày mai bão nên nghỉ', '2025-11-17 01:00:28', 'unread', 'Phụ huynh'),
-(5, 'system', 'Bảo trì hệ thống', 'Hệ thống sẽ bảo trì từ 2:00 giờ ngày 23/11/2025 đến 4:30 giờ ngày 23/11/2025', '2025-11-22 01:31:04', 'unread', 'Phụ huynh');
+INSERT INTO `notification` (`id`, `recipient_type`, `title`, `content`, `type`, `scheduled_time`, `is_recurring`, `recurrence_days`, `status_sent`, `created_at`, `status`) VALUES
+(1, 'driver', 'Thông báo cho tài xế', 'Ngày mai đi sớm 15 phút.', 'manual', NULL, 0, NULL, 'sent', '2025-11-17 00:35:46', 'read'),
+(2, 'parent', 'Thông báo cho phụ huynh', 'Ngày mai trời mưa, chuẩn bị áo mưa cho bé.', 'manual', NULL, 0, NULL, 'sent', '2025-11-17 00:35:46', 'unread'),
+(3, 'bus', 'Thông báo cho xe buýt', 'Xe BUS001 đi kiểm tra định kỳ.', 'manual', NULL, 0, NULL, 'sent', '2025-11-17 00:35:46', 'read'),
+(4, 'driver', 'Nghi ngay mai', 'ngay mai mua nen nghi', 'manual', NULL, 0, NULL, 'sent', '2025-11-17 01:00:28', 'read'),
+(5, 'driver', 'Dời thời gian khởi hành', 'Vì xe đang trong quá trình bảo dưỡng, giờ khởi hành sẽ bị lùi 30p.', 'manual', NULL, 0, NULL, 'sent', '2025-11-20 21:49:29', 'unread'),
+(6, 'driver', 'Kiểm tra lịch làm', 'Kiểm tra lịch làm', 'scheduled', '2025-11-30 08:00:00', 1, '0', 'pending', '2025-11-20 21:51:49', 'read');
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `parent`
+-- Table structure for table `notification_recipients`
+--
+
+CREATE TABLE `notification_recipients` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `notification_id` int(11) NOT NULL,
+  `recipient_id` varchar(20) NOT NULL,
+  `recipient_type` varchar(50) DEFAULT NULL,
+  `status` enum('unread','read') DEFAULT 'unread',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `notification_recipients`
+--
+
+INSERT INTO `notification_recipients` (`id`, `notification_id`, `recipient_id`, `recipient_type`, `status`, `created_at`) VALUES
+(1, 5, 'TX005', 'driver', 'unread', '2025-11-20 07:49:29'),
+(2, 6, 'TX001', 'driver', 'unread', '2025-11-23 08:41:00');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `parent`
 --
 
 CREATE TABLE `parent` (
-  `parent_id` varchar(255) NOT NULL,
-  `name` varchar(255) DEFAULT NULL,
-  `phone` varchar(255) DEFAULT NULL,
-  `sex` char(10) DEFAULT 'Khác',
-  `email` varchar(256) DEFAULT NULL,
-  `age` int(100) DEFAULT NULL
+  `parent_id` varchar(20) NOT NULL,
+  `user_id` int(11) DEFAULT NULL,
+  `name` varchar(100) DEFAULT NULL,
+  `phone` varchar(15) DEFAULT NULL,
+  PRIMARY KEY (`parent_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `parent`
+-- Dumping data for table `parent`
 --
 
-INSERT INTO `parent` (`parent_id`, `name`, `phone`, `sex`, `email`, `age`) VALUES
-('ph001', 'Hoàng Phủ Ngọc Tường', '0123456789', 'Nam', 'ph001@gmail.com', 30),
-('ph002', 'Nguyễn Hồ Minh Mẫn', '0987654321', 'Khác', 'ph002@gmail.com', 35),
-('ph003', 'Nguyễn Cao Minh Thùy', '0975312468', 'Khác', 'ph003@gmail.com', 28);
+INSERT INTO `parent` (`parent_id`, `user_id`, `name`, `phone`) VALUES
+('PH001', NULL, 'Nguyễn Ngọc Lan', '0964123534'),
+('PH002', NULL, 'Trần Hữu Phát', '0987123765'),
+('PH003', NULL, 'Mỹ Hằng', '0901234567'),
+('PH004', NULL, 'Minh Thi', '0912345678');
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `route`
+-- Table structure for table `route`
 --
 
 CREATE TABLE `route` (
-  `route_id` varchar(255) NOT NULL,
-  `route_name` varchar(255) DEFAULT NULL,
-  `start_point` varchar(255) DEFAULT NULL,
-  `end_point` varchar(255) DEFAULT NULL
+  `route_id` varchar(20) NOT NULL,
+  `route_name` varchar(100) DEFAULT NULL,
+  `start_point` varchar(150) DEFAULT NULL,
+  `end_point` varchar(150) DEFAULT NULL,
+  `planned_start` time DEFAULT NULL,
+  `planned_end` time DEFAULT NULL,
+  `total_students` int(11) DEFAULT 0,
+  `status` enum('Đang hoạt động','Ngưng hoạt động','Bảo trì') DEFAULT 'Đang hoạt động',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`route_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `route`
+-- Dumping data for table `route`
 --
 
-INSERT INTO `route` (`route_id`, `route_name`, `start_point`, `end_point`) VALUES
-('R01', 'CS2 SGU (Q1) -> CSC SGU (Q5)', '04 Tôn Đức Thắng, Q1', '273 An Dương Vương, Q5'),
-('R02', 'CS2 SGU (Q1) -> CS1 SGU (Q3)', '04 Tôn Đức Thắng, Q1', '105 Bà Huyện Thanh Quan, Q3'),
-('R03', 'CSC SGU (Q5) -> KTX SGU (Q8)', '273 An Dương Vương, Q5', '99 An Dương Vương, Phường 16, Quận 8');
+INSERT INTO `route` (`route_id`, `route_name`, `start_point`, `end_point`, `planned_start`, `planned_end`, `total_students`, `status`, `created_at`) VALUES
+('R01', 'Q1->Q5', 'SGU_csc', 'SGU_cs2', '06:00:00', '07:30:00', 15, 'Đang hoạt động', '2025-10-01 08:00:00'),
+('R02', 'q1->q3', 'SGU_csc', 'SGU_cs1', '06:30:00', '08:00:00', 12, 'Đang hoạt động', '2025-10-01 08:30:00'),
+('R03', 'sgu->ktx', 'SGU-csc', 'ktx-SGu', '07:00:00', '08:30:00', 8, 'Bảo trì', '2025-10-01 09:00:00'),
+('TD1', 'Tuyến 1', 'Trường THPT A', 'Khu dân cư Hưng Phú', '06:15:00', '07:45:00', 20, 'Đang hoạt động', '2025-10-01 09:30:00'),
+('TD2', 'Tuyến 2', 'Trường Tiểu học B', 'Khu phố An Lạc', '06:45:00', '08:15:00', 18, 'Đang hoạt động', '2025-10-01 10:00:00'),
+('TD3', 'Tuyến 3', 'A', 'B', '07:15:00', '08:45:00', 10, 'Ngưng hoạt động', '2025-10-01 10:30:00');
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `student`
+-- Table structure for table `student`
 --
 
 CREATE TABLE `student` (
-  `student_id` varchar(255) NOT NULL,
-  `parent_id` varchar(255) DEFAULT NULL,
-  `stop_id` varchar(255) DEFAULT NULL,
-  `name` varchar(255) DEFAULT NULL,
-  `class` varchar(256) DEFAULT NULL
+  `student_id` varchar(20) NOT NULL,
+  `parent_id` varchar(20) DEFAULT NULL,
+  `stop_id` varchar(20) DEFAULT NULL,
+  `dropoff_stop_id` varchar(20) DEFAULT NULL,
+  `name` varchar(100) DEFAULT NULL,
+  `school_name` varchar(150) DEFAULT NULL,
+  `class_name` varchar(100) DEFAULT NULL,
+  `gender` enum('Nam','Nữ','Khác') DEFAULT NULL,
+  PRIMARY KEY (`student_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `student`
+-- Dumping data for table `student`
 --
 
-INSERT INTO `student` (`student_id`, `parent_id`, `stop_id`, `name`, `class`) VALUES
-('hs001', 'ph001', 'stop0011', 'Hoàng Nguyễn Minh Kha', 'DCT1234'),
-('hs002', 'ph002', 'stop0021', 'Nguyễn Đỗ Như Ngọc', 'DCT1233'),
-('hs003', 'ph003', 'stop0031', 'Hoàng Nguyên Khang', 'DCT1235'),
-('HS53775', 'ph001', 'stop0012', 'Hoàng Nguyễn Như Hoa', 'DCT1234');
+INSERT INTO `student` (`student_id`, `parent_id`, `stop_id`, `dropoff_stop_id`, `name`, `school_name`, `class_name`, `gender`) VALUES
+('HS001', 'PH003', 'STOP1', 'STOP2', 'Nguyễn Văn An', 'Trường Tiểu học Nguyễn Trãi', '5A1', 'Nam'),
+('HS002', 'PH004', 'STOP1', 'STOP2', 'Trần Thị Bình', 'Trường Tiểu học Lê Lợi', '4B2', 'Nữ');
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `student_pickup`
+-- Table structure for table `student_pickup`
 --
 
 CREATE TABLE `student_pickup` (
-  `pickup_id` varchar(255) NOT NULL,
-  `student_id` varchar(255) NOT NULL,
-  `driver_id` varchar(255) NOT NULL,
-  `schedule_id` varchar(255) NOT NULL,
+  `pickup_id` varchar(30) NOT NULL,
+  `student_id` varchar(20) DEFAULT NULL,
+  `driver_id` varchar(20) DEFAULT NULL,
+  `schedule_id` varchar(50) DEFAULT NULL,
+  `stop_id` varchar(20) DEFAULT NULL,
   `pickup_time` datetime DEFAULT NULL,
   `dropoff_time` datetime DEFAULT NULL,
-  `status` enum('Đã đến trường','Đã lên xe','Chưa lên xe','Đã về nhà') NOT NULL,
-  `stop_id` varchar(255) NOT NULL
+  `status` varchar(50) DEFAULT NULL,
+  PRIMARY KEY (`pickup_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `student_pickup`
+-- Dumping data for table `student_pickup`
 --
 
-INSERT INTO `student_pickup` (`pickup_id`, `student_id`, `driver_id`, `schedule_id`, `pickup_time`, `dropoff_time`, `status`, `stop_id`) VALUES
-('PU01', 'hs001', 'TX001', 'XE001-01-11-2025', '2025-11-01 06:15:00', '2025-11-01 06:45:00', 'Đã đến trường', 'stop0013'),
-('PU02', 'hs001', 'TX003', 'XE001-08-11-2025', '2025-11-08 06:10:00', '2025-11-08 06:40:00', 'Đã đến trường', 'stop0013'),
-('PU03', 'hs001', 'TX002', 'XE001-2025-11-21', '2025-11-17 06:20:00', '2025-11-21 21:20:01', 'Chưa lên xe', 'stop0011'),
-('PU04', 'hs002', 'TX003', 'XE001-2025-11-20', '2025-11-21 23:25:37', '2025-11-21 21:19:53', 'Chưa lên xe', 'stop0021'),
-('PU1763648301256', 'hs001', 'TX003', 'XE002-2025-11-20', '2025-11-20 21:18:21', '2025-11-21 21:19:29', 'Đã đến trường', 'stop0013'),
-('PU1763741390288', 'hs001', 'TX002', 'XE001-2025-11-21', '2025-11-21 23:10:40', NULL, 'Đã lên xe', 'stop0011'),
-('PU1763741392518', 'HS53775', 'TX002', 'XE001-2025-11-21', '2025-11-21 23:09:57', NULL, 'Chưa lên xe', 'stop0012'),
-('PU1763748577491', 'hs001', 'TX001', 'XE001-2025-11-22', '2025-11-22 16:01:55', NULL, 'Chưa lên xe', 'stop0011'),
-('PU1763748633413', 'HS53775', 'TX001', 'XE001-2025-11-22', '2025-11-22 16:01:54', NULL, 'Chưa lên xe', 'stop0012'),
-('PU1763748708951', 'hs002', 'TX003', 'XE002-2025-11-22', '2025-11-22 01:11:48', NULL, 'Đã lên xe', 'stop0021'),
-('PU1763748749738', 'hs003', 'TX004', 'XE003-2025-11-21', '2025-11-22 15:43:39', NULL, 'Đã về nhà', 'stop0031');
+INSERT INTO `student_pickup` (`pickup_id`, `student_id`, `driver_id`, `schedule_id`, `stop_id`, `pickup_time`, `dropoff_time`, `status`) VALUES
+('DT001', 'HS001', 'TX001', 'LT1', 'STOP1', '2025-11-14 06:35:00', '2025-11-14 07:25:00', 'DA_DON'),
+('DT002', 'HS002', 'TX002', 'LT2', 'STOP1', NULL, NULL, 'CHO_DON');
+
+-- --------------------------------------------------------
 
 --
--- Chỉ mục cho các bảng đã đổ
+-- Table structure for table `users`
+--
+
+CREATE TABLE `users` (
+  `user_id` int(11) NOT NULL AUTO_INCREMENT,
+  `username` varchar(50) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `role` enum('admin','driver','parent') NOT NULL,
+  `linked_id` varchar(20) DEFAULT NULL COMMENT 'ID liên kết với driver hoặc parent',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `users`
+--
+
+INSERT INTO `users` (`user_id`, `username`, `password`, `role`, `linked_id`, `created_at`) VALUES
+(1, 'admin', 'g5bus', 'admin', NULL, '2025-10-01 08:00:00'),
+(2, 'driver', 'g5bus', 'driver', NULL, '2025-10-01 08:30:00'),
+(3, 'parent', 'g5bus', 'parent', NULL, '2025-10-01 09:00:00');
+
+--
+-- Indexes for dumped tables
 --
 
 --
--- Chỉ mục cho bảng `bus`
+-- Indexes for table `bus`
 --
 ALTER TABLE `bus`
-  ADD PRIMARY KEY (`bus_id`),
-  ADD UNIQUE KEY `bus_id` (`bus_id`,`license_plate`,`capacity`),
-  ADD KEY `default_route_id` (`default_route_id`),
-  ADD KEY `fk_bus_driver` (`driver_id`);
+  ADD KEY `default_route_id` (`default_route_id`);
 
 --
--- Chỉ mục cho bảng `bus_location`
+-- Indexes for table `bus_location`
 --
 ALTER TABLE `bus_location`
-  ADD PRIMARY KEY (`location_id`),
-  ADD KEY `bus_id` (`bus_id`);
+  ADD KEY `bus_id` (`bus_id`),
+  ADD KEY `nearest_stop_id` (`nearest_stop_id`);
 
 --
--- Chỉ mục cho bảng `bus_schedule`
+-- Indexes for table `bus_schedule`
 --
 ALTER TABLE `bus_schedule`
-  ADD PRIMARY KEY (`schedule_id`),
   ADD KEY `route_id` (`route_id`),
   ADD KEY `bus_id` (`bus_id`),
   ADD KEY `driver_id` (`driver_id`);
 
 --
--- Chỉ mục cho bảng `bus_stop`
+-- Indexes for table `bus_status_history`
+--
+ALTER TABLE `bus_status_history`
+  ADD KEY `bus_id` (`bus_id`);
+
+--
+-- Indexes for table `bus_stop`
 --
 ALTER TABLE `bus_stop`
-  ADD PRIMARY KEY (`stop_id`),
   ADD KEY `route_id` (`route_id`);
 
 --
--- Chỉ mục cho bảng `driver`
+-- Indexes for table `driver`
 --
 ALTER TABLE `driver`
-  ADD PRIMARY KEY (`driver_id`);
+  ADD KEY `user_id` (`user_id`),
+  ADD UNIQUE KEY `id_card` (`id_card`),
+  ADD UNIQUE KEY `email` (`email`);
 
 --
--- Chỉ mục cho bảng `notification`
+-- Indexes for table `notification`
 --
-ALTER TABLE `notification`
-  ADD PRIMARY KEY (`id`);
 
 --
--- Chỉ mục cho bảng `parent`
+-- Indexes for table `notification_recipients`
+--
+ALTER TABLE `notification_recipients`
+  ADD KEY `notification_id` (`notification_id`);
+
+--
+-- Indexes for table `parent`
 --
 ALTER TABLE `parent`
-  ADD PRIMARY KEY (`parent_id`);
+  ADD KEY `user_id` (`user_id`);
 
 --
--- Chỉ mục cho bảng `route`
+-- Indexes for table `route`
 --
-ALTER TABLE `route`
-  ADD PRIMARY KEY (`route_id`);
 
 --
--- Chỉ mục cho bảng `student`
+-- Indexes for table `student`
 --
 ALTER TABLE `student`
-  ADD PRIMARY KEY (`student_id`),
   ADD KEY `parent_id` (`parent_id`),
-  ADD KEY `stop_id` (`stop_id`);
+  ADD KEY `stop_id` (`stop_id`),
+  ADD KEY `dropoff_stop_id` (`dropoff_stop_id`);
 
 --
--- Chỉ mục cho bảng `student_pickup`
+-- Indexes for table `student_pickup`
 --
 ALTER TABLE `student_pickup`
-  ADD PRIMARY KEY (`pickup_id`),
   ADD KEY `student_id` (`student_id`),
   ADD KEY `driver_id` (`driver_id`),
   ADD KEY `schedule_id` (`schedule_id`),
-  ADD KEY `fk_pickup_stop` (`stop_id`);
+  ADD KEY `stop_id` (`stop_id`);
 
 --
--- AUTO_INCREMENT cho các bảng đã đổ
+-- Indexes for table `users`
+--
+ALTER TABLE `users`
+  ADD UNIQUE KEY `username` (`username`);
+
+--
+-- AUTO_INCREMENT for dumped tables
 --
 
 --
--- AUTO_INCREMENT cho bảng `bus_location`
+-- AUTO_INCREMENT for table `bus_location`
 --
 ALTER TABLE `bus_location`
-  MODIFY `location_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `location_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
--- AUTO_INCREMENT cho bảng `notification`
+-- AUTO_INCREMENT for table `bus_status_history`
+--
+ALTER TABLE `bus_status_history`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT for table `notification`
 --
 ALTER TABLE `notification`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
--- Các ràng buộc cho các bảng đã đổ
+-- AUTO_INCREMENT for table `notification_recipients`
+--
+ALTER TABLE `notification_recipients`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT for table `users`
+--
+ALTER TABLE `users`
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- Constraints for dumped tables
 --
 
 --
--- Các ràng buộc cho bảng `bus`
+-- Constraints for table `bus`
 --
 ALTER TABLE `bus`
-  ADD CONSTRAINT `bus_ibfk_1` FOREIGN KEY (`default_route_id`) REFERENCES `route` (`route_id`),
-  ADD CONSTRAINT `fk_bus_driver` FOREIGN KEY (`driver_id`) REFERENCES `driver` (`driver_id`);
+  ADD CONSTRAINT `bus_ibfk_1` FOREIGN KEY (`default_route_id`) REFERENCES `route` (`route_id`) ON DELETE SET NULL;
 
 --
--- Các ràng buộc cho bảng `bus_location`
+-- Constraints for table `bus_location`
 --
 ALTER TABLE `bus_location`
-  ADD CONSTRAINT `bus_location_ibfk_1` FOREIGN KEY (`bus_id`) REFERENCES `bus` (`bus_id`);
+  ADD CONSTRAINT `bus_location_ibfk_1` FOREIGN KEY (`bus_id`) REFERENCES `bus` (`bus_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `bus_location_ibfk_2` FOREIGN KEY (`nearest_stop_id`) REFERENCES `bus_stop` (`stop_id`) ON DELETE SET NULL;
 
 --
--- Các ràng buộc cho bảng `bus_schedule`
+-- Constraints for table `bus_schedule`
 --
 ALTER TABLE `bus_schedule`
-  ADD CONSTRAINT `bus_schedule_ibfk_1` FOREIGN KEY (`route_id`) REFERENCES `route` (`route_id`),
-  ADD CONSTRAINT `bus_schedule_ibfk_2` FOREIGN KEY (`bus_id`) REFERENCES `bus` (`bus_id`),
-  ADD CONSTRAINT `bus_schedule_ibfk_3` FOREIGN KEY (`driver_id`) REFERENCES `driver` (`driver_id`);
+  ADD CONSTRAINT `bus_schedule_ibfk_1` FOREIGN KEY (`route_id`) REFERENCES `route` (`route_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `bus_schedule_ibfk_2` FOREIGN KEY (`bus_id`) REFERENCES `bus` (`bus_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `bus_schedule_ibfk_3` FOREIGN KEY (`driver_id`) REFERENCES `driver` (`driver_id`) ON DELETE CASCADE;
 
 --
--- Các ràng buộc cho bảng `bus_stop`
+-- Constraints for table `bus_status_history`
+--
+ALTER TABLE `bus_status_history`
+  ADD CONSTRAINT `bus_status_history_ibfk_1` FOREIGN KEY (`bus_id`) REFERENCES `bus` (`bus_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `bus_stop`
 --
 ALTER TABLE `bus_stop`
-  ADD CONSTRAINT `bus_stop_ibfk_1` FOREIGN KEY (`route_id`) REFERENCES `route` (`route_id`);
+  ADD CONSTRAINT `bus_stop_ibfk_1` FOREIGN KEY (`route_id`) REFERENCES `route` (`route_id`) ON DELETE CASCADE;
 
 --
--- Các ràng buộc cho bảng `student`
+-- Constraints for table `driver`
+--
+ALTER TABLE `driver`
+  ADD CONSTRAINT `driver_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `notification_recipients`
+--
+ALTER TABLE `notification_recipients`
+  ADD CONSTRAINT `notification_recipients_ibfk_1` FOREIGN KEY (`notification_id`) REFERENCES `notification` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `parent`
+--
+ALTER TABLE `parent`
+  ADD CONSTRAINT `parent_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `student`
 --
 ALTER TABLE `student`
-  ADD CONSTRAINT `student_ibfk_1` FOREIGN KEY (`parent_id`) REFERENCES `parent` (`parent_id`),
-  ADD CONSTRAINT `student_ibfk_2` FOREIGN KEY (`stop_id`) REFERENCES `bus_stop` (`stop_id`);
+  ADD CONSTRAINT `student_ibfk_1` FOREIGN KEY (`parent_id`) REFERENCES `parent` (`parent_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `student_ibfk_2` FOREIGN KEY (`stop_id`) REFERENCES `bus_stop` (`stop_id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `student_ibfk_3` FOREIGN KEY (`dropoff_stop_id`) REFERENCES `bus_stop` (`stop_id`) ON DELETE SET NULL;
 
 --
--- Các ràng buộc cho bảng `student_pickup`
+-- Constraints for table `student_pickup`
 --
 ALTER TABLE `student_pickup`
-  ADD CONSTRAINT `fk_pickup_stop` FOREIGN KEY (`stop_id`) REFERENCES `bus_stop` (`stop_id`),
-  ADD CONSTRAINT `student_pickup_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `student` (`student_id`),
-  ADD CONSTRAINT `student_pickup_ibfk_2` FOREIGN KEY (`driver_id`) REFERENCES `driver` (`driver_id`),
-  ADD CONSTRAINT `student_pickup_ibfk_3` FOREIGN KEY (`schedule_id`) REFERENCES `bus_schedule` (`schedule_id`);
+  ADD CONSTRAINT `student_pickup_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `student` (`student_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `student_pickup_ibfk_2` FOREIGN KEY (`driver_id`) REFERENCES `driver` (`driver_id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `student_pickup_ibfk_3` FOREIGN KEY (`schedule_id`) REFERENCES `bus_schedule` (`schedule_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `student_pickup_ibfk_4` FOREIGN KEY (`stop_id`) REFERENCES `bus_stop` (`stop_id`) ON DELETE SET NULL;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

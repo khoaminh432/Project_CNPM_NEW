@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 
 const Profile = ({ userInfo, setUserInfo, isEditing, setIsEditing }) => {
   const [students, setStudents] = useState([]);
-  const [newStudent, setNewStudent] = useState({ name: '', class: '' });
+  
+  // State quản lý form thêm mới (Có thêm school và gender)
+  const [newStudent, setNewStudent] = useState({ name: '', class: '', school: '', gender: 'Nam' });
   const [showStudentForm, setShowStudentForm] = useState(false);
 
   useEffect(() => {
@@ -15,37 +17,39 @@ const Profile = ({ userInfo, setUserInfo, isEditing, setIsEditing }) => {
         })
         .catch(err => console.error(err));
     }
-  }, [userInfo.parent_id]);
+  }, [userInfo]); 
 
   // XỬ LÝ LƯU PROFILE (UPDATE)
-  const handleSaveProfile = () => {
+  function handleSaveProfile() {
     fetch('http://localhost:8081/api/profile', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(userInfo)
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(userInfo)
     })
-    .then(res => res.json())
-    .then(data => {
-        if(data.message === "Cập nhật thành công") {
-            alert("Cập nhật thông tin thành công!");
-            setIsEditing(false);
+      .then(res => res.json())
+      .then(data => {
+        if (data.message === "Cập nhật thành công") {
+          alert("Cập nhật thông tin thành công!");
+          setIsEditing(false);
         } else {
-            alert("Lỗi: " + JSON.stringify(data));
+          alert("Lỗi: " + JSON.stringify(data));
         }
-    })
-    .catch(err => alert("Lỗi kết nối: " + err));
-  };
+      })
+      .catch(err => alert("Lỗi kết nối: " + err));
+  }
 
-  // XỬ LÝ THÊM HỌC SINH
+  // XỬ LÝ THÊM HỌC SINH (Gửi đủ thông tin mới)
   const handleAddStudent = () => {
-    if (newStudent.name && newStudent.class) {
+    if (newStudent.name && newStudent.class && newStudent.school) {
       fetch('http://localhost:8081/api/students', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             name: newStudent.name,
             studentClass: newStudent.class,
-            parent_id: userInfo.parent_id // Gắn đúng ID phụ huynh
+            school: newStudent.school,
+            gender: newStudent.gender,
+            parent_id: userInfo.parent_id 
         })
       })
       .then(res => res.json())
@@ -54,16 +58,18 @@ const Profile = ({ userInfo, setUserInfo, isEditing, setIsEditing }) => {
             student_id: data.student_id, 
             name: newStudent.name, 
             class: newStudent.class,
+            school_name: newStudent.school,
+            gender: newStudent.gender,
             parent_id: userInfo.parent_id 
         };
-        // Cập nhật danh sách ngay lập tức
         setStudents([...students, addedStudent]);
-        setNewStudent({ name: '', class: '' });
+        // Reset form
+        setNewStudent({ name: '', class: '', school: '', gender: 'Nam' });
         setShowStudentForm(false);
       })
       .catch(err => alert('Lỗi: ' + err));
     } else {
-        alert("Vui lòng nhập đủ Tên và Lớp!");
+        alert("Vui lòng nhập đủ Tên, Lớp và Trường!");
     }
   };
 
@@ -98,8 +104,9 @@ const Profile = ({ userInfo, setUserInfo, isEditing, setIsEditing }) => {
     studentHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' },
     studentCard: { background: 'white', border: '1px solid #e9ecef', borderRadius: '8px', padding: '15px', marginBottom: '10px' },
     studentInfo: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-    studentName: { fontWeight: 'bold', color: '#333', margin: '0 0 5px 0' },
-    studentClass: { color: '#6c757d', margin: 0, fontSize: '14px' },
+    studentDetails: { flex: 1 },
+    studentName: { fontWeight: 'bold', color: '#333', margin: '0 0 5px 0', fontSize: '16px' },
+    studentMeta: { color: '#6c757d', margin: 0, fontSize: '13px', lineHeight: '1.6' },
     studentForm: { background: '#f8f9fa', border: '1px solid #dee2e6', borderRadius: '8px', padding: '20px', marginBottom: '20px' },
     formGroup: { marginBottom: '15px' },
     formLabel: { display: 'block', marginBottom: '5px', fontWeight: '600', color: '#495057' },
@@ -174,10 +181,27 @@ const Profile = ({ userInfo, setUserInfo, isEditing, setIsEditing }) => {
               <label style={styles.formLabel}>Họ và tên</label>
               <input style={styles.inputField} value={newStudent.name} onChange={(e) => setNewStudent({...newStudent, name: e.target.value})} placeholder="Nhập họ tên" />
             </div>
+            
             <div style={styles.formGroup}>
-              <label style={styles.formLabel}>Lớp</label>
-              <input style={styles.inputField} value={newStudent.class} onChange={(e) => setNewStudent({...newStudent, class: e.target.value})} placeholder="Ví dụ: 10A1" />
+              <label style={styles.formLabel}>Trường học</label>
+              <input style={styles.inputField} value={newStudent.school} onChange={(e) => setNewStudent({...newStudent, school: e.target.value})} placeholder="Ví dụ: Tiểu học Nguyễn Du" />
             </div>
+
+            <div style={{display: 'flex', gap: '20px'}}>
+                <div style={{...styles.formGroup, flex: 1}}>
+                    <label style={styles.formLabel}>Lớp</label>
+                    <input style={styles.inputField} value={newStudent.class} onChange={(e) => setNewStudent({...newStudent, class: e.target.value})} placeholder="Ví dụ: 5A1" />
+                </div>
+                <div style={{...styles.formGroup, flex: 1}}>
+                    <label style={styles.formLabel}>Giới tính</label>
+                    <select style={styles.selectField} value={newStudent.gender} onChange={(e) => setNewStudent({...newStudent, gender: e.target.value})}>
+                        <option value="Nam">Nam</option>
+                        <option value="Nữ">Nữ</option>
+                        <option value="Khác">Khác</option>
+                    </select>
+                </div>
+            </div>
+
             <div style={styles.formActions}>
               <button style={{...styles.button, ...styles.primaryButton}} onClick={handleAddStudent}>Thêm</button>
             </div>
@@ -188,9 +212,10 @@ const Profile = ({ userInfo, setUserInfo, isEditing, setIsEditing }) => {
             students.map(student => (
                 <div key={student.student_id} style={styles.studentCard}>
                 <div style={styles.studentInfo}>
-                    <div>
-                    <h4 style={styles.studentName}>{student.name}</h4>
-                    <p style={styles.studentClass}>Lớp: {student.class}</p>
+                    <div style={styles.studentDetails}>
+                        <h4 style={styles.studentName}>{student.name}</h4>
+                        <div style={styles.studentMeta}>Lớp: {student.class} | Giới tính: {student.gender}</div>
+                        <div style={styles.studentMeta}>Trường: {student.school_name}</div>
                     </div>
                     <button style={{...styles.button, ...styles.dangerButton}} onClick={() => handleDeleteStudent(student.student_id)}>
                     Xóa

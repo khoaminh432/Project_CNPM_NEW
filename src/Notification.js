@@ -15,11 +15,12 @@ const Notification = () => {
         const formattedData = data.map(item => ({
           id: item.id,
           title: item.title,
-          message: item.content,
+          message: item.content, // DB mới dùng 'content'
           time: new Date(item.created_at).toLocaleString('vi-VN'),
           read: item.status === 'read',
           type: item.recipient_type, 
-          label: item.notificationFor // Lấy cột "Phụ huynh" để hiển thị
+          // Logic hiển thị nhãn dựa trên recipient_type
+          label: item.recipient_type === 'parent' ? 'Phụ huynh' : (item.recipient_type === 'system' ? 'Hệ thống' : 'Chung')
         }));
         setNotifications(formattedData);
       })

@@ -68,7 +68,7 @@ const BusLineDetail = ({ routeId: propRouteId }) => {
       }
   }, [selectedBusId]);
 
-  // 4. Lấy danh sách học sinh (KHI ĐÃ CÓ LỊCH TRÌNH)
+  // 4. Lấy danh sách học sinh
   useEffect(() => {
     const userStr = localStorage.getItem('user');
     if (routeId && userStr && currentSchedule) {
@@ -86,42 +86,20 @@ const BusLineDetail = ({ routeId: propRouteId }) => {
             .then(res => res.json()).then(data => { setStops(data); if (data.length > 0) setRouteInfo({ name: data[0].route_name, id: routeId }); });
     }
   }, [routeId]);
-
-  // Hàm cập nhật trạng thái
-  const handleStatusChange = (studentId, newStatus, stopId) => { 
-      if (!currentSchedule) {
-          alert("Chưa có lịch trình hoạt động.");
-          return;
-      }
-      setStudents(prev => prev.map(s => s.student_id === studentId ? {...s, pickup_status: newStatus} : s));
-
-      const payload = { 
-          student_id: studentId, 
-          status: newStatus, 
-          driver_id: currentSchedule.driver_id, 
-          schedule_id: currentSchedule.schedule_id, 
-          stop_id: stopId 
-      }; 
-      
-      fetch('http://localhost:8081/api/update-student-status', { 
-          method: 'POST', 
-          headers: { 'Content-Type': 'application/json' }, 
-          body: JSON.stringify(payload) 
-      })
-      .then(res => res.json())
-      .then(() => { 
-          // Có thể fetch lại để đảm bảo đồng bộ
-          const userStr = localStorage.getItem('user'); 
-          if (userStr) {
-              const user = JSON.parse(userStr);
-              fetch(`http://localhost:8081/api/route-students-status?id=${routeId}&parentId=${user.linked_id}&scheduleId=${currentSchedule.schedule_id}`)
-                .then(r => r.json()).then(d => setStudents(d));
-          }
-      }); 
+  
+  const getStatusLabel = (status) => {
+      if (!status || status === 'CHO_DON') return 'Chưa lên xe';
+      if (status === 'DA_DON') return 'Đã lên xe';
+      if (status === 'DA_XUONG') return 'Đã xuống xe';
+      if (status === 'DA_DEN_TRUONG') return 'Đã đến trường';
+      if (status === 'DA_VE_NHA') return 'Đã về nhà';
+      return 'Chưa xác định';
   };
 
-  const studentsWaiting = students.filter(s => !s.pickup_status || s.pickup_status === 'Chưa lên xe');
-  const studentsOnBus = students.filter(s => s.pickup_status && s.pickup_status !== 'Chưa lên xe');
+  const isWaiting = (status) => !status || status === 'CHO_DON' || status === 'Chưa lên xe';
+
+  const studentsWaiting = students.filter(s => isWaiting(s.pickup_status));
+  const studentsOnBus = students.filter(s => !isWaiting(s.pickup_status));
 
   const styles = {
     container: { padding: '30px', maxWidth: '800px', margin: '0 auto', fontFamily: "'Segoe UI', sans-serif", backgroundColor: '#f9f9f9', minHeight: '100vh' },
@@ -143,20 +121,28 @@ const BusLineDetail = ({ routeId: propRouteId }) => {
     studentGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' },
     studentColumn: { backgroundColor: '#f8f9fa', padding: '15px', borderRadius: '8px', border: '1px solid #eee' },
     colTitle: { fontSize: '14px', fontWeight: 'bold', marginBottom: '10px', textAlign: 'center', color: '#555' },
-    studentItem: { marginBottom: '10px', padding: '10px', backgroundColor: 'white', borderRadius: '6px', border: '1px solid #e0e0e0', boxShadow: '0 1px 2px rgba(0,0,0,0.03)' },
-    studentName: { fontWeight: 'bold', fontSize: '14px', color: '#333' },
+    studentItem: { marginBottom: '10px', padding: '10px', backgroundColor: 'white', borderRadius: '6px', border: '1px solid #e0e0e0', boxShadow: '0 1px 2px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'column' },
+    studentName: { fontWeight: 'bold', fontSize: '14px', color: '#333', marginBottom: '4px' },
     studentStop: { fontSize: '12px', color: '#888', marginBottom: '8px' },
-    selectBox: { width: '100%', padding: '6px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '13px', backgroundColor: '#fff', cursor: 'pointer' },
-    statusColor: (status) => { if (status === 'Đã lên xe') return { color: '#007bff' }; if (status === 'Đã đến trường') return { color: '#28a745' }; return { color: '#6c757d' }; },
-    emptyMsg: { textAlign: 'center', color: '#999', fontSize: '13px', fontStyle: 'italic', padding: '20px 0' },
-    warningBox: { padding: '10px', backgroundColor: '#fff3cd', color: '#856404', borderRadius: '5px', marginBottom: '20px', border: '1px solid #ffeeba', fontSize: '14px' }
+    
+    statusBadge: { 
+        display: 'inline-block', 
+        padding: '4px 8px', 
+        borderRadius: '4px', 
+        fontSize: '12px', 
+        fontWeight: 'bold',
+        textAlign: 'center',
+        width: 'fit-content'
+    },
+    
+    statusColor: (status) => { 
+        if (status === 'DA_DON') return { backgroundColor: '#cce5ff', color: '#004085', border: '1px solid #b8daff' }; // Xanh dương
+        if (status === 'DA_XUONG') return { backgroundColor: '#e0cffc', color: '#4a148c', border: '1px solid #d1c4e9' }; // Tím (MỚI)
+        if (status === 'DA_DEN_TRUONG') return { backgroundColor: '#d4edda', color: '#155724', border: '1px solid #c3e6cb' }; // Xanh lá
+        // Default (Chưa lên xe/Chờ đón)
+        return { backgroundColor: '#e2e3e5', color: '#383d41', border: '1px solid #d6d8db' }; // Xám
+    },
   };
-
-  const StatusSelect = ({ student }) => (
-    <select style={styles.selectBox} value={student.pickup_status || 'Chưa lên xe'} onChange={(e) => handleStatusChange(student.student_id, e.target.value, student.stop_id)} disabled={!currentSchedule}>
-        <option value="Chưa lên xe">Chưa lên xe</option><option value="Đã lên xe">Đã lên xe</option><option value="Đã đến trường">Đã đến trường</option><option value="Đã về nhà">Đã về nhà</option>
-    </select>
-  );
 
   if (!routeId) return <div style={{padding: '20px', textAlign: 'center'}}>Vui lòng chọn tuyến xe...</div>;
 
@@ -221,7 +207,9 @@ const BusLineDetail = ({ routeId: propRouteId }) => {
                     <div key={s.student_id} style={styles.studentItem}>
                         <div style={styles.studentName}>{s.name}</div>
                         <div style={styles.studentStop}>Trạm: {s.stop_name}</div>
-                        <StatusSelect student={s} />
+                        <div style={{...styles.statusBadge, ...styles.statusColor(s.pickup_status)}}>
+                            {getStatusLabel(s.pickup_status)}
+                        </div>
                     </div>
                 ))}
             </div>
@@ -230,8 +218,10 @@ const BusLineDetail = ({ routeId: propRouteId }) => {
                 {studentsOnBus.map(s => (
                     <div key={s.student_id} style={styles.studentItem}>
                         <div style={styles.studentName}>{s.name}</div>
-                        <div style={{...styles.studentStop, ...styles.statusColor(s.pickup_status), fontWeight: 'bold'}}>{s.pickup_status}</div>
-                        <StatusSelect student={s} />
+                        <div style={styles.studentStop}>Trạm: {s.stop_name}</div>
+                        <div style={{...styles.statusBadge, ...styles.statusColor(s.pickup_status)}}>
+                            {getStatusLabel(s.pickup_status)}
+                        </div>
                     </div>
                 ))}
             </div>

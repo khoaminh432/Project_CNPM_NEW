@@ -5,14 +5,20 @@ const BusLine = () => {
   const [selectedRouteId, setSelectedRouteId] = useState(null);
   const [routes, setRoutes] = useState([]);
 
-  //GỌI API LẤY DANH SÁCH TUYẾN
+  // GỌI API LẤY DANH SÁCH TUYẾN
   useEffect(() => {
     fetch('http://localhost:8081/api/routes')
       .then(res => res.json())
-      .then(data => setRoutes(data))
+      .then(data => {
+        // --- LOGIC THAY ĐỔI Ở ĐÂY ---
+        // Lọc chỉ lấy các tuyến có status là 'Đang hoạt động'
+        const activeRoutes = data.filter(route => route.status === 'Đang hoạt động');
+        setRoutes(activeRoutes);
+      })
       .catch(err => console.error(err));
   }, []);
 
+  // BusLineDetail
   if (selectedRouteId) {
     return (
       <div>

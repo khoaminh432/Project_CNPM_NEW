@@ -342,6 +342,10 @@ export default function Schedule({ onNavigateToMainPage, onNavigate }) {
                   <img src={imgLaBus} alt="bus" className="sc-bus-icon" />
                 </div>
                 <div className="sc-item-body">
+                  <div className="sc-item-date-row">
+                    <FontAwesomeIcon icon={faCalendar} style={{ marginRight: '8px', color: '#6c757d' }} />
+                    <span className="sc-item-date-text">{formatDate(schedule.schedule_date)}</span>
+                  </div>
                   <div className="sc-item-time-section">
                     <div className="sc-time-group">
                       <span className="sc-time-label">Thời gian bắt đầu:</span>

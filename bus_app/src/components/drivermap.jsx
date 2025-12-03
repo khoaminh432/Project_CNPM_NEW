@@ -93,9 +93,8 @@ export default function DriverMap({ onBackToMain, onNavigateToList }) {
   const [showStudentListModal, setShowStudentListModal] = useState(false);
   const [showEmergencyModal, setShowEmergencyModal] = useState(false);
   const [reportFormData, setReportFormData] = useState({
-    type: "",
-    location: "Địa điểm hiện tại",
-    notes: "",
+    title: "",
+    content: "",
   });
   const [currentPosition, setCurrentPosition] = useState([10.762622, 106.660172]); // TP.HCM default
   const [mapCenter, setMapCenter] = useState([10.762622, 106.660172]);
@@ -142,9 +141,8 @@ export default function DriverMap({ onBackToMain, onNavigateToList }) {
   const handleCloseReportModal = () => {
     setShowReportModal(false);
     setReportFormData({
-      type: "",
-      location: "Địa điểm hiện tại",
-      notes: "",
+      title: "",
+      content: "",
     });
   };
 
@@ -155,10 +153,48 @@ export default function DriverMap({ onBackToMain, onNavigateToList }) {
     }));
   };
 
-  const handleSubmitReport = () => {
-    console.log("Report submitted:", reportFormData);
-    // TODO: Send report data to backend
-    handleCloseReportModal();
+  const handleSubmitReport = async () => {
+    if (!reportFormData.title || !reportFormData.content) {
+      alert('Vui lòng điền đầy đủ thông tin');
+      return;
+    }
+
+    try {
+      const userStr = localStorage.getItem('user');
+      if (!userStr) return;
+
+      const user = JSON.parse(userStr);
+      const driverId = user.driver_id;
+      const driverName = user.name || 'Tài xế';
+
+      // Create notification for admin
+      const response = await fetch('http://localhost:5000/api/notifications/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: reportFormData.title,
+          content: reportFormData.content,
+          recipient_type: 'admin',
+          type: 'manual',
+          sender_id: driverId,
+          sender_name: driverName
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        alert('Báo cáo đã được gửi thành công!');
+        handleCloseReportModal();
+      } else {
+        alert('Không thể gửi báo cáo: ' + data.message);
+      }
+    } catch (error) {
+      console.error('Error submitting report:', error);
+      alert('Không thể gửi báo cáo. Vui lòng thử lại.');
+    }
   };
 
   // --- Handle Stop Counter Modal ---
@@ -575,48 +611,32 @@ export default function DriverMap({ onBackToMain, onNavigateToList }) {
 
               {/* Modal Body */}
               <div className="dm-modal-body">
-                {/* Issue Type */}
+                {/* Title */}
                 <div className="dm-form-group">
-                  <label className="dm-form-label">Loại sự cố</label>
-                  <div className="dm-form-input-wrapper">
-                    <select
-                      className="dm-form-input dm-form-select"
-                      value={reportFormData.type}
-                      onChange={(e) => handleReportFormChange("type", e.target.value)}
-                    >
-                      <option value="">Chọn loại sự cố</option>
-                      <option value="accident">Tai nạn giao thông</option>
-                      <option value="mechanical">Sự cố cơ khí</option>
-                      <option value="traffic">Tắc đường</option>
-                      <option value="passenger">Vấn đề hành khách</option>
-                      <option value="other">Khác</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* Location */}
-                <div className="dm-form-group">
-                  <label className="dm-form-label">Địa điểm</label>
+                  <label className="dm-form-label">Tiêu đề</label>
                   <div className="dm-form-input-wrapper">
                     <input
                       type="text"
                       className="dm-form-input"
-                      value={reportFormData.location}
-                      onChange={(e) => handleReportFormChange("location", e.target.value)}
-                      readOnly
+                      value={reportFormData.title}
+                      onChange={(e) => handleReportFormChange("title", e.target.value)}
+                      placeholder="Nhập tiêu đề báo cáo"
                     />
                   </div>
                 </div>
 
-                {/* Notes */}
+                {/* Content */}
                 <div className="dm-form-group">
-                  <label className="dm-form-label">Ghi chú</label>
-                  <textarea
-                    className="dm-form-input dm-form-textarea"
-                    value={reportFormData.notes}
-                    onChange={(e) => handleReportFormChange("notes", e.target.value)}
-                    placeholder="Mô tả chi tiết về sự cố"
-                  />
+                  <label className="dm-form-label">Nội dung</label>
+                  <div className="dm-form-input-wrapper">
+                    <textarea
+                      className="dm-form-input dm-form-textarea"
+                      value={reportFormData.content}
+                      onChange={(e) => handleReportFormChange("content", e.target.value)}
+                      placeholder="Mô tả chi tiết về sự cố"
+                      rows="6"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -631,7 +651,7 @@ export default function DriverMap({ onBackToMain, onNavigateToList }) {
                 <button
                   className="dm-modal-btn dm-btn-confirm"
                   onClick={handleSubmitReport}
-                  disabled={!reportFormData.type}
+                  disabled={!reportFormData.title || !reportFormData.content}
                 >
                   Xác nhận báo cáo
                 </button>

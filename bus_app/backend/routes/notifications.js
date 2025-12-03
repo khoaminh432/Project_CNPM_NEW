@@ -4,6 +4,45 @@ const router = express.Router();
 const db = require('../config/database');
 
 /**
+ * POST /api/notifications/create
+ * Create a new notification (e.g., report to admin)
+ */
+router.post('/create', async (req, res) => {
+  try {
+    const { title, content, recipient_type, type, sender_id, sender_name } = req.body;
+
+    if (!title || !content) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required fields: title, content'
+      });
+    }
+
+    // Insert notification into database with defaults
+    const [result] = await db.query(
+      `INSERT INTO notification 
+       (recipient_type, title, content, type, status, status_sent, created_at)
+       VALUES (?, ?, ?, ?, 'unread', 'sent', NOW())`,
+      [recipient_type || 'admin', title, content, type || 'manual']
+    );
+
+    res.status(201).json({
+      success: true,
+      message: 'Notification created successfully',
+      notification_id: result.insertId
+    });
+
+  } catch (error) {
+    console.error('Create notification error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error creating notification',
+      error: error.message
+    });
+  }
+});
+
+/**
  * GET /api/notifications
  * Get all notifications for a specific user based on their role
  */

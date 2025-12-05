@@ -16,6 +16,15 @@ export default function Noti({ onNavigateToMainPage, onNavigate }) {
   const [driverId, setDriverId] = useState(null);
   const [isDeleteMode, setIsDeleteMode] = useState(false);
   const [selectedNotifications, setSelectedNotifications] = useState([]);
+  const [popup, setPopup] = useState({ show: false, type: 'success', title: '', message: '' });
+
+  // Show popup notification
+  const showPopup = (type, title, message) => {
+    setPopup({ show: true, type, title, message });
+    setTimeout(() => {
+      setPopup({ show: false, type: 'success', title: '', message: '' });
+    }, 3000);
+  };
 
   // Load notifications from database
   useEffect(() => {
@@ -81,11 +90,11 @@ export default function Noti({ onNavigateToMainPage, onNavigate }) {
         // Update local state
         setNotifications(notifications.map(notif => ({ ...notif, isRead: true })));
       } else {
-        alert('Lỗi: ' + data.message);
+        showPopup('error', 'Lỗi', data.message);
       }
     } catch (error) {
       console.error('Error marking all as read:', error);
-      alert('Lỗi khi đánh dấu đã đọc!');
+      showPopup('error', 'Lỗi', 'Lỗi khi đánh dấu đã đọc!');
     }
   };
 
@@ -127,7 +136,7 @@ export default function Noti({ onNavigateToMainPage, onNavigate }) {
     } else {
       // Execute delete
       if (selectedNotifications.length === 0) {
-        alert('Vui lòng chọn thông báo để xóa!');
+        showPopup('warning', 'Chưa chọn', 'Vui lòng chọn thông báo để xóa!');
         return;
       }
 
@@ -149,10 +158,10 @@ export default function Noti({ onNavigateToMainPage, onNavigate }) {
         setNotifications(notifications.filter(notif => !selectedNotifications.includes(notif.id)));
         setSelectedNotifications([]);
         setIsDeleteMode(false);
-        alert('Xóa thành công!');
+        showPopup('success', 'Thành công', 'Xóa thành công!');
       } catch (error) {
         console.error('Error deleting notifications:', error);
-        alert('Lỗi khi xóa thông báo!');
+        showPopup('error', 'Lỗi', 'Lỗi khi xóa thông báo!');
       }
     }
   };
@@ -322,6 +331,16 @@ export default function Noti({ onNavigateToMainPage, onNavigate }) {
           </>
         )}
       </div>
+
+      {/* Popup Notification */}
+      {popup.show && (
+        <div className="noti-popup-overlay">
+          <div className={`noti-popup noti-popup-${popup.type}`}>
+            <h3>{popup.title}</h3>
+            <p>{popup.message}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

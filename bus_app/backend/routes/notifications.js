@@ -23,7 +23,7 @@ router.post('/create', async (req, res) => {
       `INSERT INTO notification 
        (recipient_type, title, content, type, status, status_sent, created_at)
        VALUES (?, ?, ?, ?, 'unread', 'sent', NOW())`,
-      [recipient_type || 'admin', title, content, type || 'manual']
+      [recipient_type || 'system', title, content, type || 'manual']
     );
 
     res.status(201).json({
@@ -58,11 +58,12 @@ router.get('/', async (req, res) => {
     }
 
     // Get notifications based on recipient_type matching user role
+    // For drivers, only show notifications with recipient_type = 'driver'
     const [notifications] = await db.query(
       `SELECT id, recipient_type, title, content, type, scheduled_time, 
               is_recurring, status_sent, created_at, status
        FROM notification 
-       WHERE recipient_type = ? OR recipient_type = 'system'
+       WHERE recipient_type = ?
        ORDER BY created_at DESC`,
       [role]
     );

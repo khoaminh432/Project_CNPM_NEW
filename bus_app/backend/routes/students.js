@@ -602,4 +602,160 @@ router.get('/schedule/:schedule_id/stops/details', async (req, res) => {
   }
 });
 
+// Get students grouped by stops for student list modal
+router.get('/schedule/:schedule_id/students-by-stop', async (req, res) => {
+  try {
+    const { schedule_id } = req.params;
+
+    // Get schedule info first
+    const [scheduleInfo] = await db.query(`
+      SELECT 
+        bs.start_time,
+        r.start_point,
+        r.end_point
+      FROM bus_schedule bs
+      JOIN route r ON bs.route_id = r.route_id
+      WHERE bs.schedule_id = ?
+    `, [schedule_id]);
+
+    if (scheduleInfo.length === 0) {
+      return res.json({
+        status: 'ERROR',
+        message: 'Schedule not found'
+      });
+    }
+
+    const { start_time } = scheduleInfo[0];
+
+    // Get students grouped by pickup stops
+    const [pickupStops] = await db.query(`
+      SELECT 
+        bs.stop_id,
+        bs.stop_name,
+        'Điểm đón' as stop_type,
+        sp.pickup_id,
+        s.student_id,
+        s.full_name,
+        s.class,
+        sp.status
+      FROM student_pickup sp
+      JOIN student s ON sp.student_id = s.student_id
+      JOIN bus_stop bs ON s.stop_id = bs.stop_id
+      WHERE sp.schedule_id = ? AND s.stop_id IS NOT NULL
+      ORDER BY bs.stop_id, s.full_name
+    `, [schedule_id]);
+
+    // Get students grouped by dropoff stops
+    const [dropoffStops] = await db.query(`
+      SELECT 
+        bs.stop_id,
+        bs.stop_name,
+        'Điểm trả' as stop_type,
+        sp.pickup_id,
+        s.student_id,
+        s.full_name,
+        s.class,
+        sp.status
+      FROM student_pickup sp
+      JOIN student s ON sp.student_id = s.student_id
+      JOIN bus_stop bs ON s.dropoff_stop_id = bs.stop_id
+      WHERE sp.schedule_id = ? AND s.dropoff_stop_id IS NOT NULL
+      ORDER BY bs.stop_id, s.full_name
+    `, [schedule_id]);
+
+    // Combine and group by stops
+    const allStudents = [...pickupStops, ...dropoffStops];
+    const stopGroups = {};
+
+    allStudents.forEach(student => {
+      const key = `${student.stop_id}_${student.stop_type}`;
+      if (!stopGroups[key]) {
+        stopGroups[key] = {
+          stop_id: student.stop_id,
+          stop_name: student.stop_name,
+          stop_type: student.stop_type,
+          students: []
+        };
+      }
+      stopGroups[key].students.push({
+        pickup_id: student.pickup_id,
+        student_id: student.student_id,
+        full_name: student.full_name,
+        class: student.class,
+        status: student.status
+      });
+    });
+
+    // Convert to array and add time offsets
+    const stopsArray = Object.values(stopGroups).map((stop, index) => ({
+      ...stop,
+      time_offset: (index + 1) * 8 // 8 minutes between stops
+    }));
+
+    res.json({
+      status: 'OK',
+      data: {
+        start_time,
+        stops: stopsArray
+      }
+    });
+
+  } catch (error) {
+    console.error('Error fetching students by stop:', error);
+    res.status(500).json({
+      status: 'ERROR',
+      message: error.message
+    });
+  }
+});
+
+// Check if schedule can be completed (all students must be dropped off)
+router.get('/schedule/:schedule_id/check-completion', async (req, res) => {
+  try {
+    const { schedule_id } = req.params;
+
+    // Count students by status
+    const [statusCounts] = await db.query(`
+      SELECT 
+        status,
+        COUNT(*) as count
+      FROM student_pickup
+      WHERE schedule_id = ?
+      GROUP BY status
+    `, [schedule_id]);
+
+    const statusMap = {};
+    statusCounts.forEach(row => {
+      statusMap[row.status] = row.count;
+    });
+
+    const waiting = statusMap['CHO_DON'] || 0;
+    const pickedUp = statusMap['DA_DON'] || 0;
+    const droppedOff = statusMap['DA_TRA'] || 0;
+    const cancelled = statusMap['HUY_CHUYEN'] || 0;
+
+    // Can complete only if no students are waiting or picked up
+    const canComplete = waiting === 0 && pickedUp === 0;
+
+    res.json({
+      status: 'OK',
+      canComplete: canComplete,
+      message: canComplete 
+        ? 'Tất cả học sinh đã được trả' 
+        : 'Còn học sinh chưa được trả',
+      waiting: waiting,
+      picked_up: pickedUp,
+      dropped_off: droppedOff,
+      cancelled: cancelled
+    });
+
+  } catch (error) {
+    console.error('Error checking completion:', error);
+    res.status(500).json({
+      status: 'ERROR',
+      message: error.message
+    });
+  }
+});
+
 module.exports = router;

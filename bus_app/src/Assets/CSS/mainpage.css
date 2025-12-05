@@ -560,3 +560,226 @@
     text-align: center;
   }
 }
+
+/* ========== CHANGE PASSWORD MODAL ========== */
+.mp-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.mp-modal-content {
+  background: white;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 450px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.mp-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.mp-modal-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin: 0;
+  font-family: "Raleway", sans-serif;
+}
+
+.mp-modal-close {
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.mp-modal-close:hover {
+  background: #f3f4f6;
+}
+
+.mp-modal-body {
+  padding: 24px;
+}
+
+.mp-form-group {
+  margin-bottom: 20px;
+}
+
+.mp-form-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-dark);
+  margin-bottom: 8px;
+  font-family: Inter, sans-serif;
+}
+
+.mp-form-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: Inter, sans-serif;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.mp-form-input:focus {
+  outline: none;
+  border-color: var(--main-color);
+  box-shadow: 0 0 0 3px rgba(0, 115, 251, 0.1);
+}
+
+.mp-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.mp-btn-cancel,
+.mp-btn-confirm {
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: Inter, sans-serif;
+  border: none;
+}
+
+.mp-btn-cancel {
+  background: #f3f4f6;
+  color: var(--text-dark);
+}
+
+.mp-btn-cancel:hover {
+  background: #e5e7eb;
+}
+
+.mp-btn-confirm {
+  background: var(--main-color);
+  color: white;
+}
+
+.mp-btn-confirm:hover {
+  background: #0056d2;
+}
+
+.mp-btn-confirm:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* ========== POPUP NOTIFICATION ========== */
+.mp-popup-overlay {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  pointer-events: none;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.mp-popup {
+  background: white;
+  border-radius: 12px;
+  padding: 20px 30px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  min-width: 300px;
+  max-width: 500px;
+  pointer-events: all;
+  animation: slideDown 0.3s ease-out;
+}
+
+.mp-popup h3 {
+  margin: 0 0 10px 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.mp-popup p {
+  margin: 0;
+  font-size: 14px;
+  color: #666;
+  line-height: 1.5;
+}
+
+/* Popup types */
+.mp-popup-success {
+  border-left: 4px solid #10b981;
+}
+
+.mp-popup-success h3 {
+  color: #10b981;
+}
+
+.mp-popup-error {
+  border-left: 4px solid #ef4444;
+}
+
+.mp-popup-error h3 {
+  color: #ef4444;
+}
+
+.mp-popup-warning {
+  border-left: 4px solid #f59e0b;
+}
+
+.mp-popup-warning h3 {
+  color: #f59e0b;
+}
+
+.mp-popup-info {
+  border-left: 4px solid #3b82f6;
+}
+
+.mp-popup-info h3 {
+  color: #3b82f6;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

@@ -388,6 +388,95 @@
   background: #5a96d3;
 }
 
+/* ========== POPUP NOTIFICATION ========== */
+.list-popup-overlay {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  pointer-events: none;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.list-popup {
+  background: white;
+  border-radius: 12px;
+  padding: 20px 30px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  min-width: 300px;
+  max-width: 500px;
+  pointer-events: all;
+  animation: slideDown 0.3s ease-out;
+}
+
+.list-popup h3 {
+  margin: 0 0 10px 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.list-popup p {
+  margin: 0;
+  font-size: 14px;
+  color: #666;
+  line-height: 1.5;
+}
+
+/* Popup types */
+.list-popup-success {
+  border-left: 4px solid #10b981;
+}
+
+.list-popup-success h3 {
+  color: #10b981;
+}
+
+.list-popup-error {
+  border-left: 4px solid #ef4444;
+}
+
+.list-popup-error h3 {
+  color: #ef4444;
+}
+
+.list-popup-warning {
+  border-left: 4px solid #f59e0b;
+}
+
+.list-popup-warning h3 {
+  color: #f59e0b;
+}
+
+.list-popup-info {
+  border-left: 4px solid #3b82f6;
+}
+
+.list-popup-info h3 {
+  color: #3b82f6;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
 /* ========== RESPONSIVE DESIGN ========== */
 @media (max-width: 1400px) {
   .list-container {

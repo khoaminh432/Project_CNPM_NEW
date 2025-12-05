@@ -6,7 +6,16 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [popup, setPopup] = useState({ show: false, type: 'success', title: '', message: '' });
   const navigate = useNavigate();
+
+  // Show popup notification
+  const showPopup = (type, title, message) => {
+    setPopup({ show: true, type, title, message });
+    setTimeout(() => {
+      setPopup({ show: false, type: 'success', title: '', message: '' });
+    }, 3000);
+  };
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -24,13 +33,13 @@ const Login = () => {
         localStorage.setItem('user', JSON.stringify(data.user));
         navigate('/home'); 
       } else {
-        alert('Lỗi: ' + data.message);
+        showPopup('error', 'Lỗi đăng nhập', data.message);
       }
     })
     .catch(err => {
       setIsLoading(false);
       console.error(err);
-      alert('Lỗi kết nối đến server!');
+      showPopup('error', 'Lỗi kết nối', 'Lỗi kết nối đến server!');
     });
   };
 
@@ -72,6 +81,16 @@ const Login = () => {
         </form>
         <div className="login-footer">Bạn quên mật khẩu? Liên hệ nhà trường.</div>
       </div>
+
+      {/* Popup Notification */}
+      {popup.show && (
+        <div className="login-popup-overlay">
+          <div className={`login-popup login-popup-${popup.type}`}>
+            <h3>{popup.title}</h3>
+            <p>{popup.message}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -24,6 +24,15 @@ export default function Profile({ onBackToMain }) {
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [userRole, setUserRole] = useState("");
+  const [popup, setPopup] = useState({ show: false, type: 'success', title: '', message: '' });
+
+  // Show popup notification
+  const showPopup = (type, title, message) => {
+    setPopup({ show: true, type, title, message });
+    setTimeout(() => {
+      setPopup({ show: false, type: 'success', title: '', message: '' });
+    }, 3000);
+  };
 
   // Load user profile from API
   useEffect(() => {
@@ -117,7 +126,7 @@ export default function Profile({ onBackToMain }) {
       console.log('Server response:', data);
       
       if (data.success) {
-        alert('Cập nhật thông tin thành công!');
+        showPopup('success', 'Thành công', 'Cập nhật thông tin thành công!');
         setIsEditing(false);
         
         // Reload profile data from server
@@ -147,11 +156,11 @@ export default function Profile({ onBackToMain }) {
           }));
         }
       } else {
-        alert('Lỗi: ' + data.message);
+        showPopup('error', 'Lỗi', data.message);
       }
     } catch (error) {
       console.error('Error updating profile:', error);
-      alert('Lỗi khi cập nhật thông tin!');
+      showPopup('error', 'Lỗi kết nối', 'Lỗi khi cập nhật thông tin!');
     }
   };
 
@@ -330,6 +339,16 @@ export default function Profile({ onBackToMain }) {
             )}
           </div>
         </div>
+        </div>
+      )}
+
+      {/* Popup Notification */}
+      {popup.show && (
+        <div className="profile-popup-overlay">
+          <div className={`profile-popup profile-popup-${popup.type}`}>
+            <h3>{popup.title}</h3>
+            <p>{popup.message}</p>
+          </div>
         </div>
       )}
     </div>

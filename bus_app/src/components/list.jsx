@@ -17,6 +17,15 @@ export default function List({ onNavigateToMainPage, onNavigateToMap, onNavigate
   const [routeInfo, setRouteInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [popup, setPopup] = useState({ show: false, type: 'success', title: '', message: '' });
+
+  // Show popup notification
+  const showPopup = (type, title, message) => {
+    setPopup({ show: true, type, title, message });
+    setTimeout(() => {
+      setPopup({ show: false, type: 'success', title: '', message: '' });
+    }, 3000);
+  };
 
   useEffect(() => {
     if (scheduleId) {
@@ -136,14 +145,14 @@ export default function List({ onNavigateToMainPage, onNavigateToMap, onNavigate
       // Check if schedule was auto-completed or cancelled
       if (data.scheduleCompleted) {
         if (data.scheduleCancelled) {
-          alert('Tất cả học sinh đã hủy chuyến. Chuyến đi đã được đánh dấu hủy!');
+          showPopup('info', 'Chuyến đi hủy', 'Tất cả học sinh đã hủy chuyến. Chuyến đi đã được đánh dấu hủy!');
         } else {
-          alert('Tất cả học sinh đã được thả hoặc hủy. Chuyến đi đã được đánh dấu hoàn thành!');
+          showPopup('success', 'Chuyến đi hoàn thành', 'Tất cả học sinh đã được thả hoặc hủy. Chuyến đi đã được đánh dấu hoàn thành!');
         }
       }
     } catch (error) {
       console.error('Error updating status:', error);
-      alert('Không thể cập nhật trạng thái');
+      showPopup('error', 'Lỗi cập nhật', 'Không thể cập nhật trạng thái');
     }
   };
 
@@ -390,7 +399,7 @@ export default function List({ onNavigateToMainPage, onNavigateToMap, onNavigate
                 style={{ flex: 0.4, backgroundColor: '#ff6776ff', border: 'none' }}
                 onClick={() => {
                   if (selectedStudent.pickup_status === 'DA_DON') {
-                    alert('Học sinh đã được đón, không thể hủy chuyến!');
+                    showPopup('warning', 'Không thể hủy', 'Học sinh đã được đón, không thể hủy chuyến!');
                     return;
                   }
                   if (window.confirm(`Xác nhận hủy chuyến cho học sinh ${selectedStudent.full_name}?`)) {
@@ -404,6 +413,16 @@ export default function List({ onNavigateToMainPage, onNavigateToMap, onNavigate
           )}
         </div>
       </div>
+
+      {/* Popup Notification */}
+      {popup.show && (
+        <div className="list-popup-overlay">
+          <div className={`list-popup list-popup-${popup.type}`}>
+            <h3>{popup.title}</h3>
+            <p>{popup.message}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

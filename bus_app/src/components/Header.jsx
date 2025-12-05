@@ -86,7 +86,15 @@ export default function Header({
         
         {isDropdownOpen && (
           <div className="app-profile-dropdown-menu">
-            <button className="app-dropdown-item">Đổi mật khẩu</button>
+            <button 
+              className="app-dropdown-item"
+              onClick={() => {
+                setIsDropdownOpen(false);
+                onNavigate && onNavigate('changePassword');
+              }}
+            >
+              Đổi mật khẩu
+            </button>
             <button className="app-dropdown-item" onClick={handleLogout}>Đăng xuất</button>
           </div>
         )}

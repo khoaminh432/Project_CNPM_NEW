@@ -351,4 +351,56 @@ router.get('/today/earliest/:driver_id', async (req, res) => {
   }
 });
 
+// Start schedule - update status to "Đang thực hiện" and set start_time
+router.put('/:schedule_id/start', async (req, res) => {
+  try {
+    const { schedule_id } = req.params;
+    
+    // Update schedule status and start_time
+    await db.query(`
+      UPDATE bus_schedule 
+      SET status = 'Đang thực hiện', 
+          start_time = NOW()
+      WHERE schedule_id = ?
+    `, [schedule_id]);
+    
+    res.json({
+      status: 'OK',
+      message: 'Schedule started successfully'
+    });
+  } catch (error) {
+    console.error('Error starting schedule:', error);
+    res.status(500).json({
+      status: 'ERROR',
+      message: error.message
+    });
+  }
+});
+
+// End schedule - update status to "Hoàn thành" and set end_time
+router.put('/:schedule_id/end', async (req, res) => {
+  try {
+    const { schedule_id } = req.params;
+    
+    // Update schedule status and end_time
+    await db.query(`
+      UPDATE bus_schedule 
+      SET status = 'Hoàn thành', 
+          end_time = NOW()
+      WHERE schedule_id = ?
+    `, [schedule_id]);
+    
+    res.json({
+      status: 'OK',
+      message: 'Schedule completed successfully'
+    });
+  } catch (error) {
+    console.error('Error ending schedule:', error);
+    res.status(500).json({
+      status: 'ERROR',
+      message: error.message
+    });
+  }
+});
+
 module.exports = router;

@@ -104,6 +104,16 @@ export default function DriverMap({ onBackToMain, onNavigateToList }) {
   const [totalStops, setTotalStops] = useState(0);
   const [stopsDetails, setStopsDetails] = useState([]);
   const [studentsByStop, setStudentsByStop] = useState([]);
+  const [driverRating, setDriverRating] = useState('5.00');
+  const [popup, setPopup] = useState({ show: false, type: 'success', title: '', message: '' });
+
+  // Show popup notification
+  const showPopup = (type, title, message) => {
+    setPopup({ show: true, type, title, message });
+    setTimeout(() => {
+      setPopup({ show: false, type: 'success', title: '', message: '' });
+    }, 3000);
+  };
 
   // Helper function to format time with offset
   const formatTimeWithOffset = (startTime, offsetMinutes) => {
@@ -146,6 +156,57 @@ export default function DriverMap({ onBackToMain, onNavigateToList }) {
     });
   };
 
+  // --- Handle Start/End Trip ---
+  const handleStartEndTrip = async () => {
+    if (!earliestSchedule) return;
+
+    try {
+      const isStarting = earliestSchedule.status === 'Chưa bắt đầu';
+      
+      // If ending the trip, check if all students are dropped off
+      if (!isStarting) {
+        const checkResponse = await fetch(`http://localhost:5000/api/students/schedule/${earliestSchedule.schedule_id}/check-completion`);
+        const checkData = await checkResponse.json();
+        
+        if (!checkData.canComplete) {
+          showPopup('error', 'Không thể kết thúc chuyến đi', 
+            `${checkData.message}\nChờ đón: ${checkData.waiting} | Đã đón: ${checkData.picked_up}`);
+          return;
+        }
+      }
+
+      const newStatus = isStarting ? 'Đang thực hiện' : 'Hoàn thành';
+      const endpoint = isStarting ? 'start' : 'end';
+
+      const response = await fetch(`http://localhost:5000/api/schedules/${earliestSchedule.schedule_id}/${endpoint}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+
+      if (data.status === 'OK') {
+        // Update schedule status in state
+        setEarliestSchedule(prev => ({
+          ...prev,
+          status: newStatus,
+          start_time: isStarting ? new Date().toISOString() : prev.start_time,
+          end_time: !isStarting ? new Date().toISOString() : prev.end_time
+        }));
+        
+        showPopup('success', 'Thành công', 
+          isStarting ? 'Bắt đầu chuyến đi thành công!' : 'Kết thúc chuyến đi thành công!');
+      } else {
+        showPopup('error', 'Lỗi', data.message);
+      }
+    } catch (error) {
+      console.error('Error updating trip status:', error);
+      showPopup('error', 'Lỗi', 'Không thể cập nhật trạng thái. Vui lòng thử lại.');
+    }
+  };
+
   const handleReportFormChange = (field, value) => {
     setReportFormData((prev) => ({
       ...prev,
@@ -155,7 +216,7 @@ export default function DriverMap({ onBackToMain, onNavigateToList }) {
 
   const handleSubmitReport = async () => {
     if (!reportFormData.title || !reportFormData.content) {
-      alert('Vui lòng điền đầy đủ thông tin');
+      showPopup('warning', 'Thiếu thông tin', 'Vui lòng điền đầy đủ thông tin');
       return;
     }
 
@@ -167,7 +228,7 @@ export default function DriverMap({ onBackToMain, onNavigateToList }) {
       const driverId = user.driver_id;
       const driverName = user.name || 'Tài xế';
 
-      // Create notification for admin
+      // Create notification for system
       const response = await fetch('http://localhost:5000/api/notifications/create', {
         method: 'POST',
         headers: {
@@ -176,7 +237,7 @@ export default function DriverMap({ onBackToMain, onNavigateToList }) {
         body: JSON.stringify({
           title: reportFormData.title,
           content: reportFormData.content,
-          recipient_type: 'admin',
+          recipient_type: 'system',
           type: 'manual',
           sender_id: driverId,
           sender_name: driverName
@@ -186,14 +247,14 @@ export default function DriverMap({ onBackToMain, onNavigateToList }) {
       const data = await response.json();
 
       if (data.success) {
-        alert('Báo cáo đã được gửi thành công!');
+        showPopup('success', 'Thành công', 'Báo cáo đã được gửi thành công!');
         handleCloseReportModal();
       } else {
-        alert('Không thể gửi báo cáo: ' + data.message);
+        showPopup('error', 'Lỗi', 'Không thể gửi báo cáo: ' + data.message);
       }
     } catch (error) {
       console.error('Error submitting report:', error);
-      alert('Không thể gửi báo cáo. Vui lòng thử lại.');
+      showPopup('error', 'Lỗi', 'Không thể gửi báo cáo. Vui lòng thử lại.');
     }
   };
 
@@ -281,6 +342,22 @@ export default function DriverMap({ onBackToMain, onNavigateToList }) {
             } catch (error) {
               console.error('Error fetching stops details:', error);
             }
+
+            // Fetch students grouped by stops for student list modal
+            try {
+              const studentsResponse = await fetch(`http://localhost:5000/api/students/schedule/${scheduleData.data.schedule_id}/students-by-stop`);
+              const studentsData = await studentsResponse.json();
+              console.log('Students by stop received:', studentsData);
+              if (studentsData.status === 'OK') {
+                console.log('Students array length:', studentsData.data.stops.length);
+                console.log('Students detail:', JSON.stringify(studentsData.data.stops, null, 2));
+                setStudentsByStop(studentsData.data.stops || []);
+              } else {
+                console.error('Failed to fetch students by stop:', studentsData.message);
+              }
+            } catch (error) {
+              console.error('Error fetching students by stop:', error);
+            }
             
             // Center map to show route
             if (scheduleData.data.start_location_lat && scheduleData.data.start_location_lng) {
@@ -289,7 +366,7 @@ export default function DriverMap({ onBackToMain, onNavigateToList }) {
             }
           } else {
             console.log('No schedule found for today');
-            alert('Không có chuyến đi nào cho hôm nay.');
+            showPopup('info', 'Không có chuyến', 'Không có chuyến đi nào cho hôm nay.');
           }
         } else {
           // Clear markers when disconnecting
@@ -297,16 +374,17 @@ export default function DriverMap({ onBackToMain, onNavigateToList }) {
           setStudentCount(0);
           setTotalStops(0);
           setStopsDetails([]);
+          setStudentsByStop([]);
           setMapCenter([10.762622, 106.660172]);
           setMapZoom(13);
         }
       } else {
         console.error('Failed to update status:', data.message);
-        alert('Không thể cập nhật trạng thái. Vui lòng thử lại.');
+        showPopup('error', 'Lỗi cập nhật', 'Không thể cập nhật trạng thái. Vui lòng thử lại.');
       }
     } catch (error) {
       console.error('Error updating driver status:', error);
-      alert('Lỗi kết nối. Vui lòng thử lại.');
+      showPopup('error', 'Lỗi kết nối', 'Lỗi kết nối. Vui lòng thử lại.');
     }
   };
 
@@ -329,6 +407,11 @@ export default function DriverMap({ onBackToMain, onNavigateToList }) {
           const isActive = data.data.status === 'Đang hoạt động';
           setConnected(isActive);
           setStatus(isActive ? 'Bạn đang online.' : 'Bạn đang offline.');
+          
+          // Set driver rating
+          if (data.data.rating) {
+            setDriverRating(parseFloat(data.data.rating).toFixed(2));
+          }
           
           // If active, fetch earliest schedule
           if (isActive) {
@@ -371,6 +454,22 @@ export default function DriverMap({ onBackToMain, onNavigateToList }) {
                 }
               } catch (error) {
                 console.error('Error fetching stops details:', error);
+              }
+
+              // Fetch students grouped by stops for student list modal
+              try {
+                const studentsResponse = await fetch(`http://localhost:5000/api/students/schedule/${scheduleData.data.schedule_id}/students-by-stop`);
+                const studentsData = await studentsResponse.json();
+                console.log('Students by stop received (useEffect):', studentsData);
+                if (studentsData.status === 'OK') {
+                  console.log('Students array length (useEffect):', studentsData.data.stops.length);
+                  console.log('Students detail (useEffect):', JSON.stringify(studentsData.data.stops, null, 2));
+                  setStudentsByStop(studentsData.data.stops || []);
+                } else {
+                  console.error('Failed to fetch students by stop (useEffect):', studentsData.message);
+                }
+              } catch (error) {
+                console.error('Error fetching students by stop (useEffect):', error);
               }
               
               // Center map to show route
@@ -486,7 +585,7 @@ export default function DriverMap({ onBackToMain, onNavigateToList }) {
           </div>
           <div className="dm-profile-rating">
             <img src={imgStar1} alt="star" className="dm-star-icon" />
-            <span className="dm-rating-text">5.00</span>
+            <span className="dm-rating-text">{driverRating}</span>
           </div>
         </div>
 
@@ -563,8 +662,14 @@ export default function DriverMap({ onBackToMain, onNavigateToList }) {
 
             {/* Action Buttons */}
             <div className="dm-action-buttons">
-              <button className="dm-action-btn dm-btn-primary">
-                Bắt đầu
+              <button 
+                className="dm-action-btn dm-btn-primary"
+                onClick={handleStartEndTrip}
+                disabled={!earliestSchedule || earliestSchedule.status === 'Hoàn thành'}
+              >
+                {earliestSchedule?.status === 'Chưa bắt đầu' ? 'Bắt đầu' : 
+                 earliestSchedule?.status === 'Đang thực hiện' ? 'Kết thúc' : 
+                 'Hoàn thành'}
               </button>
               <button className="dm-action-btn" onClick={handleReportClick}>
                 Báo cáo sự cố
@@ -615,13 +720,21 @@ export default function DriverMap({ onBackToMain, onNavigateToList }) {
                 <div className="dm-form-group">
                   <label className="dm-form-label">Tiêu đề</label>
                   <div className="dm-form-input-wrapper">
-                    <input
-                      type="text"
-                      className="dm-form-input"
+                    <select
+                      className="dm-form-input dm-form-select"
                       value={reportFormData.title}
                       onChange={(e) => handleReportFormChange("title", e.target.value)}
-                      placeholder="Nhập tiêu đề báo cáo"
-                    />
+                    >
+                      <option value="">Chọn loại sự cố</option>
+                      <option value="Tai nạn giao thông">Tai nạn giao thông</option>
+                      <option value="Ùn tắc giao thông">Ùn tắc giao thông</option>
+                      <option value="Sự cố xe">Sự cố xe</option>
+                      <option value="Học sinh bị thương">Học sinh bị thương</option>
+                      <option value="Mất trật tự trên xe">Mất trật tự trên xe</option>
+                      <option value="Chậm trễ">Chậm trễ</option>
+                      <option value="Thời tiết xấu">Thời tiết xấu</option>
+                      <option value="Khác">Khác</option>
+                    </select>
                   </div>
                 </div>
 
@@ -740,80 +853,40 @@ export default function DriverMap({ onBackToMain, onNavigateToList }) {
 
               {/* Student List Container */}
               <div className="dm-student-list-container">
-                {/* Stop 1 */}
-                <div className="dm-student-stop-group">
-                  <div className="dm-student-stop-info">
-                    <p className="dm-student-location">123 Tạ Uyên</p>
-                    <p className="dm-student-time">7:30</p>
-                    <span className="dm-student-badge">Điểm đón</span>
-                  </div>
-                  <div className="dm-student-list-items">
-                    <div className="dm-student-item">
-                      <div className="dm-student-circle">X</div>
-                      <div className="dm-student-info">
-                        <p className="dm-student-name">Nguyễn Văn A</p>
-                        <p className="dm-student-class">10A1</p>
+                {console.log('Rendering modal with studentsByStop:', studentsByStop)}
+                {console.log('studentsByStop.length:', studentsByStop.length)}
+                {studentsByStop.length > 0 ? (
+                  studentsByStop.map((stop, stopIndex) => {
+                    console.log(`Rendering stop ${stopIndex}:`, stop);
+                    return (
+                    <div key={stopIndex} className="dm-student-stop-group">
+                      <div className="dm-student-stop-info">
+                        <p className="dm-student-location">{stop.stop_name}</p>
+                        <p className="dm-student-time">
+                          {formatTimeWithOffset(earliestSchedule?.planned_start, stop.time_offset)}
+                        </p>
+                        <span className="dm-student-badge">{stop.stop_type}</span>
+                      </div>
+                      <div className="dm-student-list-items">
+                        {stop.students && stop.students.map((student, studentIndex) => (
+                          <div key={studentIndex} className="dm-student-item">
+                            <div className="dm-student-circle">X</div>
+                            <div className="dm-student-info">
+                              <p className="dm-student-name">{student.full_name}</p>
+                              <p className="dm-student-class">{student.class}</p>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
-                    <div className="dm-student-item">
-                      <div className="dm-student-circle">X</div>
-                      <div className="dm-student-info">
-                        <p className="dm-student-name">Nguyễn Văn A</p>
-                        <p className="dm-student-class">10A1</p>
-                      </div>
+                  )})
+                ) : (
+                  <div className="dm-student-stop-group">
+                    <div className="dm-student-stop-info">
+                      <p className="dm-student-location">Không có dữ liệu học sinh</p>
                     </div>
                   </div>
-                </div>
-
-                {/* Stop 2 */}
-                <div className="dm-student-stop-group">
-                  <div className="dm-student-stop-info">
-                    <p className="dm-student-location">123 Tạ Uyên</p>
-                    <p className="dm-student-time">7:30</p>
-                    <span className="dm-student-badge">Điểm đón</span>
-                  </div>
-                  <div className="dm-student-list-items">
-                    <div className="dm-student-item">
-                      <div className="dm-student-circle">X</div>
-                      <div className="dm-student-info">
-                        <p className="dm-student-name">Nguyễn Văn A</p>
-                        <p className="dm-student-class">10A1</p>
-                      </div>
-                    </div>
-                    <div className="dm-student-item">
-                      <div className="dm-student-circle">X</div>
-                      <div className="dm-student-info">
-                        <p className="dm-student-name">Nguyễn Văn A</p>
-                        <p className="dm-student-class">10A1</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Stop 3 */}
-                <div className="dm-student-stop-group">
-                  <div className="dm-student-stop-info">
-                    <p className="dm-student-location">123 Tạ Uyên</p>
-                    <p className="dm-student-time">7:30</p>
-                    <span className="dm-student-badge">Điểm đón</span>
-                  </div>
-                  <div className="dm-student-list-items">
-                    <div className="dm-student-item">
-                      <div className="dm-student-circle">X</div>
-                      <div className="dm-student-info">
-                        <p className="dm-student-name">Nguyễn Văn A</p>
-                        <p className="dm-student-class">10A1</p>
-                      </div>
-                    </div>
-                    <div className="dm-student-item">
-                      <div className="dm-student-circle">X</div>
-                      <div className="dm-student-info">
-                        <p className="dm-student-name">Nguyễn Văn A</p>
-                        <p className="dm-student-class">10A1</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                )}
               </div>
 
               {/* Detail Button */}
@@ -867,6 +940,16 @@ export default function DriverMap({ onBackToMain, onNavigateToList }) {
                   Gọi ngay
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Popup Notification */}
+        {popup.show && (
+          <div className="dm-popup-overlay">
+            <div className={`dm-popup dm-popup-${popup.type}`}>
+              <h3>{popup.title}</h3>
+              <p>{popup.message}</p>
             </div>
           </div>
         )}

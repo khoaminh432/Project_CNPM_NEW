@@ -278,4 +278,70 @@ router.put('/profile', async (req, res) => {
   }
 });
 
+/**
+ * PUT /api/auth/change-password
+ * Change user password
+ */
+router.put('/change-password', async (req, res) => {
+  try {
+    const { user_id, role, current_password, new_password } = req.body;
+
+    // Validate input
+    if (!user_id || !role || !current_password || !new_password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Thiếu thông tin bắt buộc'
+      });
+    }
+
+    // Validate new password length
+    if (new_password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: 'Mật khẩu mới phải có ít nhất 6 ký tự'
+      });
+    }
+
+    // Get current password from database
+    const [users] = await db.query(
+      'SELECT password FROM users WHERE user_id = ?',
+      [user_id]
+    );
+
+    if (users.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Người dùng không tồn tại'
+      });
+    }
+
+    // Verify current password
+    if (users[0].password !== current_password) {
+      return res.status(401).json({
+        success: false,
+        message: 'Mật khẩu hiện tại không đúng'
+      });
+    }
+
+    // Update password
+    await db.query(
+      'UPDATE users SET password = ? WHERE user_id = ?',
+      [new_password, user_id]
+    );
+
+    res.json({
+      success: true,
+      message: 'Đổi mật khẩu thành công'
+    });
+
+  } catch (error) {
+    console.error('Change password error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Lỗi khi đổi mật khẩu',
+      error: error.message
+    });
+  }
+});
+
 module.exports = router;

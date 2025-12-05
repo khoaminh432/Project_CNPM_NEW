@@ -18,16 +18,50 @@ export default function Schedule({ onNavigateToMainPage, onNavigate }) {
   const [schedules, setSchedules] = useState([]);
   const [currentDriver, setCurrentDriver] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedStatuses, setSelectedStatuses] = useState(['Čhua bắt đầu', 'Đang thực hiện', 'Hoàn thành', 'Đã hủy']);
+  const [selectedStatuses, setSelectedStatuses] = useState(['Čưa bắt đầu', 'Đang thực hiện', 'Hoàn thành', 'Đã hủy']);
   const [showAllSchedules, setShowAllSchedules] = useState(false);
+  const [popup, setPopup] = useState({ show: false, type: 'success', title: '', message: '' });
+
+  // Show popup notification
+  const showPopup = (type, title, message) => {
+    setPopup({ show: true, type, title, message });
+    setTimeout(() => {
+      setPopup({ show: false, type: 'success', title: '', message: '' });
+    }, 3000);
+  };
 
   // Load data from database
   useEffect(() => {
     loadData();
+  }, [selectedDate, showAllSchedules]);
 
-    // Listen for profile updates
+  // Listen for profile updates (separate effect to avoid re-registering)
+  useEffect(() => {
     const handleProfileUpdate = (event) => {
-      console.log('Profile updated event received in schedule');
+      console.log('Profile updated event received in schedule', event && event.detail);
+      // If event includes the new name, update immediately
+      try {
+        const userStr = localStorage.getItem('user');
+        const newName = event && event.detail && event.detail.name;
+        if (userStr && newName) {
+          const user = JSON.parse(userStr);
+          
+          // Update currentDriver display name
+          setCurrentDriver(prev => prev ? { ...prev, full_name: newName } : null);
+          
+          // Update schedules list
+          setSchedules(prev => prev.map(s => {
+            if (s.driver_id && user.driver_id && String(s.driver_id) === String(user.driver_id)) {
+              return { ...s, driver_name: newName };
+            }
+            return s;
+          }));
+        }
+      } catch (err) {
+        console.error('Error applying profile update locally:', err);
+      }
+
+      // Reload from server to ensure consistency
       loadData();
     };
 
@@ -36,7 +70,7 @@ export default function Schedule({ onNavigateToMainPage, onNavigate }) {
     return () => {
       window.removeEventListener('profileUpdated', handleProfileUpdate);
     };
-  }, [selectedDate, showAllSchedules]);
+  }, []);
 
   const loadData = async () => {
     try {
@@ -189,13 +223,13 @@ export default function Schedule({ onNavigateToMainPage, onNavigate }) {
       if (data.status === 'OK') {
         // Reload schedules to reflect the change
         loadData();
-        alert('Hủy chuyến thành công!');
+        showPopup('success', 'Thành công', 'Hủy chuyến thành công!');
       } else {
-        alert('Không thể hủy chuyến: ' + data.message);
+        showPopup('error', 'Không thể hủy', data.message);
       }
     } catch (error) {
       console.error('Error cancelling trip:', error);
-      alert('Không thể hủy chuyến. Vui lòng thử lại.');
+      showPopup('error', 'Lỗi kết nối', 'Không thể hủy chuyến. Vui lòng thử lại.');
     }
   };
 
@@ -258,10 +292,7 @@ export default function Schedule({ onNavigateToMainPage, onNavigate }) {
               <div className="sc-driver-details">
                 <div className="sc-driver-name-section">
                   <h3 className="sc-driver-name">{currentDriver?.full_name || 'Driver'}</h3>
-                  <div className="sc-driver-rating">
-                    <img src={imgStar1} alt="star" className="sc-star-icon" />
-                    <span className="sc-rating-text">{currentDriver?.rating || '5.0'}</span>
-                  </div>
+                  
                 </div>
                 <p className="sc-driver-id">{currentDriver?.driver_code || 'N/A'}</p>
               </div>
@@ -418,6 +449,16 @@ export default function Schedule({ onNavigateToMainPage, onNavigate }) {
           )}
         </div>
       </div>
+
+      {/* Popup Notification */}
+      {popup.show && (
+        <div className="sc-popup-overlay">
+          <div className={`sc-popup sc-popup-${popup.type}`}>
+            <h3>{popup.title}</h3>
+            <p>{popup.message}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -169,7 +169,8 @@ router.get('/stats/:driver_id', async (req, res) => {
       SELECT 
         COUNT(*) as total,
         SUM(CASE WHEN status = 'Hoàn thành' THEN 1 ELSE 0 END) as completed,
-        SUM(CASE WHEN status = 'Đã hủy' THEN 1 ELSE 0 END) as cancelled
+        SUM(CASE WHEN status = 'Đã hủy' THEN 1 ELSE 0 END) as cancelled,
+        SUM(CASE WHEN status IN ('Hoàn thành', 'Đã hủy') THEN 1 ELSE 0 END) as finished
       FROM bus_schedule
       WHERE driver_id = ?
         AND MONTH(schedule_date) = ?
@@ -181,7 +182,8 @@ router.get('/stats/:driver_id', async (req, res) => {
       data: {
         total: stats[0].total || 0,
         completed: stats[0].completed || 0,
-        cancelled: stats[0].cancelled || 0
+        cancelled: stats[0].cancelled || 0,
+        finished: stats[0].finished || 0
       }
     });
   } catch (error) {

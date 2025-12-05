@@ -166,9 +166,11 @@ export default function MainPage({ onNavigateToMap, onNavigateToSchedule, onNavi
         const statsData = await statsResponse.json();
 
         if (statsData.status === 'OK') {
-          const { completed, cancelled, total } = statsData.data;
-          const completionRate = total > 0 ? ((completed / total) * 100).toFixed(1) : 0;
-          const cancelRate = total > 0 ? ((cancelled / total) * 100).toFixed(1) : 0;
+          const { completed, cancelled, finished } = statsData.data;
+          // Only count completed and cancelled trips (finished trips)
+          // Completion rate = completed / (completed + cancelled) * 100
+          const completionRate = finished > 0 ? ((completed / finished) * 100).toFixed(1) : 0;
+          const cancelRate = finished > 0 ? ((cancelled / finished) * 100).toFixed(1) : 0;
           
           setStats({
             completionRate,

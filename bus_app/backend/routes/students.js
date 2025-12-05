@@ -758,4 +758,59 @@ router.get('/schedule/:schedule_id/check-completion', async (req, res) => {
   }
 });
 
+// Check if all students at a specific stop have been picked up or dropped off
+router.get('/schedule/:schedule_id/stop/:stop_id/status', async (req, res) => {
+  try {
+    const { schedule_id, stop_id } = req.params;
+    
+    // Check for pickup status (students waiting at this stop)
+    const [pickupStudents] = await db.query(`
+      SELECT 
+        COUNT(*) as total,
+        SUM(CASE WHEN status = 'DA_DON' THEN 1 ELSE 0 END) as picked_up
+      FROM student_pickup
+      WHERE schedule_id = ? AND stop_id = ?
+    `, [schedule_id, stop_id]);
+    
+    // Check for dropoff status (students to be dropped at this stop)
+    const [dropoffStudents] = await db.query(`
+      SELECT 
+        COUNT(*) as total,
+        SUM(CASE WHEN status = 'DA_TRA' THEN 1 ELSE 0 END) as dropped_off
+      FROM student_pickup
+      WHERE schedule_id = ? AND dropoff_stop_id = ?
+    `, [schedule_id, stop_id]);
+    
+    const pickupTotal = pickupStudents[0].total || 0;
+    const pickupCompleted = pickupStudents[0].picked_up || 0;
+    const dropoffTotal = dropoffStudents[0].total || 0;
+    const dropoffCompleted = dropoffStudents[0].dropped_off || 0;
+    
+    res.json({
+      status: 'OK',
+      data: {
+        pickup: {
+          total: pickupTotal,
+          completed: pickupCompleted,
+          all_picked_up: pickupTotal > 0 && pickupTotal === pickupCompleted
+        },
+        dropoff: {
+          total: dropoffTotal,
+          completed: dropoffCompleted,
+          all_dropped_off: dropoffTotal > 0 && dropoffTotal === dropoffCompleted
+        },
+        all_picked_up: pickupTotal === 0 || (pickupTotal > 0 && pickupTotal === pickupCompleted),
+        all_dropped_off: dropoffTotal === 0 || (dropoffTotal > 0 && dropoffTotal === dropoffCompleted)
+      }
+    });
+    
+  } catch (error) {
+    console.error('Error checking stop status:', error);
+    res.status(500).json({
+      status: 'ERROR',
+      message: error.message
+    });
+  }
+});
+
 module.exports = router;

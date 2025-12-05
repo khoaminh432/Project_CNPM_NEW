@@ -63,8 +63,9 @@ function MainApp() {
       {currentPage === "drivermap" && (
         <DriverMap 
           onBackToMain={() => setCurrentPage("mainpage")} 
-          onNavigateToList={() => {
+          onNavigateToList={(scheduleId) => {
             setPreviousPage("drivermap");
+            setSelectedScheduleId(scheduleId);
             setCurrentPage("list");
           }}
         />

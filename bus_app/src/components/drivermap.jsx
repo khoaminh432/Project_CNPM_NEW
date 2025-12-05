@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import "../Assets/CSS/index.css";
@@ -90,7 +90,6 @@ export default function DriverMap({ onBackToMain, onNavigateToList }) {
   const [status, setStatus] = useState("Bạn đang offline.");
   const [showReportModal, setShowReportModal] = useState(false);
   const [showStopModal, setShowStopModal] = useState(false);
-  const [showStudentListModal, setShowStudentListModal] = useState(false);
   const [showEmergencyModal, setShowEmergencyModal] = useState(false);
   const [reportFormData, setReportFormData] = useState({
     title: "",
@@ -106,6 +105,13 @@ export default function DriverMap({ onBackToMain, onNavigateToList }) {
   const [studentsByStop, setStudentsByStop] = useState([]);
   const [driverRating, setDriverRating] = useState('5.00');
   const [popup, setPopup] = useState({ show: false, type: 'success', title: '', message: '' });
+  const [routePolyline, setRoutePolyline] = useState([]);
+  const [busPosition, setBusPosition] = useState(null);
+  const [isSimulating, setIsSimulating] = useState(false);
+  const [currentStopIndex, setCurrentStopIndex] = useState(-1);
+  const [waitingAtStop, setWaitingAtStop] = useState(false);
+  const animationRef = useRef(null);
+  const checkIntervalRef = useRef(null);
 
   // Show popup notification
   const showPopup = (type, title, message) => {
@@ -196,6 +202,43 @@ export default function DriverMap({ onBackToMain, onNavigateToList }) {
           end_time: !isStarting ? new Date().toISOString() : prev.end_time
         }));
         
+        // If starting trip, create polyline and start bus simulation
+        if (isStarting && stopsDetails.length > 0) {
+          const routeCoordinates = stopsDetails
+            .filter(stop => stop.latitude && stop.longitude)
+            .map(stop => [stop.latitude, stop.longitude]);
+          
+          if (routeCoordinates.length > 0) {
+            setRoutePolyline(routeCoordinates);
+            setBusPosition(routeCoordinates[0]);
+            setCurrentStopIndex(0);
+            
+            // Save simulation state AND stops details to localStorage
+            localStorage.setItem('busSimulation', JSON.stringify({
+              scheduleId: earliestSchedule.schedule_id,
+              routeCoordinates: routeCoordinates,
+              stopsDetails: stopsDetails, // Save stops details to preserve marker positions
+              currentStopIndex: 0,
+              isActive: true,
+              busPosition: routeCoordinates[0]
+            }));
+            
+            startBusSimulation(routeCoordinates, 0);
+          }
+        }
+        
+        // If ending trip, stop simulation
+        if (!isStarting) {
+          stopBusSimulation();
+          setRoutePolyline([]);
+          setBusPosition(null);
+          setCurrentStopIndex(-1);
+          setWaitingAtStop(false);
+          
+          // Clear simulation state from localStorage
+          localStorage.removeItem('busSimulation');
+        }
+        
         showPopup('success', 'Thành công', 
           isStarting ? 'Bắt đầu chuyến đi thành công!' : 'Kết thúc chuyến đi thành công!');
       } else {
@@ -206,6 +249,145 @@ export default function DriverMap({ onBackToMain, onNavigateToList }) {
       showPopup('error', 'Lỗi', 'Không thể cập nhật trạng thái. Vui lòng thử lại.');
     }
   };
+
+  // Start bus simulation animation
+  const startBusSimulation = (routeCoordinates, startIndex = 0) => {
+    if (routeCoordinates.length < 2 || startIndex >= routeCoordinates.length - 1) return;
+    
+    setIsSimulating(true);
+    let currentSegment = startIndex;
+    let progress = 0;
+    const speed = 0.002; // Adjust speed (smaller = slower)
+    
+    const animate = () => {
+      if (currentSegment >= routeCoordinates.length - 1) {
+        // Reached the end
+        setBusPosition(routeCoordinates[routeCoordinates.length - 1]);
+        setCurrentStopIndex(routeCoordinates.length - 1);
+        setIsSimulating(false);
+        
+        // Update localStorage
+        const simState = JSON.parse(localStorage.getItem('busSimulation') || '{}');
+        simState.currentStopIndex = routeCoordinates.length - 1;
+        simState.busPosition = routeCoordinates[routeCoordinates.length - 1];
+        simState.isActive = false;
+        localStorage.setItem('busSimulation', JSON.stringify(simState));
+        return;
+      }
+      
+      const start = routeCoordinates[currentSegment];
+      const end = routeCoordinates[currentSegment + 1];
+      
+      // Linear interpolation
+      const lat = start[0] + (end[0] - start[0]) * progress;
+      const lng = start[1] + (end[1] - start[1]) * progress;
+      
+      setBusPosition([lat, lng]);
+      
+      progress += speed;
+      
+      if (progress >= 1) {
+        // Reached next stop
+        currentSegment++;
+        progress = 0;
+        
+        // Check if this stop requires waiting (not start or end point)
+        const stopInfo = stopsDetails[currentSegment];
+        if (stopInfo && (stopInfo.stop_type === 'Điểm đón' || stopInfo.stop_type === 'Điểm trả')) {
+          // Stop and wait for student pickup/dropoff
+          setBusPosition(routeCoordinates[currentSegment]);
+          setCurrentStopIndex(currentSegment);
+          setWaitingAtStop(true);
+          setIsSimulating(false);
+          
+          // Update localStorage
+          const simState = JSON.parse(localStorage.getItem('busSimulation') || '{}');
+          simState.currentStopIndex = currentSegment;
+          simState.busPosition = routeCoordinates[currentSegment];
+          simState.waitingAtStop = true;
+          simState.currentStopId = stopInfo.stop_id;
+          simState.currentStopType = stopInfo.stop_type;
+          localStorage.setItem('busSimulation', JSON.stringify(simState));
+          
+          // Start checking student status
+          startCheckingStudentStatus(stopInfo.stop_id, stopInfo.stop_type, routeCoordinates, currentSegment);
+          return;
+        } else {
+          setCurrentStopIndex(currentSegment);
+          
+          // Update localStorage
+          const simState = JSON.parse(localStorage.getItem('busSimulation') || '{}');
+          simState.currentStopIndex = currentSegment;
+          simState.busPosition = routeCoordinates[currentSegment];
+          simState.waitingAtStop = false;
+          localStorage.setItem('busSimulation', JSON.stringify(simState));
+        }
+      }
+      
+      animationRef.current = requestAnimationFrame(animate);
+    };
+    
+    animationRef.current = requestAnimationFrame(animate);
+  };
+
+  // Check if all students at stop have been picked up/dropped off
+  const startCheckingStudentStatus = async (stopId, stopType, routeCoordinates, stopIndex) => {
+    const checkStatus = async () => {
+      try {
+        if (!earliestSchedule) return;
+
+        const response = await fetch(
+          `http://localhost:5000/api/students/schedule/${earliestSchedule.schedule_id}/stop/${stopId}/status`
+        );
+        const data = await response.json();
+
+        if (data.status === 'OK') {
+          const allCompleted = stopType === 'Điểm đón' 
+            ? data.data.all_picked_up 
+            : data.data.all_dropped_off;
+
+          if (allCompleted) {
+            // All students processed, continue bus movement
+            clearInterval(checkIntervalRef.current);
+            setWaitingAtStop(false);
+            setIsSimulating(true);
+            
+            // Continue to next segment
+            if (stopIndex < routeCoordinates.length - 1) {
+              startBusSimulation(routeCoordinates, stopIndex);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error checking student status:', error);
+      }
+    };
+
+    // Check immediately and then every 2 seconds
+    checkStatus();
+    checkIntervalRef.current = setInterval(checkStatus, 2000);
+  };
+
+  // Stop bus simulation
+  const stopBusSimulation = () => {
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+      animationRef.current = null;
+    }
+    if (checkIntervalRef.current) {
+      clearInterval(checkIntervalRef.current);
+      checkIntervalRef.current = null;
+    }
+    setIsSimulating(false);
+    setWaitingAtStop(false);
+  };
+
+  // Cleanup animation on unmount
+  useEffect(() => {
+    return () => {
+      stopBusSimulation();
+    };
+  }, []);
 
   const handleReportFormChange = (field, value) => {
     setReportFormData((prev) => ({
@@ -331,16 +513,39 @@ export default function DriverMap({ onBackToMain, onNavigateToList }) {
             }
             
             // Fetch detailed stops information
-            try {
-              const detailsResponse = await fetch(`http://localhost:5000/api/students/schedule/${scheduleData.data.schedule_id}/stops/details`);
-              const detailsData = await detailsResponse.json();
-              console.log('Stops details received:', detailsData);
-              if (detailsData.status === 'OK') {
-                console.log('Stops array:', detailsData.data.stops);
-                setStopsDetails(detailsData.data.stops || []);
+            // Check if there's already a saved simulation with stops details
+            const savedSimulation = localStorage.getItem('busSimulation');
+            let shouldFetchStops = true;
+            
+            if (savedSimulation) {
+              try {
+                const simState = JSON.parse(savedSimulation);
+                if (simState.scheduleId === scheduleData.data.schedule_id && 
+                    simState.isActive && 
+                    simState.stopsDetails && 
+                    simState.stopsDetails.length > 0) {
+                  // Use saved stops details instead of fetching new ones
+                  console.log('Using saved stops details from simulation');
+                  setStopsDetails(simState.stopsDetails);
+                  shouldFetchStops = false;
+                }
+              } catch (e) {
+                console.error('Error reading saved simulation:', e);
               }
-            } catch (error) {
-              console.error('Error fetching stops details:', error);
+            }
+            
+            if (shouldFetchStops) {
+              try {
+                const detailsResponse = await fetch(`http://localhost:5000/api/students/schedule/${scheduleData.data.schedule_id}/stops/details`);
+                const detailsData = await detailsResponse.json();
+                console.log('Stops details received:', detailsData);
+                if (detailsData.status === 'OK') {
+                  console.log('Stops array:', detailsData.data.stops);
+                  setStopsDetails(detailsData.data.stops || []);
+                }
+              } catch (error) {
+                console.error('Error fetching stops details:', error);
+              }
             }
 
             // Fetch students grouped by stops for student list modal
@@ -444,13 +649,15 @@ export default function DriverMap({ onBackToMain, onNavigateToList }) {
               }
               
               // Fetch detailed stops information
+              let stopsData = [];
               try {
                 const detailsResponse = await fetch(`http://localhost:5000/api/students/schedule/${scheduleData.data.schedule_id}/stops/details`);
                 const detailsData = await detailsResponse.json();
                 console.log('Stops details received (useEffect):', detailsData);
                 if (detailsData.status === 'OK') {
                   console.log('Stops array (useEffect):', detailsData.data.stops);
-                  setStopsDetails(detailsData.data.stops || []);
+                  stopsData = detailsData.data.stops || [];
+                  setStopsDetails(stopsData);
                 }
               } catch (error) {
                 console.error('Error fetching stops details:', error);
@@ -476,6 +683,67 @@ export default function DriverMap({ onBackToMain, onNavigateToList }) {
               if (scheduleData.data.start_location_lat && scheduleData.data.start_location_lng) {
                 setMapCenter([scheduleData.data.start_location_lat, scheduleData.data.start_location_lng]);
                 setMapZoom(12);
+              }
+              
+              // Check if there's a saved simulation state and restore it
+              const savedSimulation = localStorage.getItem('busSimulation');
+              if (savedSimulation) {
+                try {
+                  const simState = JSON.parse(savedSimulation);
+                  
+                  // Only restore if it's for the same schedule
+                  if (simState.scheduleId === scheduleData.data.schedule_id && simState.isActive) {
+                    console.log('Restoring simulation state:', simState);
+                    
+                    // Use saved stops details instead of freshly fetched data
+                    if (simState.stopsDetails && simState.stopsDetails.length > 0) {
+                      setStopsDetails(simState.stopsDetails);
+                      stopsData = simState.stopsDetails; // Override with saved data
+                    }
+                    
+                    // Restore immediately since we have the data
+                    setRoutePolyline(simState.routeCoordinates);
+                    setBusPosition(simState.busPosition);
+                    setCurrentStopIndex(simState.currentStopIndex);
+                    
+                    if (simState.waitingAtStop && simState.currentStopId && simState.currentStopType) {
+                      setWaitingAtStop(true);
+                      // Resume checking student status with saved stop info
+                      setTimeout(() => {
+                        startCheckingStudentStatus(
+                          simState.currentStopId, 
+                          simState.currentStopType, 
+                          simState.routeCoordinates, 
+                          simState.currentStopIndex
+                        );
+                      }, 500);
+                    } else if (!simState.isComplete) {
+                      // Check if current position is at a pickup/dropoff stop
+                      const currentStop = simState.stopsDetails ? simState.stopsDetails[simState.currentStopIndex] : null;
+                      
+                      if (currentStop && (currentStop.stop_type === 'Điểm đón' || currentStop.stop_type === 'Điểm trả')) {
+                        // We're at a stop that requires waiting, start checking
+                        setWaitingAtStop(true);
+                        setTimeout(() => {
+                          startCheckingStudentStatus(
+                            currentStop.stop_id, 
+                            currentStop.stop_type, 
+                            simState.routeCoordinates, 
+                            simState.currentStopIndex
+                          );
+                        }, 500);
+                      } else {
+                        // Not at a waiting stop, resume animation from current position
+                        setTimeout(() => {
+                          startBusSimulation(simState.routeCoordinates, simState.currentStopIndex);
+                        }, 500);
+                      }
+                    }
+                  }
+                } catch (e) {
+                  console.error('Error restoring simulation:', e);
+                  localStorage.removeItem('busSimulation');
+                }
               }
             }
           }
@@ -529,6 +797,16 @@ export default function DriverMap({ onBackToMain, onNavigateToList }) {
           />
           <MapUpdater center={mapCenter} zoom={mapZoom} />
           
+          {/* Render polyline route when trip is started */}
+          {routePolyline.length > 0 && (
+            <Polyline 
+              positions={routePolyline} 
+              color="#0073FB" 
+              weight={4}
+              opacity={0.7}
+            />
+          )}
+          
           {/* Render all stop markers from stopsDetails */}
           {connected && stopsDetails.length > 0 && stopsDetails.map((stop, index) => {
             console.log(`Marker ${index}:`, stop.stop_name, stop.latitude, stop.longitude, stop.stop_type);
@@ -549,7 +827,17 @@ export default function DriverMap({ onBackToMain, onNavigateToList }) {
             ) : null;
           })}
           
-          {connected && currentPosition && (
+          {/* Render animated bus marker when simulation is active */}
+          {busPosition && (
+            <Marker position={busPosition} icon={driverIcon}>
+              <Popup>
+                Xe bus đang di chuyển
+              </Popup>
+            </Marker>
+          )}
+          
+          {/* Static driver position when not simulating */}
+          {connected && currentPosition && !busPosition && (
             <Marker position={currentPosition} icon={driverIcon}>
               <Popup>
                 Vị trí hiện tại của bạn
@@ -674,7 +962,10 @@ export default function DriverMap({ onBackToMain, onNavigateToList }) {
               <button className="dm-action-btn" onClick={handleReportClick}>
                 Báo cáo sự cố
               </button>
-              <button className="dm-action-btn" onClick={() => setShowStudentListModal(true)}>
+              <button 
+                className="dm-action-btn" 
+                onClick={() => onNavigateToList && onNavigateToList(earliestSchedule?.schedule_id)}
+              >
                 Danh sách học sinh
               </button>
               <button className="dm-action-btn" onClick={() => setShowEmergencyModal(true)}>
@@ -825,78 +1116,6 @@ export default function DriverMap({ onBackToMain, onNavigateToList }) {
                     </div>
                   </div>
                 )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Student List Modal */}
-        {showStudentListModal && (
-          <div className="dm-modal-overlay" onClick={() => setShowStudentListModal(false)}>
-            <div className="dm-student-list-panel" onClick={(e) => e.stopPropagation()}>
-              {/* Header */}
-              <div className="dm-student-list-header">
-                <div className="dm-student-list-title-wrapper">
-                  <svg className="dm-student-list-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
-                    <path d="M320 80C377.4 80 424 126.6 424 184C424 241.4 377.4 288 320 288C262.6 288 216 241.4 216 184C216 126.6 262.6 80 320 80zM96 152C135.8 152 168 184.2 168 224C168 263.8 135.8 296 96 296C56.2 296 24 263.8 24 224C24 184.2 56.2 152 96 152zM0 480C0 409.3 57.3 352 128 352C140.8 352 153.2 353.9 164.9 357.4C132 394.2 112 442.8 112 496L112 512C112 523.4 114.4 534.2 118.7 544L32 544C14.3 544 0 529.7 0 512L0 480zM521.3 544C525.6 534.2 528 523.4 528 512L528 496C528 442.8 508 394.2 475.1 357.4C486.8 353.9 499.2 352 512 352C582.7 352 640 409.3 640 480L640 512C640 529.7 625.7 544 608 544L521.3 544zM472 224C472 184.2 504.2 152 544 152C583.8 152 616 184.2 616 224C616 263.8 583.8 296 544 296C504.2 296 472 263.8 472 224zM160 496C160 407.6 231.6 336 320 336C408.4 336 480 407.6 480 496L480 512C480 529.7 465.7 544 448 544L192 544C174.3 544 160 529.7 160 512L160 496z"/>
-                  </svg>
-                  <h2 className="dm-student-list-title">Danh sách học sinh</h2>
-                </div>
-                <button
-                  className="dm-student-list-close"
-                  onClick={() => setShowStudentListModal(false)}
-                  aria-label="Đóng"
-                >
-                  ×
-                </button>
-              </div>
-
-              {/* Student List Container */}
-              <div className="dm-student-list-container">
-                {console.log('Rendering modal with studentsByStop:', studentsByStop)}
-                {console.log('studentsByStop.length:', studentsByStop.length)}
-                {studentsByStop.length > 0 ? (
-                  studentsByStop.map((stop, stopIndex) => {
-                    console.log(`Rendering stop ${stopIndex}:`, stop);
-                    return (
-                    <div key={stopIndex} className="dm-student-stop-group">
-                      <div className="dm-student-stop-info">
-                        <p className="dm-student-location">{stop.stop_name}</p>
-                        <p className="dm-student-time">
-                          {formatTimeWithOffset(earliestSchedule?.planned_start, stop.time_offset)}
-                        </p>
-                        <span className="dm-student-badge">{stop.stop_type}</span>
-                      </div>
-                      <div className="dm-student-list-items">
-                        {stop.students && stop.students.map((student, studentIndex) => (
-                          <div key={studentIndex} className="dm-student-item">
-                            <div className="dm-student-circle">X</div>
-                            <div className="dm-student-info">
-                              <p className="dm-student-name">{student.full_name}</p>
-                              <p className="dm-student-class">{student.class}</p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )})
-                ) : (
-                  <div className="dm-student-stop-group">
-                    <div className="dm-student-stop-info">
-                      <p className="dm-student-location">Không có dữ liệu học sinh</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Detail Button */}
-              <div className="dm-student-list-footer">
-                <button 
-                  className="dm-student-list-detail-btn"
-                  onClick={() => onNavigateToList && onNavigateToList()}
-                >
-                  Chi tiết thông tin học sinh
-                </button>
               </div>
             </div>
           </div>

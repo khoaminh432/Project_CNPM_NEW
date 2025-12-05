@@ -97,7 +97,7 @@ function MapComponent({ searchQuery, searchTrigger, onRouteSelect }) {
   // Cleanup khi component unmount
   useEffect(() => {
     return () => {
-      // Dọn dẹp tất cả interval và timeout
+  // Dọn dẹp tất cả interval và timeout
       Object.values(animRefs.current).forEach(anim => {
         if (anim?.demNguoc) clearInterval(anim.demNguoc);
         if (anim?.animation) clearTimeout(anim.animation);

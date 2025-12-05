@@ -1,27 +1,34 @@
 const express = require('express');
 const cors = require('cors');
-const cron = require('node-cron');      // Thư viện tạo lịch chạy ngầm
-const pool = require('./db/connect');   // Kết nối DB để Cron Job lấy dữ liệu
+const cron = require('node-cron');
+const pool = require('./db/connect');
 
-// 1. Import file route
+// Import các routes
 const driverRoutes = require('./route/driver.js');
 const busRoutes = require('./route/bus.js'); 
 const scheduleRoutes = require('./route/schedule.js');
 const routeRoutes = require('./route/route.js');
 const notificationRoutes = require('./route/notification.js');
+const signinRoute = require('./signinRoute');
+const vehicleRoutes = require('./routes/vehicleRoutes');
+const thongKeRoutes = require('./routes/thongKeRoutes');
 
 const app = express();
-const PORT = 3001; 
+const PORT = 3001;
 
+// Middleware
 app.use(cors());
 app.use(express.json());
 
-// 2. Chỉ dẫn cho server: 
+// Đăng ký các routes
 app.use('/api/drivers', driverRoutes); 
 app.use('/api/buses', busRoutes); 
 app.use('/api/schedules', scheduleRoutes);
 app.use('/api/routes', routeRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api', signinRoute);
+app.use('/api/vehicle', vehicleRoutes);
+app.use('/api/thongke', thongKeRoutes);
 
 /* ==================================================================
  * CRON JOB: TỰ ĐỘNG QUÉT VÀ GỬI THÔNG BÁO (CHẠY MỖI PHÚT)
@@ -59,16 +66,14 @@ cron.schedule('* * * * *', async () => {
         // 2. TÍNH TOÁN NGÀY GỬI TIẾP THEO
         if (notif.is_recurring == 1 && notif.recurrence_days) {
             // Logic: Tìm ngày hợp lệ tiếp theo gần nhất
-            const allowedDays = notif.recurrence_days.split(',').map(Number).sort((a,b)=>a-b); // VD: [1, 3, 5]
+            const allowedDays = notif.recurrence_days.split(',').map(Number).sort((a,b)=>a-b);
             const current = new Date(notif.scheduled_time);
             let nextDate = new Date(current);
             
-            // Cộng thêm 1 ngày trước, sau đó kiểm tra xem có trùng ngày cho phép không
-            // Nếu không trùng, cộng tiếp cho đến khi trùng
             let found = false;
-            for (let i = 1; i <= 7; i++) { // Thử tối đa 7 ngày tới
+            for (let i = 1; i <= 7; i++) {
                 nextDate.setDate(nextDate.getDate() + 1);
-                const dayOfWeek = nextDate.getDay(); // 0-6
+                const dayOfWeek = nextDate.getDay();
                 if (allowedDays.includes(dayOfWeek)) {
                     found = true;
                     break;
@@ -76,11 +81,9 @@ cron.schedule('* * * * *', async () => {
             }
             
             if (found) {
-                // Cập nhật thời gian gửi tiếp theo, giữ status 'pending'
                 await connection.query(`UPDATE notification SET scheduled_time = ? WHERE id = ?`, [nextDate, notif.id]);
                 console.log(`-> Đã gửi ID ${notif.id}, hẹn lại vào: ${nextDate}`);
             } else {
-                // Trường hợp hiếm: ko tìm thấy ngày (dữ liệu lỗi), cho dừng luôn
                 await connection.query(`UPDATE notification SET status_sent = 'sent' WHERE id = ?`, [notif.id]);
             }
 
@@ -93,8 +96,11 @@ cron.schedule('* * * * *', async () => {
     }
     connection.release();
   } catch (err) {
-    if (connection) { await connection.rollback(); connection.release(); }
-    console.error(err);
+    if (connection) { 
+      await connection.rollback(); 
+      connection.release(); 
+    }
+    console.error('Cron job error:', err);
   }
 });
 

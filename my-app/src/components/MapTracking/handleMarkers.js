@@ -27,8 +27,8 @@ export const capNhatMarkerXe = (idTuyen, viTri, lichTrinh, trangThai, mapRef, ma
   if (trangThai.status === 'inactive' || trangThai.status === 'finished') {
     // Tooltip inactive - chỉ hiển thị 4 thông tin
     tooltipContent = `
-      <b>Mã xe: ${lichTrinh.xb_id || 'Lỗi'}</b><br/>
-      <b>Mã tài xế: ${lichTrinh.tx_id || 'Lỗi'}</b><br/>
+      <b>Mã xe: ${lichTrinh.bus_id || 'Lỗi'}</b><br/>
+      <b>Mã tài xế: ${lichTrinh.driver_id || 'Lỗi'}</b><br/>
       <b>Mã tuyến: ${idTuyen}</b><br/>
       <b>Trạng thái:</b> ${trangThai.desc}
     `;
@@ -39,12 +39,12 @@ export const capNhatMarkerXe = (idTuyen, viTri, lichTrinh, trangThai, mapRef, ma
       null;
 
     tooltipContent = `
-      <b>Mã xe: ${lichTrinh.xb_id || 'Lỗi'}</b><br/>
-      <b>Mã tài xế: ${lichTrinh.tx_id || 'Lỗi'}</b><br/>
+      <b>Mã xe: ${lichTrinh.bus_id || 'Lỗi'}</b><br/>
+      <b>Mã tài xế: ${lichTrinh.driver_id || 'Lỗi'}</b><br/>
       <b>Mã tuyến: ${idTuyen}</b><br/>
-      <b>Ngày khởi hành:</b> ${lichTrinh.ngay_xe ? new Date(lichTrinh.ngay_xe).toLocaleDateString('vi-VN') : 'Lỗi'}<br/>
+      <b>Ngày khởi hành:</b> ${lichTrinh.schedule_date ? new Date(lichTrinh.schedule_date).toLocaleDateString('vi-VN') : 'Lỗi'}<br/>
       <b>Trạng thái:</b> ${trangThai.desc}<br/>
-      <b>Khởi hành:</b> ${lichTrinh.gio_di || 'Lỗi'}<br/>
+      <b>Khởi hành:</b> ${lichTrinh.start_time || 'Lỗi'}<br/>
       <b>Đến dự kiến:</b> ${thoiGianKetThuc ? formatTime(thoiGianKetThuc) : 'Đang tính...'}<br/>
       <b>Vận tốc:</b> ${VAN_TOC} km/h<br/>
       <b>Khoảng cách thực:</b> ${dataTuyen ? (dataTuyen.tongS / 1000).toFixed(2) + ' km' : 'Đang tính...'}
@@ -72,12 +72,12 @@ export const taoMarkerTram = (idTuyen, dsTram, map, markerTramRef) => {
     const offset = idx * 0.00003;
     const marker = L.marker([tram.lat + offset, tram.lng + offset], { 
       icon: iconTram,
-      title: `${tram.ten_stop} (${idx + 1}/${dsTram.length})`
+      title: `${tram.stop_name} (${idx + 1}/${dsTram.length})`
     }).addTo(map);
     
     // Thêm tooltip hiển thị tên trạm
     marker.bindTooltip(`
-      <b>${tram.ten_stop}</b><br/>
+      <b>${tram.stop_name}</b><br/>
       <i>Thứ tự: ${idx + 1}/${dsTram.length}</i>
     `, { sticky: true });
     

@@ -1,24 +1,29 @@
+/* ==================== GLOBAL STYLES ==================== */
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
+  font-family: "Poppins", Arial, sans-serif;
+  box-sizing: border-box;
+  background-color: #ffff;
+}
+
+* {
   box-sizing: border-box;
 }
-*{
-  box-sizing: border-box;
-}
+
+/* ==================== LAYOUT CONTAINER ==================== */
 .container {
   display: flex;
   height: 100vh;
 }
 
-/* Sidebar */
+/* ==================== SIDEBAR ==================== */
 .sidebar {
   width: 200px;
-  color: #333;                /* màu chữ tối nhưng dịu */
-  text-align: center;          /* căn giữa chữ menu */
-  border-right: 1px solid #ddd; /* đường viền bên phải */
-  box-shadow: 2px 0 5px rgba(0,0,0,0.1); /* tạo hiệu ứng nổi */
-  height: 100vh;               /* full chiều cao */
+  color: #333;
+  text-align: center;
+  border-right: 1px solid #ddd;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  height: 100vh;
 }
 
 .sidebar h2 {
@@ -35,28 +40,49 @@ body {
   margin: 17px 0 0 0;
 }
 
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
 .sidebar ul li {
   color: #444;
   font-size: 1rem;
   border-radius: 3px;
   cursor: pointer;
-  margin: 40px 0; 
+  margin: 40px 0;
+  text-align: center;
+  width: 100%;
 }
 
+.sidebar li:hover {
+  color: #007bff;
+}
+
+/* ==================== MAIN CONTENT ==================== */
 .main {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: #F0F2F5;
+  background: #f0f2f5;
 }
+
 .main1 {
   flex: 1;
   display: flex;
   flex-direction: column;
   background: url('./assets/image/Bus Tracking.png') no-repeat center center;
-  background-size: cover; /* ảnh phủ toàn bộ */
+  background-size: cover;
 }
 
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ==================== HEADER ==================== */
 .header {
   height: 50px;
   display: flex;
@@ -81,7 +107,34 @@ body {
   cursor: pointer;
 }
 
-/* 4 bảng trang chủ */
+/* ==================== NAVBAR ==================== */
+.navbar {
+  font-size: 17px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 20px 170px;
+}
+
+.navbar .logo {
+  color: #007bff;
+  font-weight: 600;
+  font-size: 39px;
+}
+
+.navbar ul {
+  display: flex;
+  gap: 150px;
+  list-style: none;
+  margin-left: 550px;
+  padding: 0;
+}
+
+.navbar li:hover {
+  color: #007bff;
+}
+
+/* ==================== STATS CARDS (TRANG CHỦ) ==================== */
 .stats {
   margin: 29px 90px;
   display: grid;
@@ -117,41 +170,18 @@ body {
   transition: 0.2s ease;
 }
 
-.page-empty {
-  background: white;
-  height: 300px;
-  border-radius: 8px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 18px;
-}
-
-.sidebar ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.sidebar li {
-  margin: 15px 0;
-  cursor: pointer;
-  text-align: center; /* căn giữa chữ menu */
-  width: 100%;
-}
-
-/**/
+/* ==================== MODAL ==================== */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0,0,0,0.4);
+  background: rgba(0, 0, 0, 0.4);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 9999; /* 👈 Thêm dòng này */
+  z-index: 9999;
 }
 
 .modal {
@@ -161,8 +191,8 @@ body {
   padding: 16px;
   width: 400px;
   max-width: 90%;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
-  z-index: 10000; /* tùy chọn, nếu cần nổi hơn overlay */
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  z-index: 10000;
 }
 
 .modal-header {
@@ -187,29 +217,21 @@ body {
   min-height: 100px;
 }
 
-/**/
+/* ==================== TRACKING PAGE ==================== */
 .tracking-container {
   display: flex;
   height: 100vh;
   font-family: Arial, sans-serif;
 }
-/* Main content */
-.main-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
 
-/* Body */
 .body {
   display: flex;
   flex: 1;
 }
 
-
-/* tìm kiếm, bộ lọc */
+/* ==================== PANEL (TÌM KIẾM & BỘ LỌC) ==================== */
 .panel {
-  width: 400px; /* hoặc 30%, tùy layout */
+  width: 400px;
   border-left: 1px solid #ccc;
   padding: 20px;
 }
@@ -234,14 +256,13 @@ body {
 
 .search-filter {
   display: flex;
-  flex-direction: column;  /* xếp theo cột */
-  align-items: center;     /* canh giữa */
-  gap: 12px;               /* khoảng cách đẹp */
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
   padding-bottom: 10px;
   border-bottom: 1px solid #ccc;
 }
 
-/* Input + Select nằm ngang */
 .search-row {
   display: flex;
   gap: 10px;
@@ -255,11 +276,12 @@ body {
   border: 1px solid #ccc;
   border-radius: 4px;
   outline: none;
-  font-size: 1rem; 
-  font-weight: 500; 
+  font-size: 1rem;
+  font-weight: 500;
   color: #000;
   letter-spacing: 0.5px;
 }
+
 .search-input::placeholder {
   color: #000;
   opacity: 1;
@@ -286,4 +308,73 @@ body {
 
 .search-btn:hover {
   background-color: #0056b3;
+}
+
+/* ==================== LOGIN PAGE ==================== */
+.login-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 35px 60px;
+  gap: 100px;
+}
+
+.login-image img {
+  width: 800px;
+  margin-left: 50px;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 400px;
+  gap: 20px;
+  margin: 0 auto;
+}
+
+.login-form h2 {
+  margin-bottom: 25px;
+  font-size: 24px;
+}
+
+.login-form input {
+  margin-bottom: 15px;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.login-form .forgot {
+  font-size: 0.9rem;
+  color: #007bff;
+  text-align: right;
+  margin-bottom: 20px;
+  text-decoration: none;
+}
+
+.login-form button {
+  background-color: #007bff;
+  border: none;
+  color: white;
+  padding: 10px 0;
+  border-radius: 10px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.login-form button:hover {
+  background-color: #0056b3;
+}
+
+/* ==================== UTILITY CLASSES ==================== */
+.page-empty {
+  background: white;
+  height: 300px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 18px;
 }

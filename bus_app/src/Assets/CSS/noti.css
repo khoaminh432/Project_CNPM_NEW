@@ -1,0 +1,360 @@
+/* noti.css - Styles for Notification (Thông báo) component */
+:root {
+  --main-color: #0073FB;
+  --light-blue: #87BEFF;
+  --light-blue-border: #77b5ff;
+  --text-dark: #111827;
+  --text-gray: #7a7a7a;
+  --text-light-gray: #c4c4c4;
+  --bg-white: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.noti-root {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+  background: white;
+  font-family: Inter, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* ========== CONTAINER ========== */
+.noti-container {
+  flex: 1;
+  padding: 60px 136px;
+  overflow-y: auto;
+}
+
+/* ========== SECTION HEADER ========== */
+.noti-section-header {
+  display: flex;
+  align-items: center;
+  gap: 34px;
+  margin-bottom: 30px;
+  position: relative;
+}
+
+.noti-section-title {
+  font-family: "Raleway", sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: 0.3px;
+}
+
+.noti-section-title.unread {
+  color: var(--main-color);
+}
+
+.noti-section-title.read {
+  color: var(--light-blue);
+  margin-top: 40px;
+  margin-bottom: 30px;
+}
+
+/* ========== MARK ALL BUTTON ========== */
+.noti-mark-all-btn {
+  background: var(--light-blue);
+  border: none;
+  border-radius: 72px;
+  padding: 9px 34px;
+  font-family: "Raleway", sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: black;
+  cursor: pointer;
+  transition: background 0.2s;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.noti-mark-all-btn:hover {
+  background: #6fa9e6;
+}
+
+.noti-mark-all-btn:active {
+  background: #5a96d3;
+}
+
+/* ========== DELETE BUTTON ========== */
+.noti-delete-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin-left: auto;
+  transition: opacity 0.2s;
+}
+
+.noti-delete-btn:hover {
+  opacity: 0.7;
+}
+
+.noti-delete-icon {
+  width: 32px;
+  height: 32px;
+  display: block;
+}
+
+/* ========== NOTIFICATION LIST ========== */
+.noti-list {
+  display: flex;
+  flex-direction: column;
+  gap: 38px;
+}
+
+/* ========== NOTIFICATION CARD ========== */
+.noti-card {
+  background: white;
+  border-radius: 43px;
+  padding: 15px 39px;
+  min-height: 154px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.noti-card.unread {
+  border: 2px solid var(--main-color);
+}
+
+.noti-card.read {
+  border: 2px solid var(--light-blue-border);
+}
+
+.noti-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.noti-card-title {
+  font-family: "Raleway", sans-serif;
+  font-size: 25px;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.167;
+  white-space: normal;
+  color: black;
+}
+
+.noti-card.unread .noti-card-title {
+  color: black;
+}
+
+.noti-card.read .noti-card-title {
+  color: var(--text-gray);
+}
+
+.noti-card-preview {
+  font-family: "Raleway", sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.167;
+  white-space: pre-line;
+  text-align: justify;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.noti-card.unread .noti-card-preview {
+  color: var(--text-gray);
+}
+
+.noti-card.read .noti-card-preview {
+  color: var(--text-light-gray);
+}
+
+/* ========== DIVIDER ========== */
+.noti-divider {
+  margin: 38px 0;
+  position: relative;
+  height: 2px;
+}
+
+.noti-divider-line {
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+}
+
+/* ========== POPUP NOTIFICATION ========== */
+.noti-popup-overlay {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  pointer-events: none;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.noti-popup {
+  background: white;
+  border-radius: 12px;
+  padding: 20px 30px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  min-width: 300px;
+  max-width: 500px;
+  pointer-events: all;
+  animation: slideDown 0.3s ease-out;
+}
+
+.noti-popup h3 {
+  margin: 0 0 10px 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.noti-popup p {
+  margin: 0;
+  font-size: 14px;
+  color: #666;
+  line-height: 1.5;
+}
+
+/* Popup types */
+.noti-popup-success {
+  border-left: 4px solid #10b981;
+}
+
+.noti-popup-success h3 {
+  color: #10b981;
+}
+
+.noti-popup-error {
+  border-left: 4px solid #ef4444;
+}
+
+.noti-popup-error h3 {
+  color: #ef4444;
+}
+
+.noti-popup-warning {
+  border-left: 4px solid #f59e0b;
+}
+
+.noti-popup-warning h3 {
+  color: #f59e0b;
+}
+
+.noti-popup-info {
+  border-left: 4px solid #3b82f6;
+}
+
+.noti-popup-info h3 {
+  color: #3b82f6;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ========== RESPONSIVE DESIGN ========== */
+@media (max-width: 1400px) {
+  .noti-container {
+    padding: 40px 80px;
+  }
+
+  .noti-card {
+    padding: 15px 30px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .noti-container {
+    padding: 30px 40px;
+  }
+
+  .noti-section-title {
+    font-size: 24px;
+  }
+
+  .noti-card-title {
+    font-size: 24px;
+  }
+
+  .noti-card-preview {
+    font-size: 20px;
+  }
+
+  .noti-mark-all-btn {
+    font-size: 18px;
+    padding: 8px 24px;
+  }
+
+  .noti-section-header {
+    gap: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .noti-container {
+    padding: 20px;
+  }
+
+  .noti-section-title {
+    font-size: 20px;
+  }
+
+  .noti-card {
+    padding: 12px 20px;
+    border-radius: 25px;
+    min-height: 120px;
+  }
+
+  .noti-card-title {
+    font-size: 18px;
+  }
+
+  .noti-card-preview {
+    font-size: 16px;
+  }
+
+  .noti-mark-all-btn {
+    font-size: 14px;
+    padding: 6px 16px;
+    height: 32px;
+  }
+
+  .noti-delete-icon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .noti-section-header {
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .noti-list {
+    gap: 24px;
+  }
+}

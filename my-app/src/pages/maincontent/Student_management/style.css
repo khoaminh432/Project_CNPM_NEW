@@ -1,13 +1,21 @@
 /* Tiêu đề chính */
+<<<<<<< HEAD
 .header-row h2 {
   font-size: 1.25rem;
+=======
+h2 {
+  font-size: 1.8rem;
+>>>>>>> ADMINTC
   font-weight: 700;
   margin-bottom: 24px;
   color: #1e293b;
   display: flex;
   align-items: center;
   justify-content: space-between;
+<<<<<<< HEAD
 
+=======
+>>>>>>> ADMINTC
 }
 
 /* Nút chức năng trên góc phải */
@@ -31,6 +39,7 @@ button:hover {
   background-color: #1d4ed8;
 }
 
+<<<<<<< HEAD
 /* Page header and controls */
 .header-row {
   display: flex;
@@ -79,17 +88,33 @@ button:hover {
   height: 65vh;               /* chỉnh giá trị nếu cần (vd: calc(100vh - 260px)) */
   overflow-y: auto;
   border-radius: 12px;
+=======
+/* Grid chứa các card */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+>>>>>>> ADMINTC
 }
 
 /* Card nhân viên */
 .card {
   background: #fff;
+<<<<<<< HEAD
   border-radius: 12px;  
   padding: 12px;
   border: 1px solid #e6e9ee;
   box-shadow: 0 6px 16px rgba(2,6,23,0.04);
   text-align: center;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+=======
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  padding: 20px;
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid #e2e8f0;
+>>>>>>> ADMINTC
 }
 
 .card:hover {
@@ -147,6 +172,7 @@ button:hover {
 
 .card .btn-detail:hover {
   background-color: #1d4ed8;
+<<<<<<< HEAD
 }
 
 /* Small screens */
@@ -154,4 +180,6 @@ button:hover {
   .card-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
   h2 { font-size: 1.2rem; }
   .header-actions button { padding: 7px 10px; font-size: 0.9rem; }
+=======
+>>>>>>> ADMINTC
 }

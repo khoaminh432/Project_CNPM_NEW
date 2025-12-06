@@ -1,4 +1,6 @@
-import React, { useState, useCallback } from "react";  // Removed unused useEffect
+import React, { useState, useEffect, useCallback } from "react";
+import MapComponent from "./components/MapTracking/MapComponent";
+import "./Tracking.css";
 
 function Tracking() {
   // State quản lý dữ liệu
@@ -8,11 +10,18 @@ function Tracking() {
   const [lanCapNhatCuoi, setLanCapNhatCuoi] = useState(null);
 
   // Hàm xử lý tìm kiếm
-  const xuLyTimKiem = useCallback(() => setLanKichHoatTim(prev => prev + 1), []);
+  const xuLyTimKiem = () => setLanKichHoatTim(prev => prev + 1);
 
   // Hàm chọn tuyến đường
   const xuLyChonTuyen = useCallback((thongTinTuyen) => {
-    console.log("Cập nhật tuyến:", thongTinTuyen);
+    // DEBUG: Kiểm tra dữ liệu nhận được
+    if (thongTinTuyen) {
+      console.log(`📱 [TRACKING] Nhận dữ liệu:`, {
+        distanceTraveled: thongTinTuyen.distanceTraveled,
+        routeId: thongTinTuyen.routeId,
+        time: new Date().toLocaleTimeString()
+      });
+    }
     
     if (thongTinTuyen === null) {
       setTuyenDuongChon(null);
@@ -20,17 +29,9 @@ function Tracking() {
       return;
     }
     
-    setTuyenDuongChon(prev => {
-      if (!prev || 
-          prev.routeId !== thongTinTuyen.routeId || 
-          prev.currentStopIndex !== thongTinTuyen.currentStopIndex ||
-          prev.status !== thongTinTuyen.status) {
-        setLanCapNhatCuoi(new Date());
-        return thongTinTuyen;
-      }
-      
-      return prev;
-    });
+    // LUÔN CẬP NHẬT KHI CÓ DỮ LIỆU MỚI
+    setTuyenDuongChon(thongTinTuyen);
+    setLanCapNhatCuoi(new Date());
   }, []);
 
   // Hàm xác định trạng thái trạm
@@ -48,16 +49,21 @@ function Tracking() {
   }, []);
 
   // Hàm định dạng thời gian
-  const dinhDangThoiGian = useCallback((ngayGio) => {
+  const dinhDangThoiGian = (ngayGio) => {
     if (!(ngayGio instanceof Date) || isNaN(ngayGio.getTime())) return "-";
     const themSo0 = (so) => (so < 10 ? "0" + so : so);
     return `${themSo0(ngayGio.getHours())}:${themSo0(ngayGio.getMinutes())}:${themSo0(ngayGio.getSeconds())}`;
-  }, []);
+  };
 
-  const dinhDangLanCapNhat = useCallback(() => {
+  const dinhDangLanCapNhat = () => {
     if (!lanCapNhatCuoi) return "";
     return `Cập nhật: ${lanCapNhatCuoi.toLocaleTimeString()}`;
-  }, [lanCapNhatCuoi]);
+  };
+
+  // Hàm tính vận tốc m/s từ km/h
+  const tinhVanTocMetGiay = (vanTocKmH) => {
+    return (vanTocKmH * 1000 / 3600).toFixed(2);
+  };
 
   return ( 
     <div className="tracking-container"> 
@@ -65,7 +71,11 @@ function Tracking() {
         <div className="body">
           {/* Bản đồ */}
           <div className="map">
-            Map API Component
+            <MapComponent
+              searchQuery={tuKhoaTim}
+              searchTrigger={lanKichHoatTim}
+              onRouteSelect={xuLyChonTuyen}
+            />
           </div>
 
           {/* Thanh bên hiển thị thông tin */}
@@ -103,14 +113,11 @@ function Tracking() {
                   <h3 className="progress-title">
                     Tuyến: {tuyenDuongChon.routeId}
                   </h3>
+                  <div className="last-update">{dinhDangLanCapNhat()}</div>
                 </div>
 
                 {/* Thông tin chi tiết */}
                 <div className="bus-info">
-                  <div className="info-item">
-                    <span>Giờ cập nhật:</span>
-                    <strong>{tuyenDuongChon.estimatedTime ? dinhDangThoiGian(tuyenDuongChon.estimatedTime) : 'Không lấy được dữ liệu'}</strong>
-                  </div>
                   <div className="info-item">
                     <span>Trạng thái xe:</span>
                     <strong>
@@ -123,7 +130,7 @@ function Tracking() {
                   </div>
                   <div className="info-item">
                     <span>Mã tài xế:</span>
-                    <strong>{tuyenDuongChon.busInfo?.tx_id || "Không lấy được dữ liệu"}</strong>
+                    <strong>{tuyenDuongChon.busInfo?.driver_id || "Không lấy được dữ liệu"}</strong>
                   </div>
                   <div className="info-item">
                     <span>Mã tuyến:</span>
@@ -131,24 +138,36 @@ function Tracking() {
                   </div>
                   <div className="info-item">
                     <span>Ngày khởi hành:</span>
-                    <strong>{tuyenDuongChon.busInfo?.ngay_xe ? new Date(tuyenDuongChon.busInfo.ngay_xe).toLocaleDateString('vi-VN') : 'Không lấy được dữ liệu'}</strong>
+                    <strong>{tuyenDuongChon.busInfo?.schedule_date ? new Date(tuyenDuongChon.busInfo.schedule_date).toLocaleDateString('vi-VN') : 'Không lấy được dữ liệu'}</strong>
                   </div>
                   <div className="info-item">
                     <span>Giờ khởi hành:</span>
-                    <strong>{tuyenDuongChon.busInfo?.gio_di || 'Không lấy được dữ liệu'}</strong>
+                    <strong>{tuyenDuongChon.busInfo?.start_time || 'Không lấy được dữ liệu'}</strong>
                   </div>
                   <div className="info-item">
                     <span>Giờ dự kiến:</span>
                     <strong>{tuyenDuongChon.gioDuKienKT ? dinhDangThoiGian(tuyenDuongChon.gioDuKienKT) : 'Không lấy được dữ liệu'}</strong>
                   </div>
+                  
+                  {/* QUÃNG ĐƯỜNG ĐÃ ĐI */} 
+                  {/* ~ 0.01126 km ≈ 0.01 km  */} 
                   <div className="info-item">
                     <span>Quãng đường đã đi:</span>
-                    <strong>{(tuyenDuongChon.distanceTraveled / 1000).toFixed(2)} km</strong>
+                    <div className="distance-display">
+                      <strong className="distance-m">{tuyenDuongChon.distanceTraveled.toFixed(6)} m</strong>
+                      <span className="distance-separator"> = </span>
+                      <strong className="distance-km">{(tuyenDuongChon.distanceTraveled / 1000).toFixed(2)} km</strong>
+                    </div>
                   </div>
+
+                  {/* VẬN TỐC */}
                   <div className="info-item">
                     <span>Vận tốc:</span>
-                    <strong>{tuyenDuongChon.vanToc} km/h</strong>
+                    <div className="speed-display">
+                      <strong className="speed-kmh">{tuyenDuongChon.vanToc} km/h</strong>
+                    </div>
                   </div>
+
                   <div className="info-item">
                     <span>Tổng khoảng cách:</span>
                     <strong>{(tuyenDuongChon.totalDistance / 1000).toFixed(2)} km</strong>
@@ -183,7 +202,7 @@ function Tracking() {
                             {trangThai.includes("active") && <div className="pulse-animation"></div>}
                           </div>
                           <div className="stop-info">
-                            <div className="stop-name">{tram.ten_stop}</div>
+                            <div className="stop-name">{tram.stop_name}</div>
                             <div className="stop-order">
                               Trạm {viTri + 1}
                             </div>

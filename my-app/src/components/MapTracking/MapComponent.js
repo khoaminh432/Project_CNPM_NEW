@@ -97,7 +97,11 @@ function MapComponent({ searchQuery, searchTrigger, onRouteSelect }) {
   // Cleanup khi component unmount
   useEffect(() => {
     return () => {
+<<<<<<< HEAD
       // Dọn dẹp tất cả interval và timeout
+=======
+  // Dọn dẹp tất cả interval và timeout
+>>>>>>> ADMINTC
       Object.values(animRefs.current).forEach(anim => {
         if (anim?.demNguoc) clearInterval(anim.demNguoc);
         if (anim?.animation) clearTimeout(anim.animation);

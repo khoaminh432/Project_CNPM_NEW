@@ -2,7 +2,11 @@ import { VAN_TOC } from './constants.js';
 import { capNhatTrangThaiTram } from './handleRouteCalculation.js';
 
 /**
+<<<<<<< HEAD
  * Xử lý tìm kiếm xe theo từ khóa
+=======
+ * Xử lý tìm kiếm xe theo mã
+>>>>>>> ADMINTC
  */
 export const xuLyTimKiem = (searchQuery, mapRef, markerXeRef, isTheoDoiRef, markerTheoDoiRef, selectedRouteIdRef, onRouteSelectRef, dataTuyenRef) => {
   if (!searchQuery) {

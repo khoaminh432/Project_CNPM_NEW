@@ -1,11 +1,11 @@
 // models/thongKeModel.js
-const pool = require('../db/connect') // kết nối database
+const pool = require('../db'); // kết nối database
 
 const getThongKe = async () => {
-  const [xeBuyt] = await pool.query('SELECT COUNT(*) as count FROM xe_buyt');
-  const [taiXe] = await pool.query('SELECT COUNT(*) as count FROM tai_xe');
-  const [hocSinh] = await pool.query('SELECT COUNT(*) as count FROM hoc_sinh');
-  const [tuyenDuong] = await pool.query('SELECT COUNT(*) as count FROM tuyen_duong');
+  const [xeBuyt] = await pool.query('SELECT COUNT(*) as count FROM bus');
+  const [taiXe] = await pool.query('SELECT COUNT(*) as count FROM driver');
+  const [hocSinh] = await pool.query('SELECT COUNT(*) as count FROM student');
+  const [tuyenDuong] = await pool.query('SELECT COUNT(*) as count FROM route');
 
   return {
     xeBuyt: xeBuyt[0].count,

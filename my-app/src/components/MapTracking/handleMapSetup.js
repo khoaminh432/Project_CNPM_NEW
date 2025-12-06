@@ -9,7 +9,11 @@ import { batDauDemNguoc, batDauDiChuyenXe, danhDauXeKetThuc } from './handleAnim
 import { capNhatTrangThaiTram } from './handleRouteCalculation.js';
 
 /**
+<<<<<<< HEAD
  * Khởi tạo bản đồ Leaflet
+=======
+ * Khởi tạo bản đồ Leaflet map/
+>>>>>>> ADMINTC
  */
 export const khoiTaoBanDo = (centerLat, centerLng, mapRef, isTheoDoiRef, markerTheoDoiRef) => {
   if (!mapRef.current) {
@@ -42,7 +46,11 @@ export const khoiTaoBanDo = (centerLat, centerLng, mapRef, isTheoDoiRef, markerT
 export const xuLySuKienPolyline = (duongDi, tuyen, tongS, dsTram) => {
   // Thêm tooltip cho tuyến đường
   duongDi.bindTooltip(
+<<<<<<< HEAD
     `<b>Tuyến: ${tuyen.ten_tuyen}</b><br/>Số trạm: ${dsTram.length}<br/>Khoảng cách: ${(tongS / 1000).toFixed(2)} km`, 
+=======
+    `<b>Tên tuyến: ${tuyen.route_name}</b><br/>Số trạm: ${dsTram.length}<br/>Khoảng cách: ${(tongS / 1000).toFixed(2)} km`, 
+>>>>>>> ADMINTC
     { 
       sticky: true,
       direction: 'top'
@@ -80,8 +88,13 @@ export const thietLapTuyen = (tuyen, map, dataTuyenRef, markerXeRef, markerTramR
   if (!tuyen.stops || !Array.isArray(tuyen.stops) || tuyen.stops.length === 0) return;
 
   // Sắp xếp các trạm theo thứ tự
+<<<<<<< HEAD
   const dsTram = tuyen.stops.slice().sort((a, b) => a.thu_tu - b.thu_tu);
   taoMarkerTram(tuyen.td_id, dsTram, map, markerTramRef);
+=======
+  const dsTram = tuyen.stops.slice().sort((a, b) => a.stop_order - b.stop_order);
+  taoMarkerTram(tuyen.route_id, dsTram, map, markerTramRef);
+>>>>>>> ADMINTC
 
   // Tạo waypoints cho routing
   const waypoints = dsTram.map(tram => L.latLng(tram.lat, tram.lng));
@@ -103,7 +116,11 @@ export const thietLapTuyen = (tuyen, map, dataTuyenRef, markerXeRef, markerTramR
     }),
   }).addTo(map);
 
+<<<<<<< HEAD
   controlTuyenRef.current[tuyen.td_id] = routingControl;
+=======
+  controlTuyenRef.current[tuyen.route_id] = routingControl;
+>>>>>>> ADMINTC
 
   // Xử lý khi tìm thấy route
   routingControl.on("routesfound", (event) => {
@@ -119,16 +136,28 @@ export const thietLapTuyen = (tuyen, map, dataTuyenRef, markerXeRef, markerTramR
       interactive: true
     }).addTo(map);
 
+<<<<<<< HEAD
     polylineRef.current[tuyen.td_id] = duongDi;
     xuLySuKienPolyline(duongDi, tuyen, tongS, dsTram);
+=======
+    polylineRef.current[tuyen.route_id] = duongDi;
+    xuLySuKienPolyline(duongDi, tuyen , tongS, dsTram);
+>>>>>>> ADMINTC
 
     // Tính khoảng cách đến các trạm
     const kcTram = tinhKCdenTram(toaDoDoans, dsTram);
     const lichTrinh = tuyen.schedule[0];
+<<<<<<< HEAD
     const thoiGianBatDau = parseDateTime(lichTrinh.ngay_xe, lichTrinh.gio_di);
 
     // Lưu dữ liệu tuyến vào ref
     dataTuyenRef.current[tuyen.td_id] = {
+=======
+    const thoiGianBatDau = parseDateTime(lichTrinh.schedule_date, lichTrinh.start_time);
+
+    // Lưu dữ liệu tuyến vào ref
+    dataTuyenRef.current[tuyen.route_id] = {
+>>>>>>> ADMINTC
       toaDoDoans,
       thoiGianBatDau,
       tongS,
@@ -140,14 +169,22 @@ export const thietLapTuyen = (tuyen, map, dataTuyenRef, markerXeRef, markerTramR
 
     // Tạo marker xe và bắt đầu animation
     const trangThai = layTrangThaiXe(lichTrinh, thoiGianBatDau, dataTuyenRef);
+<<<<<<< HEAD
     const marker = capNhatMarkerXe(tuyen.td_id, toaDoDoans[0], lichTrinh, trangThai, mapRef, markerXeRef, dataTuyenRef);
+=======
+    const marker = capNhatMarkerXe(tuyen.route_id, toaDoDoans[0], lichTrinh, trangThai, mapRef, markerXeRef, dataTuyenRef);
+>>>>>>> ADMINTC
 
     if (!marker) return;
 
     // Bắt đầu animation tùy theo trạng thái
     if (trangThai.status === 'waiting') {
       batDauDemNguoc(
+<<<<<<< HEAD
         tuyen.td_id, 
+=======
+        tuyen.route_id, 
+>>>>>>> ADMINTC
         dataTuyenRef, 
         markerXeRef, 
         animRefs, 
@@ -159,7 +196,11 @@ export const thietLapTuyen = (tuyen, map, dataTuyenRef, markerXeRef, markerTramR
       );
     } else if (trangThai.status === 'active') {
       batDauDiChuyenXe(
+<<<<<<< HEAD
         tuyen.td_id, 
+=======
+        tuyen.route_id, 
+>>>>>>> ADMINTC
         dataTuyenRef, 
         markerXeRef, 
         animRefs, 
@@ -170,25 +211,43 @@ export const thietLapTuyen = (tuyen, map, dataTuyenRef, markerXeRef, markerTramR
         markerTheoDoiRef
       );
     } else if (trangThai.status === 'finished') {
+<<<<<<< HEAD
       capNhatTrangThaiTram(tuyen.td_id, tongS, 'finished', dataTuyenRef, selectedRouteIdRef, onRouteSelectRef);
       danhDauXeKetThuc(tuyen.td_id, lichTrinh, markerXeRef, dataTuyenRef);
+=======
+      capNhatTrangThaiTram(tuyen.route_id, tongS, 'finished', dataTuyenRef, selectedRouteIdRef, onRouteSelectRef);
+      danhDauXeKetThuc(tuyen.route_id, lichTrinh, markerXeRef, dataTuyenRef);
+>>>>>>> ADMINTC
     }
 
     // Xóa routing control sau 1 giây
     setTimeout(() => {
+<<<<<<< HEAD
       if (controlTuyenRef.current[tuyen.td_id]) {
         map.removeControl(controlTuyenRef.current[tuyen.td_id]);
         controlTuyenRef.current[tuyen.td_id] = null;
+=======
+      if (controlTuyenRef.current[tuyen.route_id]) {
+        map.removeControl(controlTuyenRef.current[tuyen.route_id]);
+        controlTuyenRef.current[tuyen.route_id] = null;
+>>>>>>> ADMINTC
       }
     }, 1000);
   });
 
   // Xử lý lỗi routing
   routingControl.on('routingerror', (error) => {
+<<<<<<< HEAD
     console.error(`Lỗi routing cho tuyến ${tuyen.td_id}:`, error);
     if (controlTuyenRef.current[tuyen.td_id]) {
       map.removeControl(controlTuyenRef.current[tuyen.td_id]);
       controlTuyenRef.current[tuyen.td_id] = null;
+=======
+    console.error(`Lỗi routing cho tuyến ${tuyen.route_id}:`, error);
+    if (controlTuyenRef.current[tuyen.route_id]) {
+      map.removeControl(controlTuyenRef.current[tuyen.route_id]);
+      controlTuyenRef.current[tuyen.route_id] = null;
+>>>>>>> ADMINTC
     }
   });
 };

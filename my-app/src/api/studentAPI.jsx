@@ -1,8 +1,7 @@
 // src/api/student.api.js
 import axiosClient from "./AxiosClient";
-
 const studentAPI = {
-  
+  renListData: (res)=>res.data.data,
   // Lấy tất cả học sinh
   getAllStudents: () => axiosClient.get("/students"),
 

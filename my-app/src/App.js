@@ -4,6 +4,7 @@ import Info from "./Info";
 import Tracking from "./Tracking";
 import StudentManagementPage from "./pages/maincontent/Student_management/StudentManagementPage";
 import RouteManagementPage from "./pages/maincontent/Route_management/RouteManagementPage";
+import renderStudent from "./renderData/RenderStudent";
 import studentAPI from "./api/studentAPI";
 import { Student } from "./models/bus_mapDB";
 function App() {
@@ -19,7 +20,7 @@ function App() {
     setShowModal(true);
   };
   useEffect(()=>{
-    studentAPI.getAllStudents().then(res => setStudent(res))
+    studentAPI.getAllStudents().then(res=> setStudent(res.data.data.map(item => new Student(item))))
   },[])
   return (
     <div className="container">

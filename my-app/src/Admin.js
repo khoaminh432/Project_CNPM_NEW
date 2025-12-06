@@ -5,6 +5,9 @@ import "./Admin.css";
 import Info from "./Info";
 import Tracking from "./Tracking";
 import StudentManagementPage from "./pages/maincontent/Student_management/StudentManagementPage";
+import QuanLyTaiXe from "./frontend/QuanLyTaiXe";
+import QuanLyXeBuyt from "./frontend/QuanLyXeBuyt";
+import ThongBao from "./frontend/ThongBao";
 import Clock from "./components/Time";
 import DemoTk from "./demoTk";
 
@@ -49,7 +52,9 @@ function Admin({ user, onLogout }) {
         <ul>
           <li onClick={() => setActivePage("TRANG CHỦ")}>Trang chủ</li>
           <li onClick={() => setActivePage("THEO DÕI XE BUÝT")}>Theo dõi xe buýt</li>
-          <li onClick={() => setActivePage("QUẢN LÝ HỌC SINH")}>Quản lý học sinh</li>
+          <li onClick={() => setActivePage("QUẢN LÝ TÀI XẾ")}>Quản lý tài xế</li>
+          <li onClick={() => setActivePage("QUẢN LÝ XE BUÝT")}>Quản lý xe buýt</li>
+          <li onClick={() => setActivePage("QUẢN LÝ THÔNG BÁO")}>Quản lý thông báo</li>
         </ul>
         {/* Không còn nút logout ở sidebar */}
       </div>
@@ -173,6 +178,15 @@ function Admin({ user, onLogout }) {
 
         {/* === QUẢN LÝ HỌC SINH === */}
         {activePage === "QUẢN LÝ HỌC SINH" && <StudentManagementPage />}
+
+        {/* === QUẢN LÝ TÀI XẾ === */}
+        {activePage === "QUẢN LÝ TÀI XẾ" && <QuanLyTaiXe />}
+        
+        {/* === QUẢN LÝ XE BUÝT=== */}
+        {activePage === "QUẢN LÝ XE BUÝT" && <QuanLyXeBuyt />}
+
+        {/* === QUẢN LÝ THÔNG BÁO === */}
+        {activePage === "QUẢN LÝ THÔNG BÁO" && <ThongBao />}
       </div>
     </div>
   );

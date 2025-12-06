@@ -4,6 +4,11 @@ const cors = require('cors');
 const signinRoute = require('./signinRoute');
 const vehicleRoutes = require('./routes/vehicleRoutes');
 const thongKeRoutes = require('./routes/thongKeRoutes'); // import route thống kê
+const driverRoutes = require('./route/driver.js');
+const busRoutes = require('./route/bus.js');
+const scheduleRoutes = require('./route/schedule.js');
+const routeRoutes = require('./route/route.js');
+const notificationRoutes = require('./route/notification.js');
 const app = express();
 const PORT = 5000;
 
@@ -19,6 +24,11 @@ app.use('/api', signinRoute);
 
 app.use('/api/vehicle', vehicleRoutes);
 app.use('/api/thongke', thongKeRoutes);
+app.use('/api/drivers', driverRoutes);
+app.use('/api/buses', busRoutes);
+app.use('/api/schedules', scheduleRoutes);
+app.use('/api/routes', routeRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Start server
 app.listen(PORT, () => {

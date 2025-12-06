@@ -564,6 +564,7 @@ router.get('/schedule/:schedule_id/stops/details', async (req, res) => {
     stops.forEach((stop, index) => {
       const coords = generateRandomCoordinates(index + 1, totalStops);
       stopsArray.push({
+        stop_id: stop.stop_id, // Add stop_id to the response
         stop_name: stop.stop_name,
         stop_type: stop.stop_type === 'pickup' ? 'Điểm đón' : 'Điểm trả',
         student_count: stop.student_count,
@@ -635,14 +636,14 @@ router.get('/schedule/:schedule_id/students-by-stop', async (req, res) => {
         'Điểm đón' as stop_type,
         sp.pickup_id,
         s.student_id,
-        s.full_name,
-        s.class,
+        s.name as full_name,
+        s.class_name as class,
         sp.status
       FROM student_pickup sp
       JOIN student s ON sp.student_id = s.student_id
       JOIN bus_stop bs ON s.stop_id = bs.stop_id
       WHERE sp.schedule_id = ? AND s.stop_id IS NOT NULL
-      ORDER BY bs.stop_id, s.full_name
+      ORDER BY bs.stop_id, s.name
     `, [schedule_id]);
 
     // Get students grouped by dropoff stops
@@ -653,14 +654,14 @@ router.get('/schedule/:schedule_id/students-by-stop', async (req, res) => {
         'Điểm trả' as stop_type,
         sp.pickup_id,
         s.student_id,
-        s.full_name,
-        s.class,
+        s.name as full_name,
+        s.class_name as class,
         sp.status
       FROM student_pickup sp
       JOIN student s ON sp.student_id = s.student_id
       JOIN bus_stop bs ON s.dropoff_stop_id = bs.stop_id
       WHERE sp.schedule_id = ? AND s.dropoff_stop_id IS NOT NULL
-      ORDER BY bs.stop_id, s.full_name
+      ORDER BY bs.stop_id, s.name
     `, [schedule_id]);
 
     // Combine and group by stops
@@ -763,28 +764,54 @@ router.get('/schedule/:schedule_id/stop/:stop_id/status', async (req, res) => {
   try {
     const { schedule_id, stop_id } = req.params;
     
-    // Check for pickup status (students waiting at this stop)
+    console.log(`📊 Checking status for schedule ${schedule_id}, stop ${stop_id}`);
+    
+    // Check for pickup students at this stop
     const [pickupStudents] = await db.query(`
       SELECT 
         COUNT(*) as total,
-        SUM(CASE WHEN status = 'DA_DON' THEN 1 ELSE 0 END) as picked_up
-      FROM student_pickup
-      WHERE schedule_id = ? AND stop_id = ?
+        SUM(CASE WHEN sp.status = 'DA_DON' THEN 1 ELSE 0 END) as picked_up,
+        GROUP_CONCAT(CONCAT(s.name, ':', sp.status, '(', sp.student_id, ')') SEPARATOR ', ') as debug_info
+      FROM student_pickup sp
+      JOIN student s ON sp.student_id = s.student_id
+      WHERE sp.schedule_id = ? AND s.stop_id = ?
     `, [schedule_id, stop_id]);
     
-    // Check for dropoff status (students to be dropped at this stop)
+    // Check for dropoff students at this stop
     const [dropoffStudents] = await db.query(`
       SELECT 
         COUNT(*) as total,
-        SUM(CASE WHEN status = 'DA_TRA' THEN 1 ELSE 0 END) as dropped_off
-      FROM student_pickup
-      WHERE schedule_id = ? AND dropoff_stop_id = ?
+        SUM(CASE WHEN sp.status = 'DA_TRA' THEN 1 ELSE 0 END) as dropped_off,
+        GROUP_CONCAT(CONCAT(s.name, ':', sp.status, '(', sp.student_id, ')') SEPARATOR ', ') as debug_info
+      FROM student_pickup sp
+      JOIN student s ON sp.student_id = s.student_id
+      WHERE sp.schedule_id = ? AND s.dropoff_stop_id = ?
     `, [schedule_id, stop_id]);
     
     const pickupTotal = pickupStudents[0].total || 0;
-    const pickupCompleted = pickupStudents[0].picked_up || 0;
+    const pickupCompleted = parseInt(pickupStudents[0].picked_up) || 0;
     const dropoffTotal = dropoffStudents[0].total || 0;
-    const dropoffCompleted = dropoffStudents[0].dropped_off || 0;
+    const dropoffCompleted = parseInt(dropoffStudents[0].dropped_off) || 0;
+    
+    // Determine which type this stop is based on which has students
+    const isPickupStop = pickupTotal > 0;
+    const isDropoffStop = dropoffTotal > 0;
+    
+    console.log(`Stop ${stop_id} - Pickup: ${pickupCompleted}/${pickupTotal}, Dropoff: ${dropoffCompleted}/${dropoffTotal}`);
+    if (isPickupStop) console.log(`  Pickup students: ${pickupStudents[0].debug_info}`);
+    if (isDropoffStop) console.log(`  Dropoff students: ${dropoffStudents[0].debug_info}`);
+    
+    // If no students found, check if there are ANY student_pickup records for this schedule
+    if (pickupTotal === 0 && dropoffTotal === 0) {
+      const [anyStudents] = await db.query(`
+        SELECT COUNT(*) as count FROM student_pickup WHERE schedule_id = ?
+      `, [schedule_id]);
+      console.log(`⚠️ No students found at stop ${stop_id} for schedule ${schedule_id}. Total students in schedule: ${anyStudents[0].count}`);
+    }
+    
+    // Calculate completion status
+    const allPickedUp = pickupTotal === 0 || (pickupTotal > 0 && pickupTotal === pickupCompleted);
+    const allDroppedOff = dropoffTotal === 0 || (dropoffTotal > 0 && dropoffTotal === dropoffCompleted);
     
     res.json({
       status: 'OK',
@@ -792,20 +819,60 @@ router.get('/schedule/:schedule_id/stop/:stop_id/status', async (req, res) => {
         pickup: {
           total: pickupTotal,
           completed: pickupCompleted,
-          all_picked_up: pickupTotal > 0 && pickupTotal === pickupCompleted
+          all_picked_up: allPickedUp
         },
         dropoff: {
           total: dropoffTotal,
           completed: dropoffCompleted,
-          all_dropped_off: dropoffTotal > 0 && dropoffTotal === dropoffCompleted
+          all_dropped_off: allDroppedOff
         },
-        all_picked_up: pickupTotal === 0 || (pickupTotal > 0 && pickupTotal === pickupCompleted),
-        all_dropped_off: dropoffTotal === 0 || (dropoffTotal > 0 && dropoffTotal === dropoffCompleted)
+        all_picked_up: allPickedUp,
+        all_dropped_off: allDroppedOff
       }
     });
     
   } catch (error) {
-    console.error('Error checking stop status:', error);
+    console.error('❌ Error checking stop status:', error);
+    res.status(500).json({
+      status: 'ERROR',
+      message: error.message
+    });
+  }
+});
+
+// TEMPORARY: Create test data for schedule LT_TX007_005
+router.post('/schedule/:schedule_id/create-test-data', async (req, res) => {
+  try {
+    const { schedule_id } = req.params;
+    
+    console.log(`Creating test data for schedule ${schedule_id}`);
+    
+    // Insert test student_pickup records
+    await db.query(`
+      INSERT INTO student_pickup 
+        (pickup_id, student_id, driver_id, schedule_id, stop_id, pickup_time, dropoff_time, status) 
+      VALUES
+        (?, 'HS101', 'TX007', ?, 'STOP1', NULL, NULL, 'CHO_DON'),
+        (?, 'HS102', 'TX007', ?, 'STOP1', NULL, NULL, 'CHO_DON')
+      ON DUPLICATE KEY UPDATE 
+        schedule_id = VALUES(schedule_id),
+        status = VALUES(status)
+    `, [
+      `PU_${schedule_id}_001`,
+      schedule_id,
+      `PU_${schedule_id}_002`,
+      schedule_id
+    ]);
+    
+    console.log(`✅ Test data created for schedule ${schedule_id}`);
+    
+    res.json({
+      status: 'OK',
+      message: 'Test data created successfully'
+    });
+    
+  } catch (error) {
+    console.error('Error creating test data:', error);
     res.status(500).json({
       status: 'ERROR',
       message: error.message

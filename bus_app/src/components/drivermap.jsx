@@ -310,7 +310,7 @@ export default function DriverMap({ onBackToMain, onNavigateToList }) {
           localStorage.setItem('busSimulation', JSON.stringify(simState));
           
           // Start checking student status
-          startCheckingStudentStatus(stopInfo.stop_id, stopInfo.stop_type, routeCoordinates, currentSegment);
+          startCheckingStudentStatus(stopInfo.stop_id, stopInfo.stop_type, routeCoordinates, currentSegment, simState.scheduleId);
           return;
         } else {
           setCurrentStopIndex(currentSegment);
@@ -331,41 +331,167 @@ export default function DriverMap({ onBackToMain, onNavigateToList }) {
   };
 
   // Check if all students at stop have been picked up/dropped off
-  const startCheckingStudentStatus = async (stopId, stopType, routeCoordinates, stopIndex) => {
+  const startCheckingStudentStatus = async (stopId, stopType, routeCoordinates, stopIndex, scheduleId = null) => {
+    console.log(`Checking student status at stop ${stopId} (${stopType}), index ${stopIndex}`);
+    console.log('earliestSchedule:', earliestSchedule);
+    console.log('scheduleId param:', scheduleId);
+    
     const checkStatus = async () => {
       try {
-        if (!earliestSchedule) return;
+        // Use scheduleId parameter if provided, otherwise use earliestSchedule
+        const activeScheduleId = scheduleId || (earliestSchedule ? earliestSchedule.schedule_id : null);
+        
+        if (!activeScheduleId) {
+          console.log('⚠️ No schedule ID available, cannot check status');
+          return;
+        }
 
+        console.log(`📡 Fetching status from API for schedule ${activeScheduleId}, stop ${stopId}`);
         const response = await fetch(
-          `http://localhost:5000/api/students/schedule/${earliestSchedule.schedule_id}/stop/${stopId}/status`
+          `http://localhost:5000/api/students/schedule/${activeScheduleId}/stop/${stopId}/status`
         );
         const data = await response.json();
+        console.log(`✅ API Response received for stop ${stopId}:`, data);
 
         if (data.status === 'OK') {
+          console.log(`📊 Detailed pickup data:`, data.data.pickup);
+          console.log(`📊 Detailed dropoff data:`, data.data.dropoff);
+          
           const allCompleted = stopType === 'Điểm đón' 
             ? data.data.all_picked_up 
             : data.data.all_dropped_off;
 
+          console.log(`🔍 Stop ${stopId}: allCompleted = ${allCompleted}, stopType = ${stopType}`);
+          console.log(`📊 Full data.data:`, data.data);
+
           if (allCompleted) {
             // All students processed, continue bus movement
+            console.log('✨ All students completed, resuming movement ✨');
             clearInterval(checkIntervalRef.current);
+            checkIntervalRef.current = null;
             setWaitingAtStop(false);
-            setIsSimulating(true);
             
-            // Continue to next segment
+            // Update localStorage
+            const simState = JSON.parse(localStorage.getItem('busSimulation') || '{}');
+            simState.waitingAtStop = false;
+            delete simState.currentStopId;
+            delete simState.currentStopType;
+            localStorage.setItem('busSimulation', JSON.stringify(simState));
+            
+            // Continue to next segment - start from current position and move forward
             if (stopIndex < routeCoordinates.length - 1) {
-              startBusSimulation(routeCoordinates, stopIndex);
+              setTimeout(() => {
+                // Start animation from current stop to next stop
+                setIsSimulating(true);
+                continueSimulationFromStop(routeCoordinates, stopIndex);
+              }, 200);
             }
           }
         }
       } catch (error) {
-        console.error('Error checking student status:', error);
+        console.error('❌ Error checking student status:', error);
       }
     };
 
     // Check immediately and then every 2 seconds
+    console.log('🔄 Starting interval check for student status...');
     checkStatus();
+    if (checkIntervalRef.current) {
+      console.log('⚠️ Clearing existing interval before creating new one');
+      clearInterval(checkIntervalRef.current);
+    }
     checkIntervalRef.current = setInterval(checkStatus, 2000);
+    console.log('✓ Interval started with ID:', checkIntervalRef.current);
+  };
+
+  // Continue simulation from a stop after waiting
+  const continueSimulationFromStop = (routeCoordinates, fromIndex) => {
+    console.log(`Continuing simulation from stop ${fromIndex}, total stops in stopsDetails: ${stopsDetails.length}`);
+    console.log('StopsDetails:', stopsDetails.map((s, i) => `${i}: ${s.stop_name} (${s.stop_type})`));
+    
+    if (fromIndex >= routeCoordinates.length - 1) {
+      console.log('Already at last stop');
+      return;
+    }
+
+    // Clear any existing animation
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+      animationRef.current = null;
+    }
+
+    let currentSegment = fromIndex;
+    let progress = 0;
+    const speed = 0.002;
+
+    const animate = () => {
+      if (currentSegment >= routeCoordinates.length - 1) {
+        // Reached the end
+        console.log('Bus reached final destination');
+        setBusPosition(routeCoordinates[routeCoordinates.length - 1]);
+        setCurrentStopIndex(routeCoordinates.length - 1);
+        setIsSimulating(false);
+        
+        const simState = JSON.parse(localStorage.getItem('busSimulation') || '{}');
+        simState.currentStopIndex = routeCoordinates.length - 1;
+        simState.busPosition = routeCoordinates[routeCoordinates.length - 1];
+        simState.isActive = false;
+        localStorage.setItem('busSimulation', JSON.stringify(simState));
+        return;
+      }
+
+      const start = routeCoordinates[currentSegment];
+      const end = routeCoordinates[currentSegment + 1];
+      
+      const lat = start[0] + (end[0] - start[0]) * progress;
+      const lng = start[1] + (end[1] - start[1]) * progress;
+      
+      setBusPosition([lat, lng]);
+      
+      progress += speed;
+      
+      if (progress >= 1) {
+        // Reached next stop
+        currentSegment++;
+        progress = 0;
+        
+        console.log(`Reached coordinate index ${currentSegment}, checking stopsDetails[${currentSegment}]`);
+        const stopInfo = stopsDetails[currentSegment];
+        console.log(`StopInfo at ${currentSegment}:`, stopInfo);
+        
+        if (stopInfo && (stopInfo.stop_type === 'Điểm đón' || stopInfo.stop_type === 'Điểm trả')) {
+          console.log(`Reached stop ${currentSegment}: ${stopInfo.stop_name} (${stopInfo.stop_type})`);
+          setBusPosition(routeCoordinates[currentSegment]);
+          setCurrentStopIndex(currentSegment);
+          setWaitingAtStop(true);
+          setIsSimulating(false);
+          
+          const simState = JSON.parse(localStorage.getItem('busSimulation') || '{}');
+          simState.currentStopIndex = currentSegment;
+          simState.busPosition = routeCoordinates[currentSegment];
+          simState.waitingAtStop = true;
+          simState.currentStopId = stopInfo.stop_id;
+          simState.currentStopType = stopInfo.stop_type;
+          localStorage.setItem('busSimulation', JSON.stringify(simState));
+          
+          startCheckingStudentStatus(stopInfo.stop_id, stopInfo.stop_type, routeCoordinates, currentSegment, simState.scheduleId);
+          return;
+        } else {
+          console.log(`No stop or not pickup/dropoff at ${currentSegment}, continuing...`);
+          setCurrentStopIndex(currentSegment);
+          
+          const simState = JSON.parse(localStorage.getItem('busSimulation') || '{}');
+          simState.currentStopIndex = currentSegment;
+          simState.busPosition = routeCoordinates[currentSegment];
+          simState.waitingAtStop = false;
+          localStorage.setItem('busSimulation', JSON.stringify(simState));
+        }
+      }
+      
+      animationRef.current = requestAnimationFrame(animate);
+    };
+    
+    animationRef.current = requestAnimationFrame(animate);
   };
 
   // Stop bus simulation
@@ -691,8 +817,13 @@ export default function DriverMap({ onBackToMain, onNavigateToList }) {
                 try {
                   const simState = JSON.parse(savedSimulation);
                   
-                  // Only restore if it's for the same schedule
-                  if (simState.scheduleId === scheduleData.data.schedule_id && simState.isActive) {
+                  // Only restore if it's for the same schedule AND has valid stop_id data
+                  const hasValidStopIds = simState.stopsDetails && 
+                    simState.stopsDetails.some(stop => 
+                      (stop.stop_type === 'Điểm đón' || stop.stop_type === 'Điểm trả') && stop.stop_id
+                    );
+                  
+                  if (simState.scheduleId === scheduleData.data.schedule_id && simState.isActive && hasValidStopIds) {
                     console.log('Restoring simulation state:', simState);
                     
                     // Use saved stops details instead of freshly fetched data
@@ -714,7 +845,8 @@ export default function DriverMap({ onBackToMain, onNavigateToList }) {
                           simState.currentStopId, 
                           simState.currentStopType, 
                           simState.routeCoordinates, 
-                          simState.currentStopIndex
+                          simState.currentStopIndex,
+                          simState.scheduleId
                         );
                       }, 500);
                     } else if (!simState.isComplete) {
@@ -729,13 +861,14 @@ export default function DriverMap({ onBackToMain, onNavigateToList }) {
                             currentStop.stop_id, 
                             currentStop.stop_type, 
                             simState.routeCoordinates, 
-                            simState.currentStopIndex
+                            simState.currentStopIndex,
+                            simState.scheduleId
                           );
                         }, 500);
                       } else {
                         // Not at a waiting stop, resume animation from current position
                         setTimeout(() => {
-                          startBusSimulation(simState.routeCoordinates, simState.currentStopIndex);
+                          continueSimulationFromStop(simState.routeCoordinates, simState.currentStopIndex);
                         }, 500);
                       }
                     }
@@ -809,7 +942,7 @@ export default function DriverMap({ onBackToMain, onNavigateToList }) {
           
           {/* Render all stop markers from stopsDetails */}
           {connected && stopsDetails.length > 0 && stopsDetails.map((stop, index) => {
-            console.log(`Marker ${index}:`, stop.stop_name, stop.latitude, stop.longitude, stop.stop_type);
+            console.log(`Marker ${index}:`, stop.stop_name, stop.latitude, stop.longitude, stop.stop_type, 'stop_id:', stop.stop_id);
             return stop.latitude && stop.longitude ? (
               <Marker 
                 key={index} 

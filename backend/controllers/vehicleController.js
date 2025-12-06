@@ -2,7 +2,7 @@ const { getStopsByRoute, getScheduleByRoute, getAllRoutesFull } = require('../mo
 const axios = require('axios');
 
 // Cache tạm thời trong memory
-const geocodeCache = {}; // key = dia_chi, value = {lat, lng}
+const geocodeCache = {}; // key = address, value = {lat, lng}
 
 /**
  * Geocode address bằng OSM Nominatim
@@ -31,19 +31,19 @@ async function geocodeOSM(address) {
 }
 
 /**
- * API: Lấy tuyến theo td_id
+ * API: Lấy tuyến theo route_id
  */
 async function getRoute(req, res) {
-    const { td_id } = req.params;
+    const { route_id } = req.params;
 
     try {
-        const stops = await getStopsByRoute(td_id);
-        const schedule = await getScheduleByRoute(td_id);
+        const stops = await getStopsByRoute(route_id);
+        const schedule = await getScheduleByRoute(route_id);
 
         // Geocode tất cả stops cùng lúc
         const geocodedStops = await Promise.all(
             stops.map(async stop => {
-                const coords = await geocodeOSM(stop.dia_chi);
+                const coords = await geocodeOSM(stop.address);
                 return { ...stop, lat: coords.lat, lng: coords.lng };
             })
         );
@@ -67,7 +67,7 @@ async function getAllRoutes(req, res) {
             routes.map(async route => {
                 const stops = await Promise.all(
                     route.stops.map(async stop => {
-                        const coords = await geocodeOSM(stop.dia_chi);
+                        const coords = await geocodeOSM(stop.address);
                         return { ...stop, lat: coords.lat, lng: coords.lng };
                     })
                 );

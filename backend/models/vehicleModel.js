@@ -1,37 +1,37 @@
 // vehicleModel.js
 const pool = require('../db');
 
-// Lấy stop theo td_id
-async function getStopsByRoute(td_id) {
+// Lấy stop theo route_id
+async function getStopsByRoute(route_id) {
   const [rows] = await pool.query(
-    `SELECT stop_id, ten_stop, dia_chi, thu_tu
-     FROM diem_stop
-     WHERE td_id = ?
-     ORDER BY thu_tu`,
-    [td_id]
+    `SELECT stop_id, stop_name, address, stop_order
+     FROM bus_stop
+     WHERE route_id = ?
+     ORDER BY stop_order`,
+    [route_id]
   );
   return rows;
 }
 
-// Lấy lịch trình theo td_id
-async function getScheduleByRoute(td_id) {
+// Lấy lịch trình theo route_id
+async function getScheduleByRoute(route_id) {
   const [rows] = await pool.query(
-    `SELECT lt_id, td_id, xb_id, tx_id, ngay_xe, gio_di, gio_den
-     FROM lich_trinh
-     WHERE td_id = ?`,
-    [td_id]
+    `SELECT schedule_id, route_id, bus_id, driver_id, schedule_date, start_time
+     FROM bus_schedule
+     WHERE route_id = ?`,
+    [route_id]
   );
   return rows;
 }
 
 // Lấy tất cả tuyến + stops + schedule
 async function getAllRoutesFull() {
-  const [routes] = await pool.query("SELECT * FROM tuyen_duong");
+  const [routes] = await pool.query("SELECT * FROM route");
   
   const result = await Promise.all(
     routes.map(async route => {
-      const stops = await getStopsByRoute(route.td_id);
-      const schedule = await getScheduleByRoute(route.td_id);
+      const stops = await getStopsByRoute(route.route_id);
+      const schedule = await getScheduleByRoute(route.route_id);
       return { ...route, stops, schedule };
     })
   );

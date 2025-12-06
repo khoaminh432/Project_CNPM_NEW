@@ -4,8 +4,8 @@ const mysql = require('mysql2/promise');
 const pool = mysql.createPool({
   host: 'localhost',
   user: 'root',
-  password: '',
-  database: 'bus_map',
+  password: '123456',
+  database: 'bus_map2',
 });
 
 module.exports = pool;

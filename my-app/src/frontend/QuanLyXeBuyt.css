@@ -5,23 +5,6 @@
     font-family: Arial, sans-serif;
 }
 
-/* Sidebar */
-.sidebar {
-    width: 200px;
-    background: #111;
-    color: white;
-    padding: 0;
-}
-
-.sidebar h2 {
-    margin-top: 20px;
-    font-size: 25px;
-    padding: 0 16px;
-    margin: 0;
-    height: 60px;
-    display: flex;
-    align-items: center;
-}
 
 /* Content */
 .content {

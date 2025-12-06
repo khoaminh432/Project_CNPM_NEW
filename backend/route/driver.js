@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 // Đảm bảo đường dẫn này đúng
-const pool = require('../db/connect.js'); 
+const pool = require('../db.js'); 
 
 /* ==========================================================
  * GET /api/drivers (Giữ nguyên)

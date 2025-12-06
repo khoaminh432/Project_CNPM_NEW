@@ -1,7 +1,7 @@
 // File: backend/route/notification.js
 const express = require('express');
 const router = express.Router();
-const pool = require('../db/connect'); 
+const pool = require('../db.js'); 
 
 /* ==========================================================
  * [GET] /api/notifications/users/:role

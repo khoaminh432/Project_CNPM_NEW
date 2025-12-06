@@ -1,8 +1,7 @@
 // File: backend/route/bus.js
 const express = require('express');
 const router = express.Router();
-const pool = require('../db/connect.js'); 
-
+const pool = require('../db.js'); 
 /* ==========================================================
  * LẤY 1 XE THEO ID (GET /api/buses/:id)
  * Sửa lỗi: Thêm DATE_FORMAT cho 'registry'

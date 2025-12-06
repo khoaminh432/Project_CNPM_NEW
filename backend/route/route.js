@@ -1,7 +1,7 @@
 // File: backend/route/route.js
 const express = require('express');
 const router = express.Router();
-const pool = require('../db/connect.js');
+const pool = require('../db.js');
 
 /* ==========================================================
  * LẤY DANH SÁCH TUYẾN (GET /api/routes)

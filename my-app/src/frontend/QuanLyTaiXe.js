@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react"; 
 import "./QuanLyTaiXe.css";
 import NextWeekScheduler from "./NextWeekScheduler";
@@ -10,10 +9,6 @@ import DriverEditPopup from "./components/DriverEditPopup";
 import ScheduleCalendarPopup from "./components/ScheduleCalendarPopup";
 // ===========================================
 
-
-// ===================================================================
-// == 🔹 COMPONENT CHÍNH (QUẢN LÝ TÀI XẾ)
-// ===================================================================
 export default function QuanLyTaiXe() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("Tất cả");
@@ -32,7 +27,7 @@ export default function QuanLyTaiXe() {
   
   useEffect(() => {
     setIsLoading(true);
-    fetch('http://localhost:3001/api/drivers')
+    fetch('http://localhost:5000/api/drivers')
       .then(res => {
         if (!res.ok) throw new Error('Không thể tải dữ liệu');
         return res.json();
@@ -104,20 +99,8 @@ export default function QuanLyTaiXe() {
 
 
   return (
-    <div className="dashboard">
-      <aside className="sidebar">
-        <h2>DASHBOARD</h2>
-      </aside>
-
-      <main className="content">
-        <header className="header">
-          <h1>QUẢN LÝ TÀI XẾ</h1>
-          <div className="profile">
-            <span className="icon">👤</span> Profile ▼
-          </div>
-        </header>
-
-        <div className="driver-container">
+    // Đã xóa dashboard, sidebar, header
+    <div className="driver-container" style={{padding: "10px", height: "100%", display: "flex", flexDirection: "column"}}>
           <div className="toolbar">
             <input
               type="text"
@@ -194,7 +177,6 @@ export default function QuanLyTaiXe() {
               )}
             </tbody>
           </table>
-        </div>
 
         {/* --- DANH SÁCH 4 POPUP --- */}
 
@@ -244,9 +226,6 @@ export default function QuanLyTaiXe() {
           onClose={() => setShowScheduler(false)}
           drivers={drivers}
         />
-        
-
-      </main>
     </div>
   );
 }

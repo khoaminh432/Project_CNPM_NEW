@@ -23,3 +23,4 @@ function Modal({ show, onClose, title, value }) {
 }
 
 export default Modal;
+

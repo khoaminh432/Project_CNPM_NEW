@@ -48,12 +48,12 @@ export const batDauDemNguoc = (idTuyen, dataTuyenRef, markerXeRef, animRefs, sel
     const marker = markerXeRef.current[idTuyen];
     if (marker) {
       const tooltipContent = `
-        <b>Mã xe: ${lichTrinh.xb_id || 'Lỗi'}</b><br/>
-        <b>Mã tài xế: ${lichTrinh.tx_id || 'Lỗi'}</b><br/>
+        <b>Mã xe: ${lichTrinh.bus_id || 'Lỗi'}</b><br/>
+        <b>Mã tài xế: ${lichTrinh.driver_id || 'Lỗi'}</b><br/>
         <b>Mã tuyến: ${idTuyen}</b><br/>
-        <b>Ngày khởi hành:</b> ${lichTrinh.ngay_xe ? new Date(lichTrinh.ngay_xe).toLocaleDateString('vi-VN') : 'Lỗi'}<br/>
+        <b>Ngày khởi hành:</b> ${lichTrinh.schedule_date ? new Date(lichTrinh.schedule_date).toLocaleDateString('vi-VN') : 'Lỗi'}<br/>
         <b>Trạng thái:</b> Chờ khởi hành (còn ${phut}p ${giay}s)<br/>
-        <b>Khởi hành:</b> ${lichTrinh.gio_di || 'Lỗi'}<br/>
+        <b>Khởi hành:</b> ${lichTrinh.start_time || 'Lỗi'}<br/>
         <b>Đến dự kiến:</b> ${dataTuyen.thoiGianKetThuc ? formatTime(dataTuyen.thoiGianKetThuc) : 'Đang tính...'}<br/>
         <b>Vận tốc:</b> ${VAN_TOC} km/h<br/>
         <b>Khoảng cách thực:</b> ${dataTuyen ? (dataTuyen.tongS / 1000).toFixed(2) + ' km' : 'Đang tính...'}
@@ -101,6 +101,8 @@ export const batDauDiChuyenXe = (idTuyen, dataTuyenRef, markerXeRef, animRefs, s
   const now = new Date();
   const thoiGianHoatDong = (now - thoiGianBatDau) / 1000;
   const quangDuongDaDi = Math.min(thoiGianHoatDong * (VAN_TOC * 1000 / 3600), tongS);
+  console.log("Thời gian hoạt động (s):", thoiGianHoatDong);
+console.log("Quãng đường đã đi (m):", quangDuongDaDi);
   
   // Tìm vị trí hiện tại của xe
   const viTriHienTai = timViTriXe(toaDoDoans, quangDuongDaDi);
@@ -134,7 +136,7 @@ export const batDauDiChuyenXe = (idTuyen, dataTuyenRef, markerXeRef, animRefs, s
   for (let i = 0; i < kcTram.length; i++) {
     if (kcTram[i].kcDenTram > quangDuongDaDi) {
       const kcConLai = kcTram[i].kcDenTram - quangDuongDaDi;
-      const tgConLai = Math.ceil(kcConLai / (VAN_TOC * 1000 / 3600));
+      const tgConLai = Math.ceil(kcConLai / (VAN_TOC * 1000 / 3600)); // làm tròn
       
       tramTiepTheo = {
         tram: kcTram[i].tram,
@@ -152,17 +154,17 @@ export const batDauDiChuyenXe = (idTuyen, dataTuyenRef, markerXeRef, animRefs, s
 
   // Tạo nội dung tooltip tùy theo trạng thái
   if (tramTiepTheo && tramTiepTheo.tgConLai > 0) {
-    const phutConLai = Math.floor(tramTiepTheo.tgConLai / 60);
+    const phutConLai = Math.floor(tramTiepTheo.tgConLai / 60); // p làm tròn từ s bỏ nguyên
     const giayConLai = tramTiepTheo.tgConLai % 60;
     
     tooltipContent = `
-      <b>Mã xe: ${lichTrinh.xb_id || 'Lỗi'}</b><br/>
-      <b>Mã tài xế: ${lichTrinh.tx_id || 'Lỗi'}</b><br/>
+      <b>Mã xe: ${lichTrinh.bus_id || 'Lỗi'}</b><br/>
+      <b>Mã tài xế: ${lichTrinh.driver_id || 'Lỗi'}</b><br/>
       <b>Mã tuyến: ${idTuyen}</b><br/>
-      <b>Trạm tiếp theo:</b> ${tramTiepTheo.tram.ten_stop}<br/>
+      <b>Trạm tiếp theo:</b> ${tramTiepTheo.tram.stop_name}<br/>
       <b>Đến trạm sau:</b> ${phutConLai}p ${giayConLai}s<br/>
-      <b>Ngày khởi hành:</b> ${lichTrinh.ngay_xe ? new Date(lichTrinh.ngay_xe).toLocaleDateString('vi-VN') : 'Lỗi'}<br/>
-      <b>Giờ khởi hành:</b> ${lichTrinh.gio_di || 'Lỗi'}<br/>
+      <b>Ngày khởi hành:</b> ${lichTrinh.schedule_date ? new Date(lichTrinh.schedule_date).toLocaleDateString('vi-VN') : 'Lỗi'}<br/>
+      <b>Giờ khởi hành:</b> ${lichTrinh.start_time || 'Lỗi'}<br/>
       <b>Giờ dự kiến KT:</b> ${formatTime(thoiGianKetThuc)}<br/>
       <b>Trạng thái:</b> Đang hoạt động<br/>
       <b>Vận tốc:</b> ${VAN_TOC} km/h<br/>
@@ -170,11 +172,11 @@ export const batDauDiChuyenXe = (idTuyen, dataTuyenRef, markerXeRef, animRefs, s
     `;
   } else if (quangDuongDaDi >= tongS) {
     tooltipContent = `
-      <b>Mã xe: ${lichTrinh.xb_id || 'Lỗi'}</b><br/>
-      <b>Mã tài xế: ${lichTrinh.tx_id || 'Lỗi'}</b><br/>
+      <b>Mã xe: ${lichTrinh.bus_id || 'Lỗi'}</b><br/>
+      <b>Mã tài xế: ${lichTrinh.driver_id || 'Lỗi'}</b><br/>
       <b>Mã tuyến: ${idTuyen}</b><br/>
-      <b>Ngày khởi hành:</b> ${lichTrinh.ngay_xe ? new Date(lichTrinh.ngay_xe).toLocaleDateString('vi-VN') : 'Lỗi'}<br/>
-      <b>Giờ khởi hành:</b> ${lichTrinh.gio_di || 'Lỗi'}<br/>
+      <b>Ngày khởi hành:</b> ${lichTrinh.schedule_date ? new Date(lichTrinh.schedule_date).toLocaleDateString('vi-VN') : 'Lỗi'}<br/>
+      <b>Giờ khởi hành:</b> ${lichTrinh.start_time || 'Lỗi'}<br/>
       <b>Giờ dự kiến KT:</b> ${formatTime(thoiGianKetThuc)}<br/>
       <b>Trạng thái:</b> Đã kết thúc<br/>
       <b>Vận tốc:</b> ${VAN_TOC} km/h<br/>
@@ -182,11 +184,11 @@ export const batDauDiChuyenXe = (idTuyen, dataTuyenRef, markerXeRef, animRefs, s
     `;
   } else {
     tooltipContent = `
-      <b>Mã xe: ${lichTrinh.xb_id || 'Lỗi'}</b><br/>
-      <b>Mã tài xế: ${lichTrinh.tx_id || 'Lỗi'}</b><br/>
+      <b>Mã xe: ${lichTrinh.bus_id || 'Lỗi'}</b><br/>
+      <b>Mã tài xế: ${lichTrinh.driver_id || 'Lỗi'}</b><br/>
       <b>Mã tuyến: ${idTuyen}</b><br/>
-      <b>Ngày khởi hành:</b> ${lichTrinh.ngay_xe ? new Date(lichTrinh.ngay_xe).toLocaleDateString('vi-VN') : 'Lỗi'}<br/>
-      <b>Giờ khởi hành:</b> ${lichTrinh.gio_di || 'Lỗi'}<br/>
+      <b>Ngày khởi hành:</b> ${lichTrinh.schedule_date ? new Date(lichTrinh.schedule_date).toLocaleDateString('vi-VN') : 'Lỗi'}<br/>
+      <b>Giờ khởi hành:</b> ${lichTrinh.start_time || 'Lỗi'}<br/>
       <b>Giờ dự kiến KT:</b> ${formatTime(thoiGianKetThuc)}<br/>
       <b>Trạng thái:</b> Đang hoạt động<br/>
       <b>Vận tốc:</b> ${VAN_TOC} km/h<br/>
@@ -226,8 +228,8 @@ export const danhDauXeKetThuc = (idTuyen, lichTrinh, markerXeRef, dataTuyenRef) 
     const tongS = dataTuyen ? dataTuyen.tongS : 0;
     
     const tooltipContent = `
-      <b>Mã xe: ${lichTrinh.xb_id || 'Lỗi'}</b><br/>
-      <b>Mã tài xế: ${lichTrinh.tx_id || 'Lỗi'}</b><br/>
+      <b>Mã xe: ${lichTrinh.bus_id || 'Lỗi'}</b><br/>
+      <b>Mã tài xế: ${lichTrinh.driver_id || 'Lỗi'}</b><br/>
       <b>Mã tuyến: ${idTuyen}</b><br/>
       <b>Trạng thái:</b> Đã kết thúc
     `;

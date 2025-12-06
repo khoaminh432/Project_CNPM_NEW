@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../Assets/CSS/noti.css";
 import Header from "./Header";
+import ChangePasswordModal from "./ChangePasswordModal";
 import { getNotifications, markAllAsRead, markAsRead, deleteAllReadNotifications } from '../services/notificationService';
 
 // Import local images
@@ -17,6 +18,7 @@ export default function Noti({ onNavigateToMainPage, onNavigate }) {
   const [isDeleteMode, setIsDeleteMode] = useState(false);
   const [selectedNotifications, setSelectedNotifications] = useState([]);
   const [popup, setPopup] = useState({ show: false, type: 'success', title: '', message: '' });
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
 
   // Show popup notification
   const showPopup = (type, title, message) => {
@@ -71,7 +73,9 @@ export default function Noti({ onNavigateToMainPage, onNavigate }) {
   }, []);
 
   const handleNavigate = (page) => {
-    if (page === "mainpage" && onNavigateToMainPage) {
+    if (page === 'changePassword') {
+      setShowChangePasswordModal(true);
+    } else if (page === "mainpage" && onNavigateToMainPage) {
       onNavigateToMainPage();
     } else if (onNavigate) {
       onNavigate(page);
@@ -341,6 +345,13 @@ export default function Noti({ onNavigateToMainPage, onNavigate }) {
           </div>
         </div>
       )}
+
+      {/* Change Password Modal */}
+      <ChangePasswordModal
+        isOpen={showChangePasswordModal}
+        onClose={() => setShowChangePasswordModal(false)}
+        onSuccess={() => showPopup('success', 'Thành công', 'Đổi mật khẩu thành công!')}
+      />
     </div>
   );
 }

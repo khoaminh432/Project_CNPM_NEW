@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../Assets/CSS/schedule.css";
 import Header from "./Header";
+import ChangePasswordModal from "./ChangePasswordModal";
 import { getSchedules } from '../services/scheduleService';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCalendar } from "@fortawesome/free-solid-svg-icons";
@@ -21,6 +22,7 @@ export default function Schedule({ onNavigateToMainPage, onNavigate }) {
   const [selectedStatuses, setSelectedStatuses] = useState(['Čưa bắt đầu', 'Đang thực hiện', 'Hoàn thành', 'Đã hủy']);
   const [showAllSchedules, setShowAllSchedules] = useState(false);
   const [popup, setPopup] = useState({ show: false, type: 'success', title: '', message: '' });
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
 
   // Show popup notification
   const showPopup = (type, title, message) => {
@@ -182,7 +184,9 @@ export default function Schedule({ onNavigateToMainPage, onNavigate }) {
   );
 
   const handleNavigate = (page) => {
-    if (page === "mainpage" && onNavigateToMainPage) {
+    if (page === 'changePassword') {
+      setShowChangePasswordModal(true);
+    } else if (page === "mainpage" && onNavigateToMainPage) {
       onNavigateToMainPage();
     } else if (onNavigate) {
       onNavigate(page);
@@ -459,6 +463,13 @@ export default function Schedule({ onNavigateToMainPage, onNavigate }) {
           </div>
         </div>
       )}
+
+      {/* Change Password Modal */}
+      <ChangePasswordModal
+        isOpen={showChangePasswordModal}
+        onClose={() => setShowChangePasswordModal(false)}
+        onSuccess={() => showPopup('success', 'Thành công', 'Đổi mật khẩu thành công!')}
+      />
     </div>
   );
 }

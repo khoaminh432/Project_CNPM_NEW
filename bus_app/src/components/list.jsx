@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../Assets/CSS/list.css";
 import Header from "./Header";
+import ChangePasswordModal from "./ChangePasswordModal";
 
 // Import local images
 import imgMaterialSymbolsMale from "../Assets/images/imgMaterialSymbolsMale.svg";
@@ -18,6 +19,7 @@ export default function List({ onNavigateToMainPage, onNavigateToMap, onNavigate
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [popup, setPopup] = useState({ show: false, type: 'success', title: '', message: '' });
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
 
   // Show popup notification
   const showPopup = (type, title, message) => {
@@ -100,7 +102,9 @@ export default function List({ onNavigateToMainPage, onNavigateToMap, onNavigate
   };
 
   const handleNavigate = (page) => {
-    if (page === "mainpage" && onNavigateToMainPage) {
+    if (page === 'changePassword') {
+      setShowChangePasswordModal(true);
+    } else if (page === "mainpage" && onNavigateToMainPage) {
       onNavigateToMainPage();
     } else if (page === "drivermap" && onNavigateToMap) {
       onNavigateToMap();
@@ -423,6 +427,13 @@ export default function List({ onNavigateToMainPage, onNavigateToMap, onNavigate
           </div>
         </div>
       )}
+
+      {/* Change Password Modal */}
+      <ChangePasswordModal
+        isOpen={showChangePasswordModal}
+        onClose={() => setShowChangePasswordModal(false)}
+        onSuccess={() => showPopup('success', 'Thành công', 'Đổi mật khẩu thành công!')}
+      />
     </div>
   );
 }

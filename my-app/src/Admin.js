@@ -5,6 +5,7 @@ import "./Admin.css";
 import Info from "./Info";
 import Tracking from "./Tracking";
 import StudentManagementPage from "./pages/maincontent/Student_management/StudentManagementPage";
+import RouteManagementPage from "./pages/maincontent/Route_management/RouteManagementPage"
 import QuanLyTaiXe from "./frontend/QuanLyTaiXe";
 import QuanLyXeBuyt from "./frontend/QuanLyXeBuyt";
 import ThongBao from "./frontend/ThongBao";
@@ -53,6 +54,8 @@ function Admin({ user, onLogout }) {
           <li onClick={() => setActivePage("TRANG CHỦ")}>Trang chủ</li>
           <li onClick={() => setActivePage("THEO DÕI XE BUÝT")}>Theo dõi xe buýt</li>
           <li onClick={() => setActivePage("QUẢN LÝ TÀI XẾ")}>Quản lý tài xế</li>
+          <li onClick={() => setActivePage("QUẢN LÝ HỌC SINH")}>Quản ly học sinh</li>
+          <li onClick={() => setActivePage("QUẢN LÝ TUYẾN ĐƯỜNG")}>Quản lý tuyến đường</li>
           <li onClick={() => setActivePage("QUẢN LÝ XE BUÝT")}>Quản lý xe buýt</li>
           <li onClick={() => setActivePage("QUẢN LÝ THÔNG BÁO")}>Quản lý thông báo</li>
         </ul>
@@ -175,6 +178,9 @@ function Admin({ user, onLogout }) {
 
         {/* === THEO DÕI XE BUÝT === */}
         {activePage === "THEO DÕI XE BUÝT" && <Tracking />}
+
+        {/* === QUẢN LÝ HỌC SINH === */}
+        {activePage === "QUẢN LÝ TUYẾN ĐƯỜNG" && <RouteManagementPage />}
 
         {/* === QUẢN LÝ HỌC SINH === */}
         {activePage === "QUẢN LÝ HỌC SINH" && <StudentManagementPage />}

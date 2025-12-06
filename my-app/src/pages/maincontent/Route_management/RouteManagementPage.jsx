@@ -122,7 +122,7 @@ function RouteManagementPage() {
         </div>
       </header>
 
-      <div className={"dashboard " + StyleMain.row_direction}>
+      <div className={"dashboard-route " + StyleMain.row_direction}>
         <div className="card">
           <i className="fas fa-bus" />
           <h3>Tổng số tuyến xe</h3>

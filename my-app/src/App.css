@@ -6,6 +6,9 @@ body {
 
 
 /* Navbar */
+*{
+  box-sizing: border-box;
+}
 
 .navbar .logo {
   color: #007bff;

@@ -1,7 +1,7 @@
 // route/student.js
 const express = require('express');
 const router = express.Router();
-const pool = require('../db/connect');
+const pool = require('../db.js');
 
 // Lấy tất cả học sinh với thông tin liên quan
 router.get('/', async (req, res) => {

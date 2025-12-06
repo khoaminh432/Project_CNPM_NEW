@@ -5,7 +5,7 @@ import {
   startOfDay, isSameWeek,
   startOfWeek, endOfWeek, subWeeks
 } from "date-fns";
-import { vi } from "date-fns/locale";
+import { vi } from 'date-fns/locale/vi';
 import "../QuanLyTaiXe.css"; // Dùng chung CSS
 import { DAYS_OF_WEEK_MAP, DAYS_OF_WEEK_ORDER } from "./WorkScheduleCheckboxes";
 

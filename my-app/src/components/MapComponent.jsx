@@ -1,10 +1,18 @@
 // MapComponent.jsx
+// import React, { useEffect, useRef, useState } from 'react';
+// import { InteractiveMap,} from '@goongmaps/goong-map-react';
+// import 'mapbox-gl/dist/mapbox-gl.css';
+// {/* <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' /> */}
+// import PointLocation from './MapHandle/PointLocation';
+// import {createRoute, getDirection} from "./../api/GoongDirection";
+// import DrawRoute from './MapHandle/DrawRoute';
 import React, { useEffect, useRef, useState } from 'react';
-import { InteractiveMap,} from '@goongmaps/goong-map-react';
+import { InteractiveMap } from '@goongmaps/goong-map-react';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import '@goongmaps/goong-js/dist/goong-js.css'; // Nếu có
 import PointLocation from './MapHandle/PointLocation';
-import {createRoute, getDirection} from "./../api/GoongDirection";
-import DrawRoute from './MapHandle/DrawRoute';
+import { createRoute, getDirection } from "./../api/GoongDirection";
+import DrawRoute from "./MapHandle/DrawRoute";
 const GOONG_MAPTILES_KEY = process.env.REACT_APP_GOONG_API_MAPTILE_KEY;
 function CreatePoint(locationnew,styleView={ colorLocation: 'red', fontSize: "1.5em" }){
 

@@ -29,12 +29,10 @@ export const timViTriXe = (toaDoDoans, quangDuongDaDi) => {
 };
 
 /**
-<<<<<<< HEAD
- * Tính khoảng cách từ điểm đầu đến từng trạm
-=======
- * Tính khoảng cách từ điểm đầu đến từng trạm có sai số lớn hơn thực tế = cách cộng dồn vì nếu thực tế từ osrm sẵn gọi thêm api
->>>>>>> ADMINTC
- */
+ 
+* Tính khoảng cách từ điểm đầu đến từng trạm có sai số lớn hơn thực tế = cách cộng dồn vì nếu thực tế từ osrm sẵn gọi thêm api
+ 
+*/
 export const tinhKCdenTram = (toaDoDoans, dsTram) => {
   if (!toaDoDoans || !dsTram) return [];
   
@@ -84,11 +82,9 @@ export const layTrangThaiXe = (lichTrinh, thoiGianBatDau, dataTuyenRef) => {
     return { status: 'inactive', desc: 'Không hoạt động', opacity: 0.3 };
   }
 
-<<<<<<< HEAD
-  const ngayLich = new Date(lichTrinh.ngay_xe);
-=======
+  
   const ngayLich = new Date(lichTrinh.schedule_date);
->>>>>>> ADMINTC
+
 
   // Kiểm tra lịch có trong ngày hôm nay không
   if (!trungDate(now, ngayLich)) {
@@ -101,11 +97,9 @@ export const layTrangThaiXe = (lichTrinh, thoiGianBatDau, dataTuyenRef) => {
   } else {
     const thoiGianHoatDong = (now - thoiGianBatDau) / 1000;
     const quangDuongDaDi = thoiGianHoatDong * (VAN_TOC * 1000 / 3600);
-<<<<<<< HEAD
-    const dataTuyen = dataTuyenRef.current[lichTrinh.td_id];
-=======
+   
     const dataTuyen = dataTuyenRef.current[lichTrinh.route_id];
->>>>>>> ADMINTC
+  
     
     if (dataTuyen && quangDuongDaDi >= dataTuyen.tongS) {
       return { status: 'finished', desc: 'Đã kết thúc', opacity: 1 };

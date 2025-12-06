@@ -67,7 +67,7 @@ function Tracking() {
         <div className="body">
           {/* Bản đồ */}
           <div className="map">
-            Map API Component
+            
             <MapComponent
               searchQuery={tuKhoaTim}
               searchTrigger={lanKichHoatTim}

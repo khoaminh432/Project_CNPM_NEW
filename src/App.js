@@ -1,13 +1,12 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import "./App.css";
 import Info from "./Info";
 import Tracking from "./Tracking";
-import MapComponent from "./components/MapComponent";
 import StudentManagementPage from "./pages/maincontent/Student_management/StudentManagementPage";
 import RouteManagementPage from "./pages/maincontent/Route_management/RouteManagementPage";
-
+import studentAPI from "./api/studentAPI";
 function App() {
-
+  const [students,setStudent] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
   const [modalValue, setModalValue] = useState("");
@@ -18,7 +17,9 @@ function App() {
     setModalValue(value);
     setShowModal(true);
   };
-
+  useEffect(()=>{
+    studentAPI.getAllStudents(res=>setStudent(res.data))
+  },[])
   return (
     <div className="container">
       {/* Sidebar */}
@@ -27,7 +28,7 @@ function App() {
         <ul>
           <li onClick={() => setActivePage("TRANG CHỦ")}>Trang chủ</li>
           <li onClick={() => setActivePage("THEO DÕI XE BUÝT")}>Theo dõi xe buýt</li>
-          <li onClick={() => setActivePage("QUẢN LÝ HỌC SINH")}>Quản lý học sinh</li>
+          <li onClick={() => {setActivePage("QUẢN LÝ HỌC SINH");console.log(students)}}>Quản lý học sinh</li>
           <li onClick={() => setActivePage("QUẢN LÝ TUYẾN XE")}>Quản lý tuyến xe</li>
         </ul>
       </div>

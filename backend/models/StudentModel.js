@@ -1,5 +1,5 @@
 // repositories/studentRepository.js
-const pool = require('../config/database');
+const pool = require('../db');
 
 const studentRepository = {
   /**

@@ -203,8 +203,16 @@ const MapComponent = ({ positionCurrent = { start: null, end: null }, stops = []
             styleView={{ colorLocation: 'yellow', fontSize: currentFont }}
             styleLocation={styleLocation.pointtraim}
           />
+          
         ))}
-
+        {validStops.length >4 &&(
+          
+          <>
+          <DrawRoute origin={validStops[0]} destination={validStops[1]}/>
+          <DrawRoute origin={validStops[2]} destination={validStops[3]}/>
+          </>
+        )
+        }
         {/* Start/End markers */}
         {isValidCoord(positionCurrent.start) && (
           <PointLocation

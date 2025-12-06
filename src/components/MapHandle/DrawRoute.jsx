@@ -97,7 +97,7 @@ const fetchDirection = useCallback(async()=> {
     return (
         <>
           {routeData && (
-          <Source id="route-source" type="geojson" data={routeData}>
+          <Source id={routeData.stop_code} type="geojson" data={routeData}>
             <Layer {...routeLayer} />
           </Source>
         )}

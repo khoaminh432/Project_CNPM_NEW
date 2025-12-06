@@ -4,7 +4,7 @@ const router = express.Router();
 const studentController = require("../controllers/studentController");
 
 // Lấy tất cả học sinh
-router.get('/', studentController.getAllStudents);
+router.get('/students', studentController.getAllStudents);
 
 // Tìm kiếm học sinh
 router.get('/search', studentController.searchStudents);

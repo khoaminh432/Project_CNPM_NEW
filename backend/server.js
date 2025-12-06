@@ -11,9 +11,18 @@ const routeRoutes = require('./route/route.js');
 const notificationRoutes = require('./route/notification.js');
 const studentRoutes = require('./route/student.js');
 const app = express();
-const PORT = 3001; 
+const PORT = process.env.PORT||5000; 
 
-app.use(cors());
+// Middleware
+app.use(cors({
+  origin: [
+    "http://localhost:3000",
+    "http://localhost:5001",
+    "http://localhost:5173",
+    process.env.CORS_ORIGIN||"http://localhost:5000"
+  ],
+  credentials: true
+}));
 app.use(express.json());
 
 // 2. Chỉ dẫn cho server: 
@@ -45,10 +54,10 @@ cron.schedule('* * * * *', async () => {
         // 1. Gửi tin (Copy vào bảng recipients)
         let recipientIds = [];
         if (notif.recipient_type === 'driver') {
-            const [drivers] = await connection.query("SELECT driver_id FROM bus_map_driver");
+            const [drivers] = await connection.query("SELECT driver_id FROM driver");
             recipientIds = drivers.map(d => d.driver_id);
         } else if (notif.recipient_type === 'parent') {
-            const [parents] = await connection.query("SELECT parent_id FROM bus_map_parent");
+            const [parents] = await connection.query("SELECT parent_id FROM parent");
             recipientIds = parents.map(p => p.parent_id);
         } else if (notif.recipient_type === 'bus') recipientIds = ['admin'];
 

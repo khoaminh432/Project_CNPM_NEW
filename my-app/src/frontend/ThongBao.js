@@ -18,6 +18,22 @@ export default function ThongBao() {
         recipient: "", title: "", content: "", type: "manual", scheduledTime: "", isRecurring: false, recurrenceDays: [], specificIds: []     
     });
 
+    //  Format giờ chuẩn (Fix lỗi lệch múi giờ) ---
+    const formatDateTime = (dateString) => {
+        if (!dateString) return "";
+        const date = new Date(dateString.endsWith("Z") ? dateString : dateString + "Z");
+
+        const d = String(date.getDate()).padStart(2, "0");
+        const m = String(date.getMonth() + 1).padStart(2, "0");
+        const y = date.getFullYear();
+        const h = String(date.getHours()).padStart(2, "0");
+        const min = String(date.getMinutes()).padStart(2, "0");
+        const s = String(date.getSeconds()).padStart(2, "0");
+
+        return `${d}/${m}/${y} ${h}:${min}:${s}`;
+    };
+    // ---------------------------------------------------------
+
     const fetchNotifications = useCallback(async () => {
         try {
             const params = new URLSearchParams();
@@ -28,7 +44,13 @@ export default function ThongBao() {
         } catch (e) { console.error(e); }
     }, [activeTab, filterStatus]);
 
-    useEffect(() => { fetchNotifications(); }, [fetchNotifications]);
+    useEffect(() => { 
+        fetchNotifications(); 
+        const intervalId = setInterval(() => {
+            fetchNotifications();
+        }, 2000); // Tự cập nhật mỗi 2 giây
+        return () => clearInterval(intervalId);
+    }, [fetchNotifications]);
 
     useEffect(() => {
         if ((newNotice.recipient === 'driver' || newNotice.recipient === 'parent') && showPopup) {
@@ -46,7 +68,7 @@ export default function ThongBao() {
         }
     }, [newNotice.recipient, showPopup]);
 
-    // --- LOGIC TÌM KIẾM ---
+    // --- LOGIC TÌM KIẾM & XỬ LÝ FORM (GIỮ NGUYÊN) ---
     const filteredUsers = usersList.filter(u => {
         const searchLower = searchTerm.toLowerCase();
         const nameMatch = u.name.toLowerCase().includes(searchLower);
@@ -118,10 +140,8 @@ export default function ThongBao() {
     const DAYS = [{ label: "CN", val: 0 }, { label: "T2", val: 1 }, { label: "T3", val: 2 }, { label: "T4", val: 3 }, { label: "T5", val: 4 }, { label: "T6", val: 5 }, { label: "T7", val: 6 }];
 
     return (
-        /* CẤU TRÚC ĐÃ ĐỔI TÊN CLASS ĐỂ TRÁNH XUNG ĐỘT VỚI APP.JS */
         <div className="thongbao-container" style={{height: "100%", width: "100%", display: "flex", flexDirection: "column"}}>
             <div className="thongbao-wrapper">
-                {/* Sidebar bộ lọc (Đã đổi tên thành thongbao-sidebar) */}
                 <div className="thongbao-sidebar">
                     <button className="btn-create" onClick={() => setShowPopup(true)}>+ Tạo thông báo</button>
                     <select className="filter-select" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
@@ -131,7 +151,6 @@ export default function ThongBao() {
                     </select>
                 </div>
 
-                {/* Nội dung chính (Đã đổi tên thành thongbao-content) */}
                 <div className="thongbao-content">
                     <div className="tabs">
                         <button onClick={() => setActiveTab("all")} className={`tab ${activeTab === "all" ? "active" : ""}`}>Tất cả</button>
@@ -148,9 +167,12 @@ export default function ThongBao() {
                                         <div className="notification-body">
                                             <strong className="notification-title">{notif.title}</strong>
                                             <p className="notification-content">{notif.content}</p>
-                                            {notif.type === 'scheduled' && <span className="schedule-tag">⏳ Hẹn giờ: {new Date(notif.scheduled_time).toLocaleString('vi-VN')}</span>}
+                                            
+                                            {/* SỬ DỤNG HÀM MỚI Ở ĐÂY */}
+                                            {notif.type === 'scheduled' && <span className="schedule-tag">⏳ Hẹn giờ: {formatDateTime(notif.scheduled_time)}</span>}
                                         </div>
-                                        <small className="notification-time">{new Date(notif.created_at).toLocaleString('vi-VN')}</small>
+                                        {/* SỬ DỤNG HÀM MỚI Ở ĐÂY */}
+                                        <small className="notification-time">{formatDateTime(notif.created_at)}</small>
                                     </li>
                                 ))}
                             </ul>
@@ -159,7 +181,7 @@ export default function ThongBao() {
                 </div>
             </div>
 
-            {/* Popup giữ nguyên, không ảnh hưởng layout */}
+            {/* PHẦN POPUP GIỮ NGUYÊN NHƯ CŨ */}
             {showPopup && (
                 <div className="popup-overlay">
                     <div className="popup large-popup">

@@ -26,7 +26,7 @@ const BusLineDetail = ({ routeId: propRouteId }) => {
   // 1. Lấy danh sách xe
   useEffect(() => {
       if(routeId) {
-          fetch(`http://localhost:8081/api/active-buses-by-route?id=${routeId}`)
+          fetch(`http://localhost:5000/api/active-buses-by-route?id=${routeId}`)
             .then(res => res.json())
             .then(data => {
                 setActiveBuses(data);
@@ -40,7 +40,7 @@ const BusLineDetail = ({ routeId: propRouteId }) => {
   useEffect(() => {
     if (!selectedBusId) return;
     const fetchBusStatus = () => {
-        fetch(`http://localhost:8081/api/bus-locations?busId=${selectedBusId}`)
+        fetch(`http://localhost:5000/api/bus-locations?busId=${selectedBusId}`)
             .then(res => res.json())
             .then(data => {
                 if (data.length > 0) {
@@ -59,7 +59,7 @@ const BusLineDetail = ({ routeId: propRouteId }) => {
   // 3. Lấy thông tin tài xế & Lịch trình
   useEffect(() => {
       if(selectedBusId) {
-        fetch(`http://localhost:8081/api/bus-schedule-info?busId=${selectedBusId}`)
+        fetch(`http://localhost:5000/api/bus-schedule-info?busId=${selectedBusId}`)
             .then(res => res.json())
             .then(data => { 
                 if (data && data.schedule_id) setCurrentSchedule(data); 
@@ -73,7 +73,7 @@ const BusLineDetail = ({ routeId: propRouteId }) => {
     const userStr = localStorage.getItem('user');
     if (routeId && userStr && currentSchedule) {
         const user = JSON.parse(userStr);
-        fetch(`http://localhost:8081/api/route-students-status?id=${routeId}&parentId=${user.linked_id}&scheduleId=${currentSchedule.schedule_id}`)
+        fetch(`http://localhost:5000/api/route-students-status?id=${routeId}&parentId=${user.linked_id}&scheduleId=${currentSchedule.schedule_id}`)
             .then(res => res.json())
             .then(data => setStudents(data));
     }
@@ -82,7 +82,7 @@ const BusLineDetail = ({ routeId: propRouteId }) => {
   // Load thông tin tuyến
   useEffect(() => {
     if (routeId) {
-        fetch(`http://localhost:8081/api/route-detail?id=${routeId}`)
+        fetch(`http://localhost:5000/api/route-detail?id=${routeId}`)
             .then(res => res.json()).then(data => { setStops(data); if (data.length > 0) setRouteInfo({ name: data[0].route_name, id: routeId }); });
     }
   }, [routeId]);
@@ -105,7 +105,7 @@ const BusLineDetail = ({ routeId: propRouteId }) => {
           stop_id: stopId 
       }; 
       
-      fetch('http://localhost:8081/api/update-student-status', { 
+      fetch('http://localhost:5000/api/update-student-status', { 
           method: 'POST', 
           headers: { 'Content-Type': 'application/json' }, 
           body: JSON.stringify(payload) 
@@ -116,7 +116,7 @@ const BusLineDetail = ({ routeId: propRouteId }) => {
           const userStr = localStorage.getItem('user'); 
           if (userStr) {
               const user = JSON.parse(userStr);
-              fetch(`http://localhost:8081/api/route-students-status?id=${routeId}&parentId=${user.linked_id}&scheduleId=${currentSchedule.schedule_id}`)
+              fetch(`http://localhost:5000/api/route-students-status?id=${routeId}&parentId=${user.linked_id}&scheduleId=${currentSchedule.schedule_id}`)
                 .then(r => r.json()).then(d => setStudents(d));
           }
       }); 

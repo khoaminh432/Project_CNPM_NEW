@@ -13,9 +13,9 @@ router.get('/', async (req, res) => {
         r.*,
         COUNT(st.student_id) as total_students,
         COUNT(sp.stop_id) as total_stops
-      FROM routes r
-      LEFT JOIN students st ON r.route_id = st.route_id AND st.is_active = TRUE
-      LEFT JOIN stops sp ON r.route_id = sp.route_id
+      FROM route r
+      LEFT JOIN student st ON r.route_id = st.route_id AND st.is_active = TRUE
+      LEFT JOIN bus_stop sp ON r.route_id = sp.route_id
       GROUP BY r.route_id
       ORDER BY r.route_code
     `);
@@ -43,7 +43,7 @@ router.get('/:id', async (req, res) => {
     
     // Get route info
     const [route] = await connection.query(`
-      SELECT * FROM routes WHERE route_id = ?
+      SELECT * FROM route WHERE route_id = ?
     `, [id]);
     
     if (route.length === 0) {
@@ -64,7 +64,7 @@ router.get('/:id', async (req, res) => {
         longitude,
         stop_order,
         estimated_arrival_time
-      FROM stops
+      FROM bus_stop
       WHERE route_id = ?
       ORDER BY stop_order
     `, [id]);
@@ -79,9 +79,9 @@ router.get('/:id', async (req, res) => {
         st.parent_phone,
         sp.stop_name as pickup_stop,
         sd.stop_name as dropoff_stop
-      FROM students st
-      LEFT JOIN stops sp ON st.pickup_stop_id = sp.stop_id
-      LEFT JOIN stops sd ON st.dropoff_stop_id = sd.stop_id
+      FROM student st
+      LEFT JOIN bus_stop sp ON st.pickup_stop_id = sp.stop_id
+      LEFT JOIN bus_stop sd ON st.dropoff_stop_id = sd.stop_id
       WHERE st.route_id = ? AND st.is_active = TRUE
       ORDER BY sp.stop_order
     `, [id]);
@@ -118,7 +118,7 @@ router.post('/', async (req, res) => {
     
     const connection = await db.getConnection();
     const [result] = await connection.query(`
-      INSERT INTO routes 
+      INSERT INTO route 
       (route_code, route_name, planned_start, planned_end, distance_km, description, created_at, updated_at)
       VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())
     `, [route_code, route_name, planned_start, planned_end, distance_km || null, description || null]);
@@ -157,7 +157,7 @@ router.put('/:id', async (req, res) => {
     
     const connection = await db.getConnection();
     await connection.query(`
-      UPDATE routes 
+      UPDATE route 
       SET 
         route_name = ?,
         planned_start = ?,

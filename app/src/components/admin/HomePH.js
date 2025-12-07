@@ -42,12 +42,12 @@ const HomePH = () => {
     const userStr = localStorage.getItem('user');
     if (userStr) {
         const user = JSON.parse(userStr);
-        fetch(`http://localhost:8081/api/profile?id=${user.linked_id}`)
+        fetch(`http://localhost:5000/api/profile?id=${user.linked_id}`)
           .then(res => res.json())
           .then(data => {
             if (data && data.parent_id) {
                 setUserInfo(data);
-                fetch(`http://localhost:8081/api/home-summary?parentId=${data.parent_id}`)
+                fetch(`http://localhost:5000/api/home-summary?parentId=${data.parent_id}`)
                     .then(r => r.json())
                     .then(d => {
                         if(d && d.route_id) setHomeData(d);

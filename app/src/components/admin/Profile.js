@@ -8,7 +8,7 @@ const Profile = ({ userInfo, setUserInfo, isEditing, setIsEditing }) => {
  // eslint-disable-next-line react-hooks/exhaustive-deps
 useEffect(() => {
   if (userInfo && userInfo.parent_id) {
-      fetch('http://localhost:8081/api/students')
+      fetch('http://localhost:5000/api/students')
       .then(res => res.json())
       .then(data => {
           const myStudents = data.filter(s => s.parent_id === userInfo.parent_id);
@@ -20,7 +20,7 @@ useEffect(() => {
 
   // XỬ LÝ LƯU PROFILE (UPDATE)
   function handleSaveProfile() {
-    fetch('http://localhost:8081/api/profile', {
+    fetch('http://localhost:5000/api/profile', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(userInfo)
@@ -40,7 +40,7 @@ useEffect(() => {
   // XỬ LÝ THÊM HỌC SINH
   const handleAddStudent = () => {
     if (newStudent.name && newStudent.class) {
-      fetch('http://localhost:8081/api/students', {
+      fetch('http://localhost:5000/api/students', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -71,7 +71,7 @@ useEffect(() => {
   // XỬ LÝ XÓA HỌC SINH
   const handleDeleteStudent = (id) => {
     if(window.confirm("Bạn muốn xóa học sinh này?")) {
-        fetch(`http://localhost:8081/api/students/${id}`, {
+        fetch(`http://localhost:5000/api/students/${id}`, {
             method: 'DELETE'
         })
         .then(() => {

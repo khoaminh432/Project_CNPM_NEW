@@ -19,7 +19,7 @@ router.get('/driver/:id/latest', async (req, res) => {
         d.driver_code
       FROM bus_locations bl
       JOIN routes r ON bl.route_id = r.route_id
-      JOIN schedules s ON bl.schedule_id = s.schedule_id
+      JOIN bus_schedule s ON bl.schedule_id = s.schedule_id
       JOIN drivers d ON bl.driver_id = d.driver_id
       WHERE bl.driver_id = ?
       ORDER BY bl.recorded_at DESC
@@ -146,7 +146,7 @@ router.get('/active/all', async (req, res) => {
       FROM bus_locations bl
       JOIN routes r ON bl.route_id = r.route_id
       JOIN drivers d ON bl.driver_id = d.driver_id
-      JOIN schedules s ON bl.schedule_id = s.schedule_id
+      JOIN bus_schedule s ON bl.schedule_id = s.schedule_id
       WHERE (bl.driver_id, bl.recorded_at) IN (
         SELECT driver_id, MAX(recorded_at)
         FROM bus_locations

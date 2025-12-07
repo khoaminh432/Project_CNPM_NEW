@@ -20,10 +20,10 @@ router.get('/', async (req, res) => {
         r.route_code,
         sp.stop_name as pickup_stop,
         sd.stop_name as dropoff_stop
-      FROM students st
+      FROM student st
       LEFT JOIN routes r ON st.route_id = r.route_id
-      LEFT JOIN stops sp ON st.pickup_stop_id = sp.stop_id
-      LEFT JOIN stops sd ON st.dropoff_stop_id = sd.stop_id
+      LEFT JOIN bus_stop sp ON st.pickup_stop_id = sp.stop_id
+      LEFT JOIN bus_stop sd ON st.dropoff_stop_id = sd.stop_id
       WHERE 1=1
     `;
     
@@ -78,10 +78,10 @@ router.get('/:id', async (req, res) => {
         sp.stop_address as pickup_address,
         sd.stop_name as dropoff_stop,
         sd.stop_address as dropoff_address
-      FROM students st
+      FROM student st
       LEFT JOIN routes r ON st.route_id = r.route_id
-      LEFT JOIN stops sp ON st.pickup_stop_id = sp.stop_id
-      LEFT JOIN stops sd ON st.dropoff_stop_id = sd.stop_id
+      LEFT JOIN bus_stop sp ON st.pickup_stop_id = sp.stop_id
+      LEFT JOIN bus_stop sd ON st.dropoff_stop_id = sd.stop_id
       WHERE st.student_id = ?
     `, [id]);
     
@@ -129,7 +129,7 @@ router.post('/', async (req, res) => {
     
     const connection = await db.getConnection();
     const [result] = await connection.query(`
-      INSERT INTO students 
+      INSERT INTO student 
       (student_code, full_name, class_name, parent_phone, route_id, pickup_stop_id, dropoff_stop_id, created_at, updated_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
     `, [student_code, full_name, class_name, parent_phone, route_id || null, pickup_stop_id || null, dropoff_stop_id || null]);
@@ -176,7 +176,7 @@ router.put('/:id', async (req, res) => {
     
     const connection = await db.getConnection();
     await connection.query(`
-      UPDATE students 
+      UPDATE student 
       SET 
         full_name = ?,
         class_name = ?,

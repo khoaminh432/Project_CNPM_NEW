@@ -10,17 +10,15 @@ router.get('/', async (req, res) => {
     const [drivers] = await connection.query(`
       SELECT 
         d.driver_id,
-        d.driver_code,
-        d.full_name,
+        d.name,
         d.phone,
         d.email,
-        d.license_type,
+        d.license_class,
         d.rating,
         d.status,
-        d.join_date
-      FROM drivers d
-      WHERE d.status = 'active'
-      ORDER BY d.full_name
+        d.created_at
+      FROM driver d
+      ORDER BY d.name
     `);
     connection.release();
     
@@ -97,7 +95,7 @@ router.get('/:id/schedules', async (req, res) => {
         r.route_name,
         r.planned_start,
         r.planned_end
-      FROM schedules s
+      FROM bus_schedule s
       JOIN routes r ON s.route_id = r.route_id
       WHERE s.driver_id = ?
       ORDER BY s.schedule_date DESC, r.planned_start
@@ -135,7 +133,7 @@ router.get('/:id/current-location', async (req, res) => {
         s.schedule_date
       FROM bus_locations bl
       JOIN routes r ON bl.route_id = r.route_id
-      JOIN schedules s ON bl.schedule_id = s.schedule_id
+      JOIN bus_schedule s ON bl.schedule_id = s.schedule_id
       WHERE bl.driver_id = ?
       ORDER BY bl.recorded_at DESC
       LIMIT 1

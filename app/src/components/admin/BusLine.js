@@ -7,7 +7,7 @@ const BusLine = () => {
 
   //GỌI API LẤY DANH SÁCH TUYẾN
   useEffect(() => {
-    fetch('http://localhost:8081/api/routes')
+    fetch('http://localhost:5000/api/routes')
       .then(res => res.json())
       .then(data => setRoutes(data))
       .catch(err => console.error(err));

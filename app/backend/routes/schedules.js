@@ -79,7 +79,7 @@ router.get('/:id', async (req, res) => {
         d.full_name,
         d.driver_code,
         d.phone
-      FROM schedules s
+      FROM bus_schedule s
       JOIN routes r ON s.route_id = r.route_id
       JOIN drivers d ON s.driver_id = d.driver_id
       WHERE s.schedule_id = ?
@@ -103,9 +103,9 @@ router.get('/:id', async (req, res) => {
         st.parent_phone,
         sp.stop_name as pickup_stop,
         sd.stop_name as dropoff_stop
-      FROM students st
-      LEFT JOIN stops sp ON st.pickup_stop_id = sp.stop_id
-      LEFT JOIN stops sd ON st.dropoff_stop_id = sd.stop_id
+      FROM student st
+      LEFT JOIN bus_stop sp ON st.pickup_stop_id = sp.stop_id
+      LEFT JOIN bus_stop sd ON st.dropoff_stop_id = sd.stop_id
       WHERE st.route_id = ? AND st.is_active = TRUE
       ORDER BY sp.stop_order
     `, [schedule[0].route_id]);
@@ -135,7 +135,7 @@ router.put('/:id/status', async (req, res) => {
     
     const connection = await db.getConnection();
     await connection.query(`
-      UPDATE schedules 
+      UPDATE bus_schedule 
       SET 
         status = ?,
         actual_start_time = ?,

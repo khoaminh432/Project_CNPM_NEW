@@ -52,11 +52,29 @@ const Login = () => {
   };
 
   return (
-    <div className="login-container">
-      <div className="login-box">
-        <h1 className="login-title">Đăng Nhập</h1>
-        <p className="login-subtitle">Smart School Bus System</p>
-        <form className="login-form" onSubmit={handleLogin}>
+    <div className="bus-login-page" style={{ 
+      height: '100vh',
+      display: 'flex', 
+      justifyContent: 'center', 
+      alignItems: 'center',
+      backgroundColor: '#f0f2f5',
+      margin: 0,
+      padding: 0
+    }}>
+      <div className="bus-login-card" style={{
+        width: '100%',
+        maxWidth: '400px',
+        padding: '40px',
+        backgroundColor: '#ffffff',
+        borderRadius: '12px',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+        textAlign: 'center',
+        position: 'relative',
+        zIndex: 1
+      }}>
+        <h1 className="login-title" style={{ margin: '0 0 10px 0', fontSize: '28px', fontWeight: 'bold' }}>Đăng Nhập</h1>
+        <p className="login-subtitle" style={{ margin: '0 0 30px 0', fontSize: '14px', color: '#666' }}>Smart School Bus System</p>
+        <form className="login-form" onSubmit={handleLogin} style={{ width: '100%' }}>
           <div className="login-input-group">
             <label className="login-label">Tên đăng nhập</label>
             <input 

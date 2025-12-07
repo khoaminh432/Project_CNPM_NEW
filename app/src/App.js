@@ -11,7 +11,7 @@ import DriverProfile from "./components/profile";
 
 // Admin components  
 import AdminApp from "./components/admin/Admin";
-import Signin from "./components/login";
+import Login from "./components/login";
 
 import './Assets/CSS/index.css';
 
@@ -122,34 +122,9 @@ function AdminWrapper() {
 }
 
 // Login Wrapper Component - routes based on user role
+// Login wrapper - just render the Login component
 function LoginWrapper() {
-  const [user, setUser] = useState(null);
-  const [tenTK, setTenTK] = useState("");
-  const [matkhau, setMatkhau] = useState("");
-
-  const handleLogin = (userObj) => {
-    setUser(userObj);
-    localStorage.setItem('user', JSON.stringify(userObj));
-    
-    // Redirect based on role
-    if (userObj.role === 'admin') {
-      window.location.href = '/admin';
-    } else if (userObj.role === 'driver') {
-      window.location.href = '/driver';
-    } else {
-      window.location.href = '/driver'; // default to driver for other roles
-    }
-  };
-
-  return (
-    <Signin
-      tenTK={tenTK}
-      setTenTK={setTenTK}
-      matkhau={matkhau}
-      setMatkhau={setMatkhau}
-      onLogin={handleLogin}
-    />
-  );
+  return <Login />;
 }
 
 function App() {

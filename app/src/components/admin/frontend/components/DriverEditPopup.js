@@ -53,7 +53,7 @@ export default function DriverEditPopup({ isOpen, onClose, drivers, onUpdateDriv
     if (!driverFound) return;
 
     try {
-      const response = await fetch(`http://localhost:3001/api/drivers/${formData.id}`, {
+      const response = await fetch(`http://localhost:5000/api/drivers/${formData.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData) 
@@ -79,7 +79,7 @@ export default function DriverEditPopup({ isOpen, onClose, drivers, onUpdateDriv
     if (!driverFound) return;
     if (window.confirm(`Bạn có chắc chắn muốn xóa tài xế ${formData.name} (Mã: ${formData.id}) không?`)) {
       try {
-        const response = await fetch(`http://localhost:3001/api/drivers/${formData.id}`, {
+        const response = await fetch(`http://localhost:5000/api/drivers/${formData.id}`, {
           method: 'DELETE',
         });
         if (!response.ok) {

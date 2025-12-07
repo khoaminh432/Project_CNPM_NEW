@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "@goongmaps/goong-map-react": "^1.1.2"
+    "@goongmaps/goong-map-react": "^1.1.2",
+    "mysql": "^2.18.1"
   }
 }

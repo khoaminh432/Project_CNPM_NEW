@@ -1,56 +1,5 @@
 @import './NextWeekScheduler.css';
 
-.dashboard {
-    display: flex;
-    font-family: Arial, sans-serif;
-    min-height: 100vh;
-}
-
-.dashboard>.sidebar {
-    width: 200px;
-    background: #111;
-    color: white;
-    padding: 20px;
-    min-height: 100vh;
-}
-
-.dashboard>.sidebar h2 {
-    margin: 0;
-    font-size: 20px;
-    height: 60px;
-    display: flex;
-    align-items: center;
-}
-.dashboard .content {
-    flex: 1;
-    background: #f5f5f5;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-}
-.header {
-    background: #2563eb;
-    color: white;
-    height: 60px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 20px;
-    font-weight: bold;
-}
-
-.header h1 {
-    font-size: 22px;
-    margin: 0;
-}
-
-.header .profile {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-}
-
 .driver-container {
     flex: 1;
     background: #fff;
@@ -614,22 +563,71 @@
 
 .popup.driver-view-popup {
     width: 500px;
+    padding: 0;
+    border-radius: 12px;
+    overflow: hidden; 
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
 }
+.popup.driver-view-popup .popup-header {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f9fafb;
+    padding: 16px 50px;
+    border-bottom: 1px solid #e5e7eb;
+    text-align: center;
+   
+}
+.popup.driver-view-popup .popup-header h2 {
+    font-size: 20px;
+    color: #111827;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    width: 100%;
 
+}
 .driver-view-content {
     display: flex;
     flex-direction: column;
     gap: 0px;
+    padding: 20px 24px;
     margin-top: 20px;
-    font-size: 15px;
+    font-size: 20px;
+}
+.popup.driver-view-popup .close-btn {
+    position: absolute;       /* Tách khỏi dòng chảy văn bản */
+    right: 15px;               /* Cách mép trái 15px */
+    top: 50%;                 /* Căn giữa theo chiều dọc header */
+    transform: translateY(-50%); 
+    
+    /* Style nút màu xanh */
+    background-color: #2563eb; 
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;       /* Bo góc vuông nhẹ */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(37, 99, 235, 0.3);
+}
+.popup.driver-view-popup .close-btn:hover {
+    background-color: #f0f0f0; /* Màu xám nhạt khi di chuột vào */
 }
 
 .view-group {
     display: grid;
-    grid-template-columns: auto 1fr;
+    grid-template-columns: 180px 1fr;
     gap: 20px;
     align-items: center;
     padding: 14px 0;
+    border-bottom: 1px dashed #e5e7eb;
+    align-items: baseline;
 }
 
 .view-group:first-child {
@@ -644,6 +642,9 @@
     font-weight: 500;
     color: #4b5563;
     text-align: left;
+    letter-spacing: 0.5px;
+    
+    
 }
 
 .view-group span {
@@ -748,4 +749,17 @@
   width: 16px; /* Ghi đè CSS input chung */
   height: 16px;
   cursor: pointer;
+}
+.popup.driver-view-popup .popup-footer {
+    display: flex;
+    justify-content: center; /* Căn giữa nút */
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+.popup.driver-view-popup .popup-footer .btn-cancel {
+    background-color: #dc3545; /* Màu đỏ */
+    color: white;
+    padding: 8px 30px; /* Nút dài ra một chút cho đẹp */
+    border-radius: 6px;
+    font-size: 14px;
 }

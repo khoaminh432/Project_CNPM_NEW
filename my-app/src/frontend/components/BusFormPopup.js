@@ -22,8 +22,8 @@ function BusFormPopup({
   }
 
   return (
-    <div className="popup">
-      <div className="popup-content">
+    <div className="bus-popup-overlay">
+      <div className="bus-popup-content">
         <h3>
           {formType === "add"
             ? "Thêm xe buýt"

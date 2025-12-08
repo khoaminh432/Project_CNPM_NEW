@@ -11,40 +11,32 @@ router.get('/', async (req, res) => {
     let query = `
       SELECT 
         st.student_id,
-        st.student_code,
-        st.full_name,
+        st.name as full_name,
         st.class_name,
-        st.parent_phone,
-        st.is_active,
-        r.route_name,
-        r.route_code,
+        st.school_name,
+        st.gender,
+        st.parent_id,
+        p.name as parent_name,
+        p.phone as parent_phone,
         sp.stop_name as pickup_stop,
-        sd.stop_name as dropoff_stop
+        sd.stop_name as dropoff_stop,
+        st.stop_id as pickup_stop_id,
+        st.dropoff_stop_id
       FROM student st
-      LEFT JOIN routes r ON st.route_id = r.route_id
-      LEFT JOIN bus_stop sp ON st.pickup_stop_id = sp.stop_id
+      LEFT JOIN parent p ON st.parent_id = p.parent_id
+      LEFT JOIN bus_stop sp ON st.stop_id = sp.stop_id
       LEFT JOIN bus_stop sd ON st.dropoff_stop_id = sd.stop_id
       WHERE 1=1
     `;
     
     let params = [];
     
-    if (route_id) {
-      query += ` AND st.route_id = ?`;
-      params.push(route_id);
-    }
-    
     if (class_name) {
       query += ` AND st.class_name = ?`;
       params.push(class_name);
     }
     
-    if (is_active !== undefined) {
-      query += ` AND st.is_active = ?`;
-      params.push(is_active === 'true' ? 1 : 0);
-    }
-    
-    query += ` ORDER BY st.class_name, st.full_name`;
+    query += ` ORDER BY st.class_name, st.name`;
     
     const connection = await db.getConnection();
     const [students] = await connection.query(query, params);

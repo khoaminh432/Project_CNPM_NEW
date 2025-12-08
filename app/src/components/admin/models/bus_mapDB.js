@@ -130,15 +130,22 @@ class Route {
 }
 
 class Student {
-  constructor({ student_id, parent_id, stop_id, dropoff_stop_id, name, school_name, class_name, gender }) {
-    this.student_id = student_id;
-    this.parent_id = parent_id;
-    this.stop_id = stop_id;
-    this.dropoff_stop_id = dropoff_stop_id;
-    this.name = name;
-    this.school_name = school_name;
-    this.class_name = class_name;
-    this.gender = gender;
+  constructor(data = {}) {
+    this.student_id = data.student_id;
+    this.name = data.name;
+    this.full_name = data.full_name || data.name; // alias for compatibility
+    this.class_name = data.class_name;
+    this.school_name = data.school_name;
+    this.gender = data.gender;
+    this.parent_id = data.parent_id;
+    this.parent_name = data.parent_name;
+    this.parent_phone = data.parent_phone;
+    this.stop_id = data.stop_id;
+    this.pickup_stop_id = data.pickup_stop_id || data.stop_id;
+    this.dropoff_stop_id = data.dropoff_stop_id;
+    this.pickup_stop = data.pickup_stop;
+    this.dropoff_stop = data.dropoff_stop;
+    this.home_address = data.home_address;
   }
 }
 

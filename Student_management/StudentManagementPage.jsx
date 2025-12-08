@@ -3,20 +3,11 @@ import Style from "./../styleMain.module.css";
 import React, { useRef,useEffect, useState, useMemo } from "react";
 import "./style.css";
 import "./../searchbar.css";
-import { Student,defaultStudents } from "../../../models/Student";
 import Detail_Student from "./component/formdetails/Detail_Student";
 import AddStudent from "./component/addStudent";
 import renderStudent from "../../../renderData/RenderStudent";
-
-function renderStudentsTable(students, onDetails, loading) {
-  if (loading) {
-    return (
-      <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px', color: '#6b7280' }}>
-        <p>Đang tải dữ liệu...</p>
-      </div>
-    );
-  }
-  
+import renderRoute from "../../../renderData/RenderRoute";
+function renderStudentsTable(students, onDetails) {
   return(students.length > 0 ? (
           students.map((student) => (
             <TempStudent 
@@ -33,11 +24,11 @@ function renderStudentsTable(students, onDetails, loading) {
 }
 function StudentManagementPage() {
   const [students, setStudents] = useState([]);
+  const [routes,setRoute] = useState([])
   const [showaddstudent, setShowAddStudent] = useState(false);
   const [filter, setFilter] = useState('all'); // filter by route
   const [searchQuery, setSearchQuery] = useState(''); // search by name
   const [pagestudent, setPageStudent] = useState({}); // page state: default, detail
-  const [loading, setLoading] = useState(true);
   const boxRef = useRef(null);
 
   const showgrid = () => {
@@ -46,44 +37,37 @@ function StudentManagementPage() {
   const showdetail = () => {
     boxRef.current.style.display = "flex";
   }
-  
-  // Fetch students from API
-  const fetchStudents = async () => {
-    setLoading(true);
-    try {
-      console.log('Fetching students from API...');
-      const data = await renderStudent.getAllStudents();
-      console.log('Students fetched:', data);
-      setStudents(data);
-    } catch (error) {
-      console.error("Error loading students:", error);
-      // Fallback to default students if API fails
-      setStudents(defaultStudents);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchStudents();
+    const fetchData = async () => {
+      const data = await renderStudent.getAllStudents();  // gọi hàm async
+      const dataroute = await renderRoute.getAllRoutes()
+      setStudents(data);  // lưu vào state
+      setRoute(dataroute)
+    };
     setPageStudent({key: "default", value: null});
+    fetchData()
   }, []);
-
+  const handleSaveStudent = (student)=>{
+    const fetchData = async()=>{
+      await renderStudent.createStudent(student)
+    }
+    fetchData()
+  }
   // filter + search logic
   const filteredStudents = useMemo(() => {
     let result = students;
 
-    // filter by class
+    // filter by route
     if (filter !== 'all') {
-      result = result.filter(s => s.class_name === filter);
+      result = result.filter(s => s.route_name === filter);
     }
 
     // search by name or id
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       result = result.filter(s => 
-        (s.full_name || s.name || '').toLowerCase().includes(q) || 
-        String(s.student_id).toLowerCase().includes(q)
+        s.full_name.toLowerCase().includes(q) || 
+        s.student_id.includes(q)
       );
     }
 
@@ -115,7 +99,7 @@ function StudentManagementPage() {
           <input 
             style={{ fontSize: "1.1em" }} 
             type="text" 
-            className="search-box" 
+            className="search-box-container" 
             placeholder="Tìm kiếm học sinh (tên hoặc mã)..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -128,11 +112,12 @@ function StudentManagementPage() {
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
           >
-            <option value="all">Tất cả lớp học</option>
-            <option value="5A1">Lớp 5A1</option>
-            <option value="4B2">Lớp 4B2</option>
-            <option value="3C1">Lớp 3C1</option>
-            <option value="2A2">Lớp 2A2</option>
+            <option value="all">Tất cả tuyến xe</option>
+            {routes.map(route => (
+                    <option key={route.route_id} value={route.route_id}>
+                      Tuyến {route.route_id} - {route.route_name}
+                    </option>
+                  ))}
           </select>
         </div>
       </div>
@@ -149,35 +134,35 @@ function StudentManagementPage() {
       case "detail":
         return <Detail_Student tempStudent={pagestudent.value} backToList={goBackToList}/>;
       default:
-        return renderStudentsTable(filteredStudents, handleStudentDetails, loading);
+        return renderStudentsTable(filteredStudents, handleStudentDetails);
     }
   }
   // helper functions
 
   const handleAddStudent = (bool) => {
     setShowAddStudent(bool);
-    if (!bool) {
-      // Refresh students after adding
-      fetchStudents();
-    }
   };
   
 
-  const handleStudentDetails = (student) => {
+  const handleStudentDetails = (id_student) => {
     showdetail()
-    setPageStudent({key: "detail", value: student});
-    console.log('View details for student', pagestudent);
+    const fetchData = async () => {
+      const data = await renderStudent.getStudentByID(id_student);  // gọi hàm async
+      setPageStudent({key: "detail", value: data});
+    };
+    fetchData()
+    
   };
   const goBackToList = () => {
     showgrid()
     setPageStudent({key: "default", value: null});
   }
   return (
-    <div className={Style.content_main_center + " " + Style.column_direction}>
+    <div className={Style.content_main_center + " " + Style.column_direction} style={{margin:"20px",padding:"10px"}}>
       {/* Header */}
       {!showaddstudent && showDefaultPage()}
       {showaddstudent && <>
-      <AddStudent onClose={handleAddStudent}/>
+      <AddStudent onSave={handleSaveStudent} onClose={handleAddStudent}/>
       </>}
     </div>
   );

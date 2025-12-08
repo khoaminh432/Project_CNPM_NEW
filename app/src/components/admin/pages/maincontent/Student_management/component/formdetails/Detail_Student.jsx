@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './style.css';
 import { Student } from './../../../../../models/Student';
+import renderStudent from './../../../../../renderData/RenderStudent';
 
 function formatDate(d) {
   if (!d) return 'N/A';
@@ -23,10 +24,31 @@ function Detail_Student({ tempStudent = new Student(), backToList = () => {} }) 
     setStudent(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSave = () => {
-    setEditing(false);
-    // If you need to persist, call API or lift state up (not implemented here)
-    console.log('Saved student (local only):', student);
+  const handleSave = async () => {
+    try {
+      await renderStudent.updateStudent(student.student_id, student);
+      setEditing(false);
+      alert('Đã cập nhật thông tin học sinh thành công!');
+      console.log('Updated student:', student);
+    } catch (error) {
+      console.error('Error updating student:', error);
+      alert('Lỗi khi cập nhật học sinh: ' + (error.response?.data?.message || error.message));
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!window.confirm(`Bạn có chắc chắn muốn xóa học sinh ${student.full_name}?`)) {
+      return;
+    }
+    
+    try {
+      await renderStudent.deleteStudent(student.student_id);
+      alert('Đã xóa học sinh thành công!');
+      backToList();
+    } catch (error) {
+      console.error('Error deleting student:', error);
+      alert('Lỗi khi xóa học sinh: ' + (error.response?.data?.message || error.message));
+    }
   };
 
   return (
@@ -193,7 +215,10 @@ function Detail_Student({ tempStudent = new Student(), backToList = () => {} }) 
         <button className="btn btn-secondary" onClick={handleBack}>Quay lại</button>
 
         {!editing ? (
-          <button className="btn btn-primary" onClick={handleEditToggle}>Chỉnh sửa</button>
+          <>
+            <button className="btn btn-primary" onClick={handleEditToggle}>Chỉnh sửa</button>
+            <button className="btn btn-danger" onClick={handleDelete}>Xóa</button>
+          </>
         ) : (
           <>
             <button className="btn btn-primary" onClick={handleSave}>Lưu</button>

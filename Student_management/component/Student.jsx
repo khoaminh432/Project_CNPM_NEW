@@ -1,20 +1,18 @@
 // PassengerCard.jsx
 import React from 'react';
 import './styleComponent.css';
-
+import renderRoute from '../../../../renderData/RenderRoute';
 const defaultStudent = {
   student_id: '001',
-  full_name: 'Nguyễn Văn A',
-  route_id: 'Tuyến số: 1',
-  home_address: '45 Hồng Bàng',
+  name: 'Nguyễn Văn A',
+  pickup_stop_name: 'Tuyến số: 1',
+  pickup_address: '45 Hồng Bàng',
   pickupTime: '6:55',
   avatarUrl: null,
 };
 
 const PassengerCard = ({ Tempstudent = defaultStudent, onDetails = () => {} }) => {
-  const { student_id, full_name, name, class_name, home_address, pickup_stop, pickupTime="6:55", avatarUrl } = Tempstudent;
-  const studentName = full_name || name || 'N/A';
-  const displayClass = class_name || 'Chưa phân lớp';
+  const { student_id, name, pickup_stop_name, pickup_address, pickupTime="6:55", avatarUrl } = Tempstudent;
 
   return (
     <article className="passenger-card">
@@ -25,27 +23,27 @@ const PassengerCard = ({ Tempstudent = defaultStudent, onDetails = () => {} }) =
       <div className="passenger-card__avatar-wrap">
         <div className="passenger-card__avatar">
           {avatarUrl ? (
-            <img src={avatarUrl} alt={`${studentName} avatar`} />
+            <img src={avatarUrl} alt={`${name} avatar`} />
           ) : (
             <div className="passenger-card__avatar-fallback">
-              {studentName ? studentName.charAt(0).toUpperCase() : 'A'}
+              {name ? name.charAt(0).toUpperCase() : 'A'}
             </div>
           )}
         </div>
       </div>
 
       <div className="passenger-card__body">
-        <h2 className="passenger-card__name">{studentName}</h2>
+        <h2 className="passenger-card__name">{name}</h2>
 
         <div className="passenger-card__info">
           <div className="info-row">
-            <span className="info-icon">🏫</span>
-            <span className="info-text">{displayClass}</span>
+            <span className="info-icon">🚌</span>
+            <span className="info-text">{pickup_stop_name}</span>
           </div>
 
           <div className="info-row">
             <span className="info-icon">📍</span>
-            <span className="info-text">{pickup_stop || home_address || 'Chưa có địa chỉ'}</span>
+            <span className="info-text">{pickup_address}</span>
           </div>
 
           <div className="info-row">
@@ -55,7 +53,15 @@ const PassengerCard = ({ Tempstudent = defaultStudent, onDetails = () => {} }) =
         </div>
 
         <div className="passenger-card__actions">
-          <button className="btn btn--primary" onClick={() => onDetails(Tempstudent)}>Xem chi tiết</button>
+          <button className="btn btn--primary" onClick={() => {
+            onDetails(Tempstudent.student_id);
+          const fetchData = async()=>{
+            const data = await renderRoute.getAllRoutes()
+            console.log(data)
+          }
+          fetchData()
+
+          }}>Xem chi tiết</button>
         </div>
       </div>
     </article>

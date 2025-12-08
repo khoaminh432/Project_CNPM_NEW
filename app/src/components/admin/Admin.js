@@ -11,6 +11,7 @@ import QuanLyXeBuyt from "./frontend/QuanLyXeBuyt";
 import ThongBao from "./frontend/ThongBao";
 import Clock from "./components/Time";
 import DemoTk from "./demoTk";
+import AdminImg from './assets/image/ADMIN.png';
 
 function Admin({ user, onLogout }) {
   const [showModal, setShowModal] = useState(false);
@@ -92,7 +93,7 @@ function Admin({ user, onLogout }) {
                 }}
               >
                 <img
-                  src="/img/ADMIN.png"
+                  src={AdminImg}
                   alt="Admin"
                   style={{
                     width: "30px",

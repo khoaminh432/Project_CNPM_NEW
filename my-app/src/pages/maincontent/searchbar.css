@@ -13,7 +13,7 @@
   flex:1 1 320px;
   min-width:0;
 }
-.search-box{
+.search-box-container{
   border:0;
   outline:none;
   width:100%;

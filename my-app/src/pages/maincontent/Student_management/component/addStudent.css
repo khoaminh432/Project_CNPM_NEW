@@ -227,6 +227,9 @@
 .add-student-form::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+/* Style chung cho select */
+
+
 
 /* Responsive design */
 @media (max-width: 768px) {

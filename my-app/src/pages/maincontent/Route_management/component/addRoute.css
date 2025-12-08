@@ -72,7 +72,7 @@
 }
 .left-card{ flex:1;}
 .right-card{ width:60%;
-    height: 100%;
+    height: auto;
     display:flex;
      gap:12px; }
 
@@ -86,7 +86,8 @@
   box-shadow:0 6px 18px rgba(12,13,16,0.03);
 }
 .map-card{
-    height: auto;
+    height: 100%;
+    width: 100%;
     padding: 0;
 }
 
@@ -100,14 +101,15 @@
 /* stations list */
 .stations-list{
   display:grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap:8px;
   margin-top:8px;
    /* limit to 2 rows; overflow scroll when more items */
-  max-height: calc(var(--station-item-height) * 2 + 60px); /* + gap compensation */
+  height: calc(var(--station-item-height) * 2 + 80px); /* + gap compensation */
   overflow-y: auto;
   padding-right: 6px; /* space for scrollbar so content doesn't hide */
   box-sizing: border-box;
+  border: 1px rgb(67, 63, 63) solid;
 }
 
 .station-item{

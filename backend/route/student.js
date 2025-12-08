@@ -50,7 +50,6 @@ router.get('/:id', async (req, res) => {
         p.name as parent_name,
         p.phone as parent_phone,
         p.email as parent_email,
-        p.address as parent_address,
         bs_pickup.stop_name as pickup_stop_name,
         bs_pickup.address as pickup_address,
         bs_pickup.route_id as pickup_route_id,

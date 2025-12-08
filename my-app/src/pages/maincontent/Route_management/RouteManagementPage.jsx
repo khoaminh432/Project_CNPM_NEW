@@ -6,6 +6,8 @@ import { Time } from '../../../models/Time';
 import AddRoute from './component/AddRoute';
 import StyleMain from './../styleMain.module.css';
 import { RouteDetail } from './component/formdetails/Detail_Route';
+import { RouteDetail2 } from './component/formdetails/Detail_Route2';
+import renderRoute from '../../../renderData/RenderRoute';
 function renderRoutesTable(routes,handleViewDetail) {
   return routes.map((route) => (
     <BusRoute route={route} onViewDetail={handleViewDetail}/>
@@ -37,7 +39,7 @@ function parseTimeToModel(inputTime, fallback="00:00") {
   }
 
 function totalRouteStable(array){
-  return array.filter(route=>route.status==="active").length
+  return array.filter(route=>route.status==="Đang hoạt động").length
 }
 function totalDistance(array){
   return formatNumber2(array.reduce((sum,route)=>sum+parseKm(route.distance_km),0))
@@ -59,7 +61,12 @@ function RouteManagementPage() {
   const [showaddroute, setShowAddRoute] = useState(false);
   useEffect(() => {
     // ví dụ: lấy từ API hoặc dữ liệu tĩnh
-    setRoutes(defaultRoutes);
+    const fetchData=async()=>{
+      const data = await renderRoute.getListAllRoute()
+      setRoutes(data)
+    }
+    fetchData()
+
   }, []);
   function editRoute(updated) {
     setRoutes(prev => prev.map(r => {
@@ -149,7 +156,7 @@ function RouteManagementPage() {
       <div className="controls">
         <div className="search-container">
           <i className="fas fa-search" />
-          <input style={{fontSize:"1.1em"}} type="text" className="search-box" placeholder="Tìm kiếm tuyến xe..." />
+          <input style={{fontSize:"1.1em"}} type="text" className="search-box-container" placeholder="Tìm kiếm tuyến xe..." />
         </div>
         <div className="filter-container">
           <i className="fas fa-filter" />
@@ -159,8 +166,8 @@ function RouteManagementPage() {
             onChange={(e) => setFilter(e.target.value)} // <-- wire up select
           >
             <option value="all">Tất cả trạng thái</option>
-            <option value="active">Đang hoạt động</option>
-            <option value="inactive">Không hoạt động</option>
+            <option value="Đang hoạt động">Đang hoạt động</option>
+            <option value="Ngưng hoạt động">Không hoạt động</option>
           </select>
         </div>
       </div>
@@ -184,11 +191,13 @@ function RouteManagementPage() {
           </tbody>
         </table>
         {showDetail.key && (
-          <RouteDetail
+          /*<RouteDetail
             route={showDetail.value} // ví dụ: hiển thị chi tiết của tuyến đầu tiên  
             onClose={() => setShowDetail({key:false,value:null})}
             onSave={handleSaveRoute}
-            />)}
+            />*/
+            <RouteDetail2 route={showDetail.value} onClose={()=>setShowDetail({key:false,value:null})}/>
+            )}
       </div>
       </>
       }

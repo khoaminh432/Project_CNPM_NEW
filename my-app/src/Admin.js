@@ -11,7 +11,7 @@ import QuanLyXeBuyt from "./frontend/QuanLyXeBuyt";
 import ThongBao from "./frontend/ThongBao";
 import Clock from "./components/Time";
 import DemoTk from "./demoTk";
-
+import renderStudent from "./renderData/RenderStudent";
 function Admin({ user, onLogout }) {
   const [showModal, setShowModal] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
@@ -38,6 +38,7 @@ function Admin({ user, onLogout }) {
     };
     fetchStats();
   }, []);
+    
 
   const handleCardClick = (title, value) => {
     setModalTitle(title);
@@ -46,7 +47,7 @@ function Admin({ user, onLogout }) {
   };
 
   return (
-    <div className="container">
+    <div className="container" style={{maxWidth:"100%"}}>
       {/* Sidebar */}
       <div className="sidebar">
         <h2>SBT</h2>
@@ -54,7 +55,7 @@ function Admin({ user, onLogout }) {
           <li onClick={() => setActivePage("TRANG CHỦ")}>Trang chủ</li>
           <li onClick={() => setActivePage("THEO DÕI XE BUÝT")}>Theo dõi xe buýt</li>
           <li onClick={() => setActivePage("QUẢN LÝ TÀI XẾ")}>Quản lý tài xế</li>
-          <li onClick={() => setActivePage("QUẢN LÝ HỌC SINH")}>Quản ly học sinh</li>
+          <li onClick={() => {setActivePage("QUẢN LÝ HỌC SINH")}}>Quản ly học sinh</li>
           <li onClick={() => setActivePage("QUẢN LÝ TUYẾN ĐƯỜNG")}>Quản lý tuyến đường</li>
           <li onClick={() => setActivePage("QUẢN LÝ XE BUÝT")}>Quản lý xe buýt</li>
           <li onClick={() => setActivePage("QUẢN LÝ THÔNG BÁO")}>Quản lý thông báo</li>

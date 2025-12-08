@@ -1,22 +1,17 @@
 import React, { useState } from 'react';
 import './style.css';
-import { Student } from './../../../../../models/Student';
 
 function formatDate(d) {
   if (!d) return 'N/A';
-  const date = d instanceof Date ? d : new Date(d);
+  const date = new Date(d);
   if (isNaN(date.getTime())) return 'N/A';
-  return date.toLocaleDateString();
+  return date.toLocaleString();
 }
 
-function Detail_Student({ tempStudent = new Student(), backToList = () => {} }) {
-  // Ensure we work with plain Student instance
+function Detail_Student({ tempStudent = {}, backToList = () => {} }) {
+
   const [editing, setEditing] = useState(false);
   const [student, setStudent] = useState(tempStudent);
-
-  const handleBack = () => backToList();
-
-  const handleEditToggle = () => setEditing(v => !v);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -25,144 +20,94 @@ function Detail_Student({ tempStudent = new Student(), backToList = () => {} }) 
 
   const handleSave = () => {
     setEditing(false);
-    // If you need to persist, call API or lift state up (not implemented here)
-    console.log('Saved student (local only):', student);
+    console.log("Saved:", student);
   };
 
   return (
     <div className="container-detail-student">
+      {/* HEADER */}
       <div className="header-detail-student">
-        <button className="btn-back-icon" onClick={handleBack}>← Quay lại</button>
+        <button className="btn-back-icon" onClick={backToList}>
+          ← Quay lại
+        </button>
         <h1>Chi tiết học sinh</h1>
-        <div className="student-id">ID: {student.student_id ?? 'N/A'}</div>
+        <div className="student-id">ID: {student.student_id}</div>
       </div>
 
       <div className="content">
-        {/* Personal Info */}
+
+        {/* PERSONAL INFO */}
         <section className="info-card">
           <h2 className="card-title">Thông tin cá nhân</h2>
           <div className="info-grid">
+
+            {/* Họ và tên */}
             <div className="info-item">
               <span className="info-label">Họ và tên</span>
               {editing ? (
-                <input name="full_name" className="info-input" value={student.full_name ?? ''} onChange={handleChange} />
+                <input name="name" className="info-input" value={student.name ?? ''} onChange={handleChange} />
               ) : (
-                <span className="info-value">{student.full_name || 'N/A'}</span>
+                <span className="info-value">{student.name || 'N/A'}</span>
               )}
             </div>
 
+            {/* Mã học sinh */}
             <div className="info-item">
               <span className="info-label">Mã học sinh</span>
-              {editing ? (
-                <input name="student_code" className="info-input" value={student.student_code ?? ''} onChange={handleChange} />
-              ) : (
-                <span className="info-value">{student.student_code || 'N/A'}</span>
-              )}
+              <span className="info-value">{student.student_id || 'N/A'}</span>
             </div>
 
+            {/* Giới tính */}
             <div className="info-item">
               <span className="info-label">Giới tính</span>
               {editing ? (
-                <select name="gender" value={student.gender ?? ''} onChange={handleChange} className="info-input">
-                  <option value="">Chọn</option>
-                  <option value="male">Nam</option>
-                  <option value="female">Nữ</option>
-                  <option value="other">Khác</option>
+                <select name="gender" className="info-input"
+                  value={student.gender ?? ''} onChange={handleChange}>
+                  <option value="Nam">Nam</option>
+                  <option value="Nữ">Nữ</option>
                 </select>
               ) : (
                 <span className="info-value">{student.gender || 'N/A'}</span>
               )}
             </div>
 
-            <div className="info-item">
-              <span className="info-label">Ngày sinh</span>
-              {editing ? (
-                <input name="date_of_birth" type="date" className="info-input"
-                  value={student.date_of_birth ? (new Date(student.date_of_birth)).toISOString().slice(0,10) : ''}
-                  onChange={handleChange}
-                />
-              ) : (
-                <span className="info-value">{formatDate(student.date_of_birth)}</span>
-              )}
-            </div>
-          </div>
-        </section>
-
-        {/* Contact Info */}
-        <section className="info-card">
-          <h2 className="card-title">Thông tin liên hệ</h2>
-          <div className="info-grid">
-            <div className="info-item full-width">
-              <span className="info-label">Địa chỉ</span>
-              {editing ? (
-                <input name="home_address" className="info-input" value={student.home_address ?? ''} onChange={handleChange} />
-              ) : (
-                <span className="info-value">{student.home_address || 'N/A'}</span>
-              )}
-            </div>
-
-            <div className="info-item">
-              <span className="info-label">Số điện thoại</span>
-              {editing ? (
-                <input name="phone" className="info-input" value={student.phone ?? ''} onChange={handleChange} />
-              ) : (
-                <span className="info-value">{student.phone || 'N/A'}</span>
-              )}
-            </div>
-
-            <div className="info-item">
-              <span className="info-label">Email</span>
-              {editing ? (
-                <input name="email" className="info-input" value={student.email ?? ''} onChange={handleChange} />
-              ) : (
-                <span className="info-value" style={{ wordBreak: 'break-word' }}>{student.email || 'N/A'}</span>
-              )}
-            </div>
-          </div>
-        </section>
-
-        {/* Academic Info */}
-        <section className="info-card">
-          <h2 className="card-title">Thông tin học tập</h2>
-          <div className="info-grid">
-            <div className="info-item">
-              <span className="info-label">Lớp</span>
-              {editing ? (
-                <input name="class_name" className="info-input" value={student.class_name ?? ''} onChange={handleChange} />
-              ) : (
-                <span className="info-value">{student.class_name || 'N/A'}</span>
-              )}
-            </div>
-
+            {/* Trường */}
             <div className="info-item">
               <span className="info-label">Trường</span>
               {editing ? (
-                <input name="school_name" className="info-input" value={student.school_name ?? ''} onChange={handleChange} />
+                <input name="school_name" className="info-input"
+                  value={student.school_name ?? ''} onChange={handleChange} />
               ) : (
                 <span className="info-value">{student.school_name || 'N/A'}</span>
               )}
             </div>
 
+            {/* Lớp */}
             <div className="info-item">
-              <span className="info-label">Tuyến</span>
-              <span className="info-value">{student.route ?? student.route_id ?? 'N/A'}</span>
+              <span className="info-label">Lớp</span>
+              {editing ? (
+                <input name="class_name" className="info-input"
+                  value={student.class_name ?? ''} onChange={handleChange} />
+              ) : (
+                <span className="info-value">{student.class_name || 'N/A'}</span>
+              )}
             </div>
 
-            <div className="info-item">
-              <span className="info-label">Giờ đón</span>
-              <span className="info-value">{student.pickupTime ?? 'N/A'}</span>
-            </div>
           </div>
         </section>
 
-        {/* Parent Info */}
+
+
+        {/* PHỤ HUYNH */}
         <section className="info-card">
           <h2 className="card-title">Thông tin phụ huynh</h2>
           <div className="info-grid">
+
             <div className="info-item">
-              <span className="info-label">Họ tên</span>
+              <span className="info-label">Tên phụ huynh</span>
               {editing ? (
-                <input name="parent_name" className="info-input" value={student.parent_name ?? ''} onChange={handleChange} />
+                <input name="parent_name" className="info-input"
+                  value={student.parent_name ?? ''} onChange={handleChange} />
               ) : (
                 <span className="info-value">{student.parent_name || 'N/A'}</span>
               )}
@@ -171,7 +116,8 @@ function Detail_Student({ tempStudent = new Student(), backToList = () => {} }) 
             <div className="info-item">
               <span className="info-label">Số điện thoại</span>
               {editing ? (
-                <input name="parent_phone" className="info-input" value={student.parent_phone ?? ''} onChange={handleChange} />
+                <input name="parent_phone" className="info-input"
+                  value={student.parent_phone ?? ''} onChange={handleChange} />
               ) : (
                 <span className="info-value">{student.parent_phone || 'N/A'}</span>
               )}
@@ -180,27 +126,87 @@ function Detail_Student({ tempStudent = new Student(), backToList = () => {} }) 
             <div className="info-item">
               <span className="info-label">Email</span>
               {editing ? (
-                <input name="parent_email" className="info-input" value={student.parent_email ?? ''} onChange={handleChange} />
+                <input name="parent_email" className="info-input"
+                  value={student.parent_email ?? ''} onChange={handleChange} />
               ) : (
-                <span className="info-value" style={{ wordBreak: 'break-word' }}>{student.parent_email || 'N/A'}</span>
+                <span className="info-value">{student.parent_email || 'N/A'}</span>
               )}
             </div>
+
           </div>
         </section>
+
+
+        {/* THÔNG TIN ĐIỂM ĐÓN TRẢ */}
+        <section className="info-card">
+          <h2 className="card-title">Điểm đón và trả</h2>
+          <div className="info-grid">
+
+            <div className="info-item">
+              <span className="info-label">Điểm đón</span>
+              <span className="info-value">{student.pickup_stop_name || 'N/A'}</span>
+            </div>
+
+            <div className="info-item">
+              <span className="info-label">Địa chỉ đón</span>
+              <span className="info-value">{student.pickup_address || 'N/A'}</span>
+            </div>
+
+            <div className="info-item">
+              <span className="info-label">Điểm trả</span>
+              <span className="info-value">{student.dropoff_stop_name || 'N/A'}</span>
+            </div>
+
+            <div className="info-item">
+              <span className="info-label">Địa chỉ trả</span>
+              <span className="info-value">{student.dropoff_address || 'N/A'}</span>
+            </div>
+
+          </div>
+        </section>
+
+
+        {/* LỊCH SỬ ĐÓN TRẢ */}
+        <section className="info-card">
+          <h2 className="card-title">Lịch sử đón trả</h2>
+
+          {student.pickup_history?.length > 0 ? (
+            student.pickup_history.map((h, i) => (
+              <div key={i} className="history-item">
+                <p><b>Tài xế:</b> {h.driver_name}</p>
+                <p><b>SĐT:</b> {h.driver_phone}</p>
+                <p><b>Biển số:</b> {h.license_plate}</p>
+                <p><b>Điểm đón:</b> {h.stop_name}</p>
+                <p><b>Thời gian đón:</b> {formatDate(h.pickup_time)}</p>
+                <p><b>Thời gian trả:</b> {formatDate(h.dropoff_time)}</p>
+                <hr />
+              </div>
+            ))
+          ) : (
+            <p>Không có dữ liệu lịch sử</p>
+          )}
+        </section>
+
       </div>
 
+
+      {/* BUTTONS */}
       <div className="btn-group">
-        <button className="btn btn-secondary" onClick={handleBack}>Quay lại</button>
+        <button className="btn btn-secondary" onClick={backToList}>Quay lại</button>
 
         {!editing ? (
-          <button className="btn btn-primary" onClick={handleEditToggle}>Chỉnh sửa</button>
+          <button className="btn btn-primary" onClick={() => setEditing(true)}>Chỉnh sửa</button>
         ) : (
           <>
             <button className="btn btn-primary" onClick={handleSave}>Lưu</button>
-            <button className="btn btn-secondary" onClick={() => { setStudent(tempStudent); setEditing(false); }}>Hủy</button>
+            <button className="btn btn-secondary"
+              onClick={() => { setStudent(tempStudent); setEditing(false); }}>
+              Hủy
+            </button>
           </>
         )}
       </div>
+
     </div>
   );
 }

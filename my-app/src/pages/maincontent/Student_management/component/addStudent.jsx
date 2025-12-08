@@ -1,33 +1,38 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './addStudent.css';
 import { Student } from './../../../../models/Student';
-
+import renderRoute from '../../../../renderData/RenderRoute';
 function AddStudent({ onSave = () => {}, onClose = () => {} }) {
+  const [routes,setRoute] = useState([])
   const [form, setForm] = useState({
-    student_code: '',
-    full_name: '',
+    student_id: '',
+    name: '',
     class_name: '',
     school_name: '',
-    phone: '',
-    email: '',
+    gender: 'Nam',
     date_of_birth: '',
-    gender: 'other',
     parent_name: '',
     parent_phone: '',
     parent_email: '',
-    home_address: '',
     pickup_stop_id: '',
     dropoff_stop_id: '',
+    pickup_address: '',
+    dropoff_address: '',
     route_id: '',
     enrollment_date: '',
   });
-
   const [errors, setErrors] = useState({});
+  useEffect(()=>{
+    const fetchData = async()=>{
+      const data = await renderRoute.getAllRoutes()
+      setRoute(data)
+    }
+    fetchData()
 
+  },[])
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));
-    // clear error for this field
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
@@ -35,23 +40,22 @@ function AddStudent({ onSave = () => {}, onClose = () => {} }) {
 
   const validateForm = () => {
     const newErrors = {};
-    
-    if (!form.student_code.trim()) newErrors.student_code = 'Mã học sinh là bắt buộc';
-    if (!form.full_name.trim()) newErrors.full_name = 'Họ tên là bắt buộc';
+
+    if (!form.student_id.trim()) newErrors.student_id = 'Mã học sinh là bắt buộc';
+    if (!form.name.trim()) newErrors.name = 'Tên học sinh là bắt buộc';
     if (!form.class_name.trim()) newErrors.class_name = 'Lớp là bắt buộc';
     if (!form.parent_name.trim()) newErrors.parent_name = 'Tên phụ huynh là bắt buộc';
     if (!form.parent_phone.trim()) newErrors.parent_phone = 'Số điện thoại phụ huynh là bắt buộc';
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSave = (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
 
-    // Create new Student instance
     const newStudent = new Student({
       ...form,
       is_active: true,
@@ -67,20 +71,19 @@ function AddStudent({ onSave = () => {}, onClose = () => {} }) {
 
   const handleCancel = () => {
     setForm({
-      student_code: '',
-      full_name: '',
+      student_id: '',
+      name: '',
       class_name: '',
       school_name: '',
-      phone: '',
-      email: '',
+      gender: 'Nam',
       date_of_birth: '',
-      gender: 'other',
       parent_name: '',
       parent_phone: '',
       parent_email: '',
-      home_address: '',
       pickup_stop_id: '',
       dropoff_stop_id: '',
+      pickup_address: '',
+      dropoff_address: '',
       route_id: '',
       enrollment_date: '',
     });
@@ -93,45 +96,48 @@ function AddStudent({ onSave = () => {}, onClose = () => {} }) {
       <div className="add-student-modal">
         <div className="modal-header">
           <h2>Thêm học sinh mới</h2>
-          <button className="btn-close" onClick={()=>onClose(false)}>✕</button>
+          <button className="btn-close" onClick={() => onClose(false)}>✕</button>
         </div>
 
         <form onSubmit={handleSave} className="add-student-form">
+
+          {/* THÔNG TIN CÁ NHÂN */}
           <div className="form-section">
             <h3>Thông tin cá nhân</h3>
             <div className="form-grid">
+
               <div className="form-group">
                 <label>Mã học sinh *</label>
                 <input
                   type="text"
-                  name="student_code"
-                  value={form.student_code}
+                  name="student_id"
+                  value={form.student_id}
                   onChange={handleChange}
-                  placeholder="VD: S001"
-                  className={errors.student_code ? 'input-error' : ''}
+                  placeholder="VD: HS001"
+                  className={errors.student_id ? 'input-error' : ''}
                 />
-                {errors.student_code && <span className="error-text">{errors.student_code}</span>}
+                {errors.student_id && <span className="error-text">{errors.student_id}</span>}
               </div>
 
               <div className="form-group">
                 <label>Họ và tên *</label>
                 <input
                   type="text"
-                  name="full_name"
-                  value={form.full_name}
+                  name="name"
+                  value={form.name}
                   onChange={handleChange}
                   placeholder="VD: Nguyễn Văn A"
-                  className={errors.full_name ? 'input-error' : ''}
+                  className={errors.name ? 'input-error' : ''}
                 />
-                {errors.full_name && <span className="error-text">{errors.full_name}</span>}
+                {errors.name && <span className="error-text">{errors.name}</span>}
               </div>
 
               <div className="form-group">
                 <label>Giới tính</label>
                 <select name="gender" value={form.gender} onChange={handleChange}>
-                  <option value="male">Nam</option>
-                  <option value="female">Nữ</option>
-                  <option value="other">Khác</option>
+                  <option value="Nam">Nam</option>
+                  <option value="Nữ">Nữ</option>
+                  <option value="Khác">Khác</option>
                 </select>
               </div>
 
@@ -144,12 +150,15 @@ function AddStudent({ onSave = () => {}, onClose = () => {} }) {
                   onChange={handleChange}
                 />
               </div>
+
             </div>
           </div>
 
+          {/* THÔNG TIN HỌC TẬP */}
           <div className="form-section">
             <h3>Thông tin học tập</h3>
             <div className="form-grid">
+
               <div className="form-group">
                 <label>Lớp *</label>
                 <input
@@ -175,14 +184,19 @@ function AddStudent({ onSave = () => {}, onClose = () => {} }) {
               </div>
 
               <div className="form-group">
-                <label>Tuyến xe</label>
-                <input
-                  type="text"
+                <select
                   name="route_id"
                   value={form.route_id}
                   onChange={handleChange}
-                  placeholder="VD: Tuyến 1"
-                />
+                >
+                  <option value="">-- Chọn tuyến --</option>
+                  {routes.map(route => (
+                    <option key={route.route_id} value={route.route_id}>
+                      Tuyến {route.route_id} - {route.route_name}
+                    </option>
+                  ))}
+                </select>
+
               </div>
 
               <div className="form-group">
@@ -194,50 +208,15 @@ function AddStudent({ onSave = () => {}, onClose = () => {} }) {
                   onChange={handleChange}
                 />
               </div>
+
             </div>
           </div>
 
-          <div className="form-section">
-            <h3>Thông tin liên hệ</h3>
-            <div className="form-grid">
-              <div className="form-group full-width">
-                <label>Địa chỉ</label>
-                <input
-                  type="text"
-                  name="home_address"
-                  value={form.home_address}
-                  onChange={handleChange}
-                  placeholder="VD: 123 Đường A, Quận 1, TP.HCM"
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Số điện thoại</label>
-                <input
-                  type="tel"
-                  name="phone"
-                  value={form.phone}
-                  onChange={handleChange}
-                  placeholder="VD: 0912345678"
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Email</label>
-                <input
-                  type="email"
-                  name="email"
-                  value={form.email}
-                  onChange={handleChange}
-                  placeholder="VD: student@email.com"
-                />
-              </div>
-            </div>
-          </div>
-
+          {/* THÔNG TIN PHỤ HUYNH */}
           <div className="form-section">
             <h3>Thông tin phụ huynh</h3>
             <div className="form-grid">
+
               <div className="form-group">
                 <label>Tên phụ huynh *</label>
                 <input
@@ -245,7 +224,7 @@ function AddStudent({ onSave = () => {}, onClose = () => {} }) {
                   name="parent_name"
                   value={form.parent_name}
                   onChange={handleChange}
-                  placeholder="VD: Nguyễn Văn X"
+                  placeholder="VD: Nguyễn B"
                   className={errors.parent_name ? 'input-error' : ''}
                 />
                 {errors.parent_name && <span className="error-text">{errors.parent_name}</span>}
@@ -271,15 +250,18 @@ function AddStudent({ onSave = () => {}, onClose = () => {} }) {
                   name="parent_email"
                   value={form.parent_email}
                   onChange={handleChange}
-                  placeholder="VD: parent@email.com"
+                  placeholder="VD: parent@gmail.com"
                 />
               </div>
+
             </div>
           </div>
 
+          {/* THÔNG TIN TRẠM */}
           <div className="form-section">
             <h3>Thông tin trạm</h3>
             <div className="form-grid">
+
               <div className="form-group">
                 <label>Trạm đón</label>
                 <input
@@ -287,7 +269,18 @@ function AddStudent({ onSave = () => {}, onClose = () => {} }) {
                   name="pickup_stop_id"
                   value={form.pickup_stop_id}
                   onChange={handleChange}
-                  placeholder="VD: 1"
+                  placeholder="VD: 101"
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Địa chỉ đón</label>
+                <input
+                  type="text"
+                  name="pickup_address"
+                  value={form.pickup_address}
+                  onChange={handleChange}
+                  placeholder="VD: 123 Đường A"
                 />
               </div>
 
@@ -298,16 +291,30 @@ function AddStudent({ onSave = () => {}, onClose = () => {} }) {
                   name="dropoff_stop_id"
                   value={form.dropoff_stop_id}
                   onChange={handleChange}
-                  placeholder="VD: 5"
+                  placeholder="VD: 202"
                 />
               </div>
+
+              <div className="form-group">
+                <label>Địa chỉ trả</label>
+                <input
+                  type="text"
+                  name="dropoff_address"
+                  value={form.dropoff_address}
+                  onChange={handleChange}
+                  placeholder="VD: 456 Đường B"
+                />
+              </div>
+
             </div>
           </div>
 
+          {/* BUTTON */}
           <div className="form-actions">
             <button type="submit" className="btn btn-primary">Thêm học sinh</button>
             <button type="button" className="btn btn-secondary" onClick={handleCancel}>Hủy</button>
           </div>
+
         </form>
       </div>
     </div>

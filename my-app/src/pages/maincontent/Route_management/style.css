@@ -15,7 +15,8 @@
 /* main container */
 .container-route-management{
   width: 100%;
-  padding: 18px;
+  
+  padding: 30px;
   height: 100%;
   box-sizing: border-box;
   font-family: Inter, "Segoe UI", Roboto, system-ui, -apple-system, "Helvetica Neue", Arial;
@@ -98,7 +99,7 @@
 }
 .routes-table tbody {
   display: block;
-  max-height: calc(7 * 58px + 8px); /* 4 rows × ~56px + gap */
+  max-height: calc(7 * 50px + 8px); /* 4 rows × ~56px + gap */
   overflow-y: auto;
 }
 

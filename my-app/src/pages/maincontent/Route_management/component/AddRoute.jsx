@@ -16,11 +16,14 @@ return stopNames.slice(0, -2); // loại bỏ dấu phẩy và khoảng trắng 
 }
 function AddRoute({onclose=()=>{}}) {
   const [stations,setStation]= useState([]);
+  // Xóa trạm có stop_id = 123
+const DeleteStationById = (id) => {
+  setStation(prev => prev.filter(station => station.stop_id !== id));
+};
   useEffect(()=>{
     // giả lập lấy danh sách trạm từ API
     setStation(stops);
   }
-    
     ,[])
   const [positions,setPosition] = useState({
     start: null,
@@ -45,7 +48,7 @@ function AddRoute({onclose=()=>{}}) {
   const [selectedStations, setSelectedStations] = useState(new Set());
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
-
+  
   const toggleStation = (name) => {
 
     setSelectedStations(prev => {
@@ -55,7 +58,23 @@ function AddRoute({onclose=()=>{}}) {
       return next;
     });
   };
+  
 
+const handleDeletevitri = () => {
+  if (selectedStations.size === 0) {
+    alert("Không có trạm nào để xóa!");
+    return;
+  }
+  if (window.confirm(`Xóa ${selectedStations.size} trạm đã chọn?`)) {
+    selectedStations.forEach((item)=>{
+      DeleteStationById(item.stop_id)
+    })
+    setSelectedStations(new Set())
+  }
+};
+  const handleCreatevitri = ()=>{
+
+  }
   const handleSave = (e) => {
     e.preventDefault();
     const payload = {
@@ -66,9 +85,8 @@ function AddRoute({onclose=()=>{}}) {
     };
     // TODO: gọi API lưu tuyến ở đây
     console.log('Save route', payload);
-    alert('Đã lưu tuyến (console.log)');
   };
-
+  
   const selectedList = Array.from(selectedStations)
   const routeDisplay = routeName || "";
   const mapRel = useRef(null);
@@ -112,8 +130,8 @@ function AddRoute({onclose=()=>{}}) {
         <section className="left-card">
           <form className="form-card" onSubmit={handleSave} style={{width:"auto"}}>
             <h2 className="section-title">Tạo Tuyến xe mới</h2>
-            <button>+Thêm trạm</button>
-            <button>🗑️Xóa trạm</button>
+            <button type='button' onClick={handleCreatevitri}>+Thêm trạm</button>
+            <button type="button" onClick={handleDeletevitri}>🗑️Xóa trạm</button>
               <input
                 className="text-input"
                 type="text"

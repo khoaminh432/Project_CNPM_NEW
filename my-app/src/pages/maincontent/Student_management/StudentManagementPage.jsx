@@ -3,10 +3,10 @@ import Style from "./../styleMain.module.css";
 import React, { useRef,useEffect, useState, useMemo } from "react";
 import "./style.css";
 import "./../searchbar.css";
-import { Student,defaultStudents } from "../../../models/Student";
 import Detail_Student from "./component/formdetails/Detail_Student";
 import AddStudent from "./component/addStudent";
-
+import renderStudent from "../../../renderData/RenderStudent";
+import renderRoute from "../../../renderData/RenderRoute";
 function renderStudentsTable(students, onDetails) {
   return(students.length > 0 ? (
           students.map((student) => (
@@ -24,6 +24,7 @@ function renderStudentsTable(students, onDetails) {
 }
 function StudentManagementPage() {
   const [students, setStudents] = useState([]);
+  const [routes,setRoute] = useState([])
   const [showaddstudent, setShowAddStudent] = useState(false);
   const [filter, setFilter] = useState('all'); // filter by route
   const [searchQuery, setSearchQuery] = useState(''); // search by name
@@ -37,19 +38,28 @@ function StudentManagementPage() {
     boxRef.current.style.display = "flex";
   }
   useEffect(() => {
-    // ví dụ: lấy từ API hoặc dữ liệu tĩnh
-    
-    setStudents(defaultStudents);
+    const fetchData = async () => {
+      const data = await renderStudent.getAllStudents();  // gọi hàm async
+      const dataroute = await renderRoute.getAllRoutes()
+      setStudents(data);  // lưu vào state
+      setRoute(dataroute)
+    };
     setPageStudent({key: "default", value: null});
+    fetchData()
   }, []);
-
+  const handleSaveStudent = (student)=>{
+    const fetchData = async()=>{
+      await renderStudent.createStudent(student)
+    }
+    fetchData()
+  }
   // filter + search logic
   const filteredStudents = useMemo(() => {
     let result = students;
 
     // filter by route
     if (filter !== 'all') {
-      result = result.filter(s => s.route_id === filter);
+      result = result.filter(s => s.route_name === filter);
     }
 
     // search by name or id
@@ -89,7 +99,7 @@ function StudentManagementPage() {
           <input 
             style={{ fontSize: "1.1em" }} 
             type="text" 
-            className="search-box" 
+            className="search-box-container" 
             placeholder="Tìm kiếm học sinh (tên hoặc mã)..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -103,10 +113,11 @@ function StudentManagementPage() {
             onChange={(e) => setFilter(e.target.value)}
           >
             <option value="all">Tất cả tuyến xe</option>
-            <option value="Tuyến 1">Tuyến 1</option>
-            <option value="Tuyến 2">Tuyến 2</option>
-            <option value="Tuyến 3">Tuyến 3</option>
-            <option value="Tuyến 4">Tuyến 4</option>
+            {routes.map(route => (
+                    <option key={route.route_id} value={route.route_id}>
+                      Tuyến {route.route_id} - {route.route_name}
+                    </option>
+                  ))}
           </select>
         </div>
       </div>
@@ -133,21 +144,25 @@ function StudentManagementPage() {
   };
   
 
-  const handleStudentDetails = (student) => {
+  const handleStudentDetails = (id_student) => {
     showdetail()
-    setPageStudent({key: "detail", value: student});
-    console.log('View details for student', pagestudent);
+    const fetchData = async () => {
+      const data = await renderStudent.getStudentByID(id_student);  // gọi hàm async
+      setPageStudent({key: "detail", value: data});
+    };
+    fetchData()
+    
   };
   const goBackToList = () => {
     showgrid()
     setPageStudent({key: "default", value: null});
   }
   return (
-    <div className={Style.content_main_center + " " + Style.column_direction}>
+    <div className={Style.content_main_center + " " + Style.column_direction} style={{margin:"20px",padding:"10px"}}>
       {/* Header */}
       {!showaddstudent && showDefaultPage()}
       {showaddstudent && <>
-      <AddStudent onClose={handleAddStudent}/>
+      <AddStudent onSave={handleSaveStudent} onClose={handleAddStudent}/>
       </>}
     </div>
   );

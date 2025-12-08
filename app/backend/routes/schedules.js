@@ -76,12 +76,12 @@ router.get('/:id', async (req, res) => {
         r.planned_start,
         r.planned_end,
         r.distance_km,
-        d.full_name,
-        d.driver_code,
+        d.name as driver_name,
+        d.driver_id,
         d.phone
       FROM bus_schedule s
-      JOIN routes r ON s.route_id = r.route_id
-      JOIN drivers d ON s.driver_id = d.driver_id
+      JOIN route r ON s.route_id = r.route_id
+      JOIN driver d ON s.driver_id = d.driver_id
       WHERE s.schedule_id = ?
     `, [id]);
     

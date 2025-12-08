@@ -57,7 +57,7 @@ function StudentManagementPage() {
       const q = searchQuery.toLowerCase();
       result = result.filter(s => 
         s.full_name.toLowerCase().includes(q) || 
-        s.student_id.includes(q)
+        String(s.student_id).includes(q)
       );
     }
 

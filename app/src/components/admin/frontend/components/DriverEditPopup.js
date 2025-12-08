@@ -27,17 +27,20 @@ export default function DriverEditPopup({ isOpen, onClose, drivers, onUpdateDriv
       setShowDropdown(false);
       return;
     }
-    const filteredDrivers = drivers.filter(driver => 
-      driver.id.toLowerCase().includes(term.toLowerCase()) ||
-      driver.name.toLowerCase().includes(term.toLowerCase())
-    );
+    const filteredDrivers = drivers.filter(driver => {
+      const driverId = driver.id || driver.driver_id || '';
+      const driverName = driver.name || '';
+      return driverId.toLowerCase().includes(term.toLowerCase()) ||
+             driverName.toLowerCase().includes(term.toLowerCase());
+    });
     setSearchResults(filteredDrivers);
     setShowDropdown(filteredDrivers.length > 0);
   };
 
   const handleResultClick = (driver) => {
-    setSearchTerm(driver.id); 
-    setFormData({ ...driver }); 
+    const driverId = driver.driver_id || driver.id;
+    setSearchTerm(driverId); 
+    setFormData({ ...driver, id: driverId }); 
     setDriverFound(true);       
     setSearchResults([]);       
     setShowDropdown(false);     
@@ -113,12 +116,14 @@ export default function DriverEditPopup({ isOpen, onClose, drivers, onUpdateDriv
               <input type="text" id="search-id" value={searchTerm} onChange={handleSearchChange} placeholder="Nhập mã hoặc tên tài xế..." autoComplete="off" onBlur={() => { setTimeout(() => setShowDropdown(false), 200); }} onFocus={handleSearchChange} />
               {showDropdown && searchResults.length > 0 && (
                 <ul className="search-results-dropdown">
-                  {searchResults.map(driver => (
-                    <li key={driver.id} className="search-result-item" onMouseDown={() => handleResultClick(driver)}>
+                  {searchResults.map(driver => {
+                    const driverId = driver.driver_id || driver.id;
+                    return (
+                    <li key={driverId} className="search-result-item" onMouseDown={() => handleResultClick(driver)}>
                       <svg className="search-result-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-                      <span>{driver.id} - {driver.name}</span>
+                      <span>{driverId} - {driver.name}</span>
                     </li>
-                  ))}
+                  );})}
                 </ul>
               )}
             </div>

@@ -300,6 +300,14 @@ router.put('/pickup/:pickup_id/status', async (req, res) => {
     const { pickup_id } = req.params;
     const { status, pickup_time, dropoff_time, schedule_id } = req.body;
     
+    // Get student info before updating for notification
+    const [studentInfo] = await db.query(`
+      SELECT s.student_id, s.name as student_name, s.parent_id
+      FROM student_pickup sp
+      JOIN student s ON sp.student_id = s.student_id
+      WHERE sp.pickup_id = ?
+    `, [pickup_id]);
+    
     let updateFields = ['status = ?'];
     let updateValues = [status];
     
@@ -318,6 +326,40 @@ router.put('/pickup/:pickup_id/status', async (req, res) => {
     const query = `UPDATE student_pickup SET ${updateFields.join(', ')} WHERE pickup_id = ?`;
     
     await db.query(query, updateValues);
+    
+    // Send notification to parent about status change
+    if (studentInfo.length > 0 && studentInfo[0].parent_id) {
+      const student = studentInfo[0];
+      let statusText = '';
+      
+      switch(status) {
+        case 'CHO_DON':
+          statusText = 'đang chờ đón';
+          break;
+        case 'DA_DON':
+          statusText = 'đã được đón lên xe';
+          break;
+        case 'DA_THA':
+          statusText = 'đã được thả xuống xe';
+          break;
+        case 'HUY_CHUYEN':
+          statusText = 'đã hủy chuyến';
+          break;
+        default:
+          statusText = status;
+      }
+      
+      await db.query(`
+        INSERT INTO notification 
+        (recipient_type, title, content, type, status, status_sent, created_at)
+        VALUES (?, ?, ?, ?, 'unread', 'sent', NOW())
+      `, [
+        'parent',
+        'Học sinh cập nhật trạng thái',
+        `Học sinh ${student.student_name} ${statusText}.`,
+        'status_update'
+      ]);
+    }
     
     // Check if all students in this schedule are either DA_THA or HUY_CHUYEN
     if (schedule_id) {

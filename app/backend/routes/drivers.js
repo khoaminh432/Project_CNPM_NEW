@@ -159,6 +159,111 @@ router.get('/:id/current-location', async (req, res) => {
   }
 });
 
+// Create new driver
+router.post('/', async (req, res) => {
+  try {
+    const { id, name, phone, address, status, licenseClass, work_schedule } = req.body;
+    
+    const connection = await db.getConnection();
+    await connection.query(`
+      INSERT INTO driver 
+        (driver_id, name, phone, address, status, license_class, work_schedule)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `, [id, name, phone, address, status || 'Rảnh', licenseClass || 'B2', work_schedule]);
+    
+    connection.release();
+    
+    res.status(201).json({
+      status: 'OK',
+      message: 'Driver created successfully',
+      data: { driver_id: id, name, phone, address, status, license_class: licenseClass, work_schedule }
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'ERROR',
+      message: error.message
+    });
+  }
+});
+
+// Update driver
+router.put('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, phone, address, status, licenseClass, work_schedule } = req.body;
+    
+    const connection = await db.getConnection();
+    const [result] = await connection.query(`
+      UPDATE driver
+      SET 
+        name = ?, 
+        phone = ?, 
+        address = ?, 
+        status = ?, 
+        license_class = ?,
+        work_schedule = ?
+      WHERE driver_id = ?
+    `, [name, phone, address, status, licenseClass, work_schedule, id]);
+    
+    connection.release();
+    
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        status: 'ERROR',
+        message: 'Driver not found'
+      });
+    }
+    
+    res.json({
+      status: 'OK',
+      message: 'Driver updated successfully',
+      data: { driver_id: id, name, phone, address, status, license_class: licenseClass, work_schedule }
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'ERROR',
+      message: error.message
+    });
+  }
+});
+
+// Delete driver
+router.delete('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const connection = await db.getConnection();
+    const [result] = await connection.query(`
+      DELETE FROM driver WHERE driver_id = ?
+    `, [id]);
+    
+    connection.release();
+    
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        status: 'ERROR',
+        message: 'Driver not found'
+      });
+    }
+    
+    res.json({
+      status: 'OK',
+      message: 'Driver deleted successfully'
+    });
+  } catch (error) {
+    if (error.code === 'ER_ROW_IS_REFERENCED_2') {
+      return res.status(409).json({
+        status: 'ERROR',
+        message: 'Cannot delete driver: referenced in schedules'
+      });
+    }
+    res.status(500).json({
+      status: 'ERROR',
+      message: error.message
+    });
+  }
+});
+
 // Update driver status
 router.put('/:id/status', async (req, res) => {
   try {

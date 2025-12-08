@@ -57,7 +57,9 @@ export default function ThongBao() {
             fetch(`${NOTIFICATION_API_URL}/users/${newNotice.recipient}`)
                 .then(res => res.json())
                 .then(data => {
-                    setUsersList(data);
+                    // Handle different response formats
+                    const usersArray = Array.isArray(data) ? data : (data.users || data.data || []);
+                    setUsersList(usersArray);
                     setSelectAll(true);
                     setNewNotice(prev => ({ ...prev, specificIds: [] }));
                     setSearchTerm("");
@@ -69,12 +71,12 @@ export default function ThongBao() {
     }, [newNotice.recipient, showPopup]);
 
     // --- LOGIC TÌM KIẾM & XỬ LÝ FORM (GIỮ NGUYÊN) ---
-    const filteredUsers = usersList.filter(u => {
+    const filteredUsers = Array.isArray(usersList) ? usersList.filter(u => {
         const searchLower = searchTerm.toLowerCase();
-        const nameMatch = u.name.toLowerCase().includes(searchLower);
-        const idMatch = String(u.id).toLowerCase().includes(searchLower);
+        const nameMatch = u.name?.toLowerCase().includes(searchLower);
+        const idMatch = String(u.id || '').toLowerCase().includes(searchLower);
         return nameMatch || idMatch;
-    });
+    }) : [];
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -94,7 +96,7 @@ export default function ThongBao() {
         setNewNotice(prev => {
             const currentIds = prev.specificIds;
             if (selectAll) {
-                const allIds = usersList.map(u => u.id);
+                const allIds = Array.isArray(usersList) ? usersList.map(u => u.id) : [];
                 return { ...prev, specificIds: allIds.filter(uid => uid !== id) };
             }
             if (currentIds.includes(id)) return { ...prev, specificIds: currentIds.filter(x => x !== id) };
@@ -110,7 +112,7 @@ export default function ThongBao() {
     const handleSend = async () => {
         if (!newNotice.recipient || !newNotice.title || !newNotice.content) return alert("Vui lòng nhập đủ thông tin!");
         if (newNotice.type === 'scheduled' && !newNotice.scheduledTime) return alert("Chưa chọn giờ gửi!");
-        if (!selectAll && newNotice.specificIds.length === 0 && usersList.length > 0) return alert("Vui lòng chọn ít nhất 1 người nhận!");
+        if (!selectAll && newNotice.specificIds.length === 0 && Array.isArray(usersList) && usersList.length > 0) return alert("Vui lòng chọn ít nhất 1 người nhận!");
 
         try {
             const payload = { ...newNotice, specificIds: selectAll ? [] : newNotice.specificIds };

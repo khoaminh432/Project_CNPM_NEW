@@ -45,28 +45,26 @@ router.post('/create', async (req, res) => {
 /**
  * GET /api/notifications
  * Get all notifications for a specific user based on their role
+ * If no user_id/role provided, return all notifications (for admin view)
  */
 router.get('/', async (req, res) => {
   try {
     const { user_id, role } = req.query;
 
-    if (!user_id || !role) {
-      return res.status(400).json({
-        success: false,
-        message: 'Missing user_id or role'
-      });
+    let query = `SELECT id, recipient_type, title, content, type, scheduled_time, 
+                        is_recurring, status_sent, created_at, status
+                 FROM notification `;
+    let params = [];
+    
+    // If role is provided, filter by recipient_type
+    if (role) {
+      query += `WHERE recipient_type = ? `;
+      params.push(role);
     }
+    
+    query += `ORDER BY created_at DESC`;
 
-    // Get notifications based on recipient_type matching user role
-    // For drivers, only show notifications with recipient_type = 'driver'
-    const [notifications] = await db.query(
-      `SELECT id, recipient_type, title, content, type, scheduled_time, 
-              is_recurring, status_sent, created_at, status
-       FROM notification 
-       WHERE recipient_type = ?
-       ORDER BY created_at DESC`,
-      [role]
-    );
+    const [notifications] = await db.query(query, params);
 
     res.json({
       success: true,
@@ -336,12 +334,49 @@ router.get('/user/:user_id/unread/count', async (req, res) => {
 // Send notification to user(s)
 router.post('/', async (req, res) => {
   try {
-    const { title, message, notification_type, sender_id, recipient_ids } = req.body;
+    // Support both old format (title, message, notification_type, recipient_ids) 
+    // and new format (title, content, recipient, type, specificIds)
+    const { 
+      title, 
+      message, 
+      content,
+      notification_type, 
+      type,
+      sender_id, 
+      recipient_ids,
+      recipient,
+      specificIds,
+      scheduledTime,
+      isRecurring,
+      recurrenceDays
+    } = req.body;
     
-    if (!title || !message || !notification_type || !recipient_ids || !Array.isArray(recipient_ids)) {
+    // Normalize fields
+    const notificationTitle = title;
+    const notificationContent = content || message;
+    const recipientType = recipient || notification_type;
+    const notificationType = type || 'manual';
+    
+    if (!notificationTitle || !notificationContent || !recipientType) {
       return res.status(400).json({
         status: 'ERROR',
-        message: 'Missing required fields: title, message, notification_type, recipient_ids (array)'
+        message: 'Missing required fields: title, content, recipient'
+      });
+    }
+    
+    // Handle scheduled notifications
+    const scheduled_time = scheduledTime ? new Date(scheduledTime).toISOString() : null;
+    const is_recurring = isRecurring || false;
+    const recurrence_days = recurrenceDays ? JSON.stringify(recurrenceDays) : null;
+    
+    // Determine if sending to specific users or all users of a role
+    const sendToSpecificUsers = specificIds && specificIds.length > 0;
+    const recipientIdsList = recipient_ids || specificIds || [];
+    
+    if (sendToSpecificUsers && recipientIdsList.length === 0) {
+      return res.status(400).json({
+        status: 'ERROR',
+        message: 'No recipients specified'
       });
     }
     
@@ -349,33 +384,71 @@ router.post('/', async (req, res) => {
     await connection.beginTransaction();
     
     try {
-      const notifications = [];
-      
-      // Insert notification for each recipient
-      for (const recipient_id of recipient_ids) {
+      if (!sendToSpecificUsers) {
+        // Send to all users of the specified role (broadcast)
         const [result] = await connection.query(`
-          INSERT INTO notifications 
-          (title, message, notification_type, sender_id, recipient_id, created_at)
-          VALUES (?, ?, ?, ?, ?, NOW())
-        `, [title, message, notification_type, sender_id || null, recipient_id]);
+          INSERT INTO notification 
+          (recipient_type, title, content, type, status, status_sent, scheduled_time, is_recurring, recurrence_days, created_at)
+          VALUES (?, ?, ?, ?, 'unread', ?, ?, ?, ?, NOW())
+        `, [
+          recipientType, 
+          notificationTitle, 
+          notificationContent, 
+          notificationType,
+          scheduled_time ? 'pending' : 'sent',
+          scheduled_time,
+          is_recurring,
+          recurrence_days
+        ]);
         
-        notifications.push({
-          notification_id: result.insertId,
-          recipient_id: recipient_id
+        await connection.commit();
+        connection.release();
+        
+        res.status(201).json({
+          status: 'OK',
+          message: `Notification sent to all ${recipientType}s successfully`,
+          data: {
+            notification_id: result.insertId
+          }
+        });
+      } else {
+        // Send to specific users (create individual notifications)
+        const notifications = [];
+        
+        for (const recipient_id of recipientIdsList) {
+          const [result] = await connection.query(`
+            INSERT INTO notification 
+            (recipient_type, title, content, type, status, status_sent, scheduled_time, is_recurring, recurrence_days, created_at)
+            VALUES (?, ?, ?, ?, 'unread', ?, ?, ?, ?, NOW())
+          `, [
+            recipientType, 
+            notificationTitle, 
+            notificationContent, 
+            notificationType,
+            scheduled_time ? 'pending' : 'sent',
+            scheduled_time,
+            is_recurring,
+            recurrence_days
+          ]);
+          
+          notifications.push({
+            notification_id: result.insertId,
+            recipient_id: recipient_id
+          });
+        }
+        
+        await connection.commit();
+        connection.release();
+        
+        res.status(201).json({
+          status: 'OK',
+          message: 'Notifications sent successfully',
+          data: {
+            notifications_sent: notifications.length,
+            notifications: notifications
+          }
         });
       }
-      
-      await connection.commit();
-      connection.release();
-      
-      res.status(201).json({
-        status: 'OK',
-        message: 'Notifications sent successfully',
-        data: {
-          notifications_sent: notifications.length,
-          notifications: notifications
-        }
-      });
     } catch (error) {
       await connection.rollback();
       connection.release();
@@ -506,6 +579,56 @@ router.post('/broadcast', async (req, res) => {
       throw error;
     }
   } catch (error) {
+    res.status(500).json({
+      status: 'ERROR',
+      message: error.message
+    });
+  }
+});
+
+/**
+ * GET /api/notifications/users/:role
+ * Get list of users by role (driver or parent) for sending notifications
+ */
+router.get('/users/:role', async (req, res) => {
+  try {
+    const { role } = req.params;
+    
+    if (role === 'driver') {
+      // Get all drivers
+      const [drivers] = await db.query(`
+        SELECT driver_id as id, name, phone
+        FROM driver
+        WHERE status = 'active'
+        ORDER BY name
+      `);
+      
+      res.json({
+        status: 'OK',
+        data: drivers,
+        count: drivers.length
+      });
+    } else if (role === 'parent') {
+      // Get all parents
+      const [parents] = await db.query(`
+        SELECT parent_id as id, name, phone
+        FROM parent
+        ORDER BY name
+      `);
+      
+      res.json({
+        status: 'OK',
+        data: parents,
+        count: parents.length
+      });
+    } else {
+      res.status(400).json({
+        status: 'ERROR',
+        message: 'Invalid role. Must be "driver" or "parent"'
+      });
+    }
+  } catch (error) {
+    console.error('Get users by role error:', error);
     res.status(500).json({
       status: 'ERROR',
       message: error.message

@@ -33,12 +33,14 @@ export default function QuanLyTaiXe() {
         return res.json();
       })
       .then(data => {
-        setDrivers(data);
+        // Backend trả về {status, data, count}, lấy data.data
+        setDrivers(Array.isArray(data) ? data : (data.data || []));
         setIsLoading(false);
       })
       .catch(err => {
         console.error("Lỗi khi fetch drivers:", err);
         alert("Không thể tải danh sách tài xế từ server.");
+        setDrivers([]);
         setIsLoading(false);
       });
   }, []); 

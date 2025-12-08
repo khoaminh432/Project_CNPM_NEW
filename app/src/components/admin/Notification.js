@@ -11,16 +11,18 @@ const Notification = () => {
   const fetchNotifications = () => {
     fetch('http://localhost:5000/api/notifications')
       .then(res => res.json())
-      .then(data => {
-        const formattedData = data.map(item => ({
+      .then(response => {
+        // Handle new response format {success, notifications}
+        const dataArray = response.notifications || response.data || response;
+        const formattedData = Array.isArray(dataArray) ? dataArray.map(item => ({
           id: item.id,
           title: item.title,
           message: item.content,
           time: new Date(item.created_at).toLocaleString('vi-VN'),
           read: item.status === 'read',
           type: item.recipient_type, 
-          label: item.notificationFor // Lấy cột "Phụ huynh" để hiển thị
-        }));
+          label: item.recipient_type || 'Hệ thống' // Use recipient_type as label
+        })) : [];
         setNotifications(formattedData);
       })
       .catch(err => console.error("Lỗi lấy thông báo:", err));
@@ -32,7 +34,7 @@ const Notification = () => {
       notif.id === id ? { ...notif, read: true } : notif
     ));
 
-    fetch(`http://localhost:5000/api/notifications/${id}`, {
+    fetch(`http://localhost:5000/api/notifications/${id}/read`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'read' })
@@ -42,7 +44,11 @@ const Notification = () => {
   // ĐÁNH DẤU TẤT CẢ
   const markAllAsRead = () => {
     setNotifications(notifications.map(notif => ({ ...notif, read: true })));
-    fetch('http://localhost:5000/api/notifications-mark-all', { method: 'PUT' });
+    fetch('http://localhost:5000/api/notifications/mark-all-read', { 
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role: 'admin' })
+    });
   };
 
   // XÓA THÔNG BÁO

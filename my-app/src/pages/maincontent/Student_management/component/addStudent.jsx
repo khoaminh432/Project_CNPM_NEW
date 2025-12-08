@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import './addStudent.css';
 import { Student } from './../../../../models/Student';
+
 import renderRoute from '../../../../renderData/RenderRoute';
 function AddStudent({ onSave = () => {}, onClose = () => {} }) {
   const [routes,setRoute] = useState([])
@@ -56,13 +57,13 @@ function AddStudent({ onSave = () => {}, onClose = () => {} }) {
 
     if (!validateForm()) return;
 
-    const newStudent = new Student({
+    const newStudent = {
       ...form,
       is_active: true,
       enrollment_date: form.enrollment_date || new Date().toISOString().split('T')[0],
       created_at: new Date(),
       updated_at: new Date(),
-    });
+    };
 
     console.log('New student:', newStudent);
     onSave(newStudent);

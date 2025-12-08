@@ -47,12 +47,65 @@ function StudentManagementPage() {
     setPageStudent({key: "default", value: null});
     fetchData()
   }, []);
-  const handleSaveStudent = (student)=>{
-    const fetchData = async()=>{
-      await renderStudent.createStudent(student)
+  // Trong component cha (nơi gọi AddStudent)
+const handleSaveStudent = (student) => {
+  const fetchData = async () => {
+    try {
+      console.log("📤 Dữ liệu từ form:", student);
+      
+      // Chuẩn bị data theo đúng định dạng API yêu cầu
+      const apiData = {
+        // Các trường từ form - mapping đúng tên API
+        student_id: student.student_id,
+        name: student.name,
+        class_name: student.class_name,
+        school_name: student.school_name || "",
+        gender: student.gender,
+        date_of_birth: student.date_of_birth || null,
+        
+        // Thông tin phụ huynh - mapping đúng tên API
+        parent_name: student.parent_name,
+        parent_phone: student.parent_phone,
+        parent_email: student.parent_email || "",
+        
+        // Cần thêm parent_id - có thể cần select từ dropdown
+        parent_id: student.parent_id || "", // <-- QUAN TRỌNG: Có thể đây là trường bắt buộc
+        
+        // Thông tin trạm
+        stop_id: student.pickup_stop_id, // <-- Mapping: pickup_stop_id -> stop_id
+        dropoff_stop_id: student.dropoff_stop_id || "",
+        pickup_address: student.pickup_address || "",
+        dropoff_address: student.dropoff_address || "",
+        
+        // Thông tin tuyến
+        pickup_route_id: student.route_id, // <-- Mapping: route_id -> pickup_route_id
+        dropoff_route_id: student.route_id || student.dropoff_route_id,
+        
+        // Các trường mặc định
+        enrollment_date: student.enrollment_date || new Date().toISOString().split('T')[0],
+        is_active: true
+      };
+      
+      console.log("📤 Data gửi lên API:", apiData);
+      
+      const data = await renderStudent.createStudent(apiData);
+      console.log("✅ Thành công:", data);
+      
+    } catch (error) {
+      console.error("❌ Lỗi chi tiết:");
+      console.error("Status:", error.response?.status);
+      console.error("Message:", error.response?.data?.message);
+      console.error("Data:", error.response?.data);
+      
+      // Hiển thị thông báo lỗi chi tiết
+      if (error.response?.data?.errors) {
+        console.error("Validation errors:", error.response.data.errors);
+      }
     }
-    fetchData()
-  }
+  };
+  
+  fetchData();
+};
   // filter + search logic
   const filteredStudents = useMemo(() => {
     let result = students;

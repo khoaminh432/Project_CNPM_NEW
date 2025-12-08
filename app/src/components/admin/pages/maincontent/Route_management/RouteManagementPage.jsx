@@ -37,57 +37,53 @@ function parseTimeToModel(inputTime, fallback="00:00") {
   }
 
 function totalRouteStable(array){
-  return array.filter(route=>route.status==="active").length
+  return array.filter(route=>route.status==="Đang hoạt động").length
 }
-function totalDistance(array){
-  return formatNumber2(array.reduce((sum,route)=>sum+parseKm(route.distance_km),0))
-}
-function parseKm(val) {
-    if (val == null) return 0;
-    if (typeof val === 'number') return val;
-    if (typeof val === 'string') {
-      const m = val.match(/[\d,.]+/);
-      if (!m) return 0;
-      return Number(m[0].replace(',', '.'));
-    }
-    return 0;
-  }
 function RouteManagementPage() {
   const [routes, setRoutes] = useState([]);
   const [filter, setFilter] = useState('all'); // <-- new state for filter
   const [showDetail, setShowDetail] = useState({key:false,value:null});
   const [showaddroute, setShowAddRoute] = useState(false);
+  
+  const fetchRoutes = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/routes');
+      const result = await response.json();
+      console.log('API Response:', result);
+      if (result.status === 'OK' && Array.isArray(result.data)) {
+        const routeObjects = result.data.map(r => new Route(r));
+        console.log('Route objects:', routeObjects);
+        setRoutes(routeObjects);
+      }
+    } catch (error) {
+      console.error('Error fetching routes:', error);
+      setRoutes(defaultRoutes); // fallback to default if API fails
+    }
+  };
+
   useEffect(() => {
-    // ví dụ: lấy từ API hoặc dữ liệu tĩnh
-    setRoutes(defaultRoutes);
+    fetchRoutes();
   }, []);
   function editRoute(updated) {
     setRoutes(prev => prev.map(r => {
-      // match by route_id first, fallback to route_code
-      const matchId = (updated.route_id != null && r.route_id === updated.route_id);
-      const matchCode = (!matchId && updated.route_code && r.route_code === updated.route_code);
-      if (matchId || matchCode) {
-        // keep created_at, update updated_at
-        return new Route(
-          updated.route_id ?? r.route_id,
-          updated.route_code ?? r.route_code,
-          updated.route_name ?? r.route_name,
-          updated.start_location ?? r.start_location,
-          updated.end_location ?? r.end_location,
-          updated.planned_start ? parseTimeToModel(updated.planned_start, r.planned_start) : r.planned_start,
-          updated.planned_end ? parseTimeToModel(updated.planned_end, r.planned_end) : r.planned_end,
-          Number(updated.total_students ?? r.total_students),
-          updated.distance_km ?? r.distance_km,
-          Number(updated.estimated_duration_minutes ?? r.estimated_duration_minutes),
-          updated.status ?? r.status,
-          r.created_at,
-          new Date()
-        );
+      if (r.route_id === updated.route_id) {
+        return new Route({
+          route_id: updated.route_id ?? r.route_id,
+          route_name: updated.route_name ?? r.route_name,
+          start_point: updated.start_point ?? r.start_point,
+          end_point: updated.end_point ?? r.end_point,
+          planned_start: updated.planned_start ? parseTimeToModel(updated.planned_start, r.planned_start) : r.planned_start,
+          planned_end: updated.planned_end ? parseTimeToModel(updated.planned_end, r.planned_end) : r.planned_end,
+          total_students: updated.total_students ?? r.total_students,
+          status: updated.status ?? r.status
+        });
       }
       return r;
-    }));}
+    }));
+  }
   const cancelShowAddRoute = () => {
     setShowAddRoute(false);
+    fetchRoutes(); // refresh routes after closing add route
   }
   const handleSaveRoute = (newRoute) => {
     editRoute(newRoute);
@@ -101,11 +97,11 @@ function RouteManagementPage() {
   const filteredRoutes = useMemo(() => {
     console.log('Filtering routes with filter:', filter);
     if (filter === 'all') return routes;
-    return routes.filter(r => String(r.status).toLowerCase() === String(filter).toLowerCase());
+    if (filter === 'active') return routes.filter(r => r.status === 'Đang hoạt động');
+    if (filter === 'inactive') return routes.filter(r => r.status === 'Ngưng hoạt động');
+    return routes;
   }, [routes, filter]);
-  // tổng chiều dài cho tất cả routes
-  const totalDistanceAll = totalDistance(routes)
-  const totalDistanceVisible = totalDistance(filteredRoutes)
+  
   const totalRouteStableinlive = totalRouteStable(routes)
   return (
     
@@ -138,12 +134,6 @@ function RouteManagementPage() {
           <h3>Tuyến cần chú ý</h3>
           <div className="number">{routes.length-totalRouteStableinlive}</div>
         </div>
-        <div className="card">
-          <i className="fas fa-road" />
-          <h3>Tổng quãng đường</h3>
-          <div className="number">{totalDistanceAll}</div>
-          <div style={{fontSize:12,color:'#6b7280'}}>Hiển thị: {totalDistanceVisible} km</div>
-        </div>
       </div>
 
       <div className="controls">
@@ -169,12 +159,12 @@ function RouteManagementPage() {
         <table id="routes-table" className="routes-table">
           <thead>
             <tr>
-              <th><i className="fas fa-hashtag" /> MÃ SỐ TUYẾN</th>
+              <th><i className="fas fa-hashtag" /> MÃ TUYẾN</th>
               <th><i className="fas fa-signature" /> TÊN TUYẾN</th>
-              <th><i className="fas fa-map-marker-alt" /> TRẠM BẮT ĐẦU</th>
-              <th><i className="fas fa-route" /> TỔNG ĐƯỜNG ĐI</th>
-              <th><i class="fa-solid fa-person"></i> SỐ HỌC SINH</th>
+              <th><i className="fas fa-map-marker-alt" /> ĐIỂM BẮT ĐẦU</th>
+              <th><i className="fas fa-map-marker-alt" /> ĐIỂM KẾT THÚC</th>
               <th><i className="fas fa-clock" /> THỜI GIAN</th>
+              <th><i className="fa-solid fa-person"></i> SỐ HỌC SINH</th>
               <th><i className="fas fa-traffic-light" /> TÌNH TRẠNG</th>
               <th><i className="fas fa-info-circle" /> CHI TIẾT</th>
             </tr>

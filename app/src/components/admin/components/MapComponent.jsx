@@ -46,7 +46,7 @@ const normalizeCoord = (coord) => ({
   ...coord
 });
 
-const MapComponent = ({ positionCurrent = { start: null, end: null }, stops = [] }) => {
+const MapComponent = ({ positionCurrent = { start: null, end: null }, stops = [], showRoute = false }) => {
   const [viewport, setViewport] = useState({
     latitude: 10.7500452,
     longitude: 106.6622499,
@@ -226,6 +226,15 @@ const MapComponent = ({ positionCurrent = { start: null, end: null }, stops = []
             location={{ ...positionCurrent.end, name: 'Điểm kết thúc' }}
             styleView={{ colorLocation: 'black', fontSize: currentFont }}
             styleLocation={styleLocation.pointend}
+          />
+        )}
+
+        {/* Draw route between start and end when showRoute is true */}
+        {showRoute && isValidCoord(positionCurrent.start) && isValidCoord(positionCurrent.end) && (
+          <DrawRoute 
+            origin={normalizeCoord(positionCurrent.start)} 
+            destination={normalizeCoord(positionCurrent.end)}
+            color="#3887be"
           />
         )}
 

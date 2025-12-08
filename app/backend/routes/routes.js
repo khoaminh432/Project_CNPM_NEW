@@ -9,15 +9,8 @@ router.get('/', async (req, res) => {
     const connection = await db.getConnection();
     
     const [routes] = await connection.query(`
-      SELECT 
-        r.*,
-        COUNT(st.student_id) as total_students,
-        COUNT(sp.stop_id) as total_stops
-      FROM route r
-      LEFT JOIN student st ON r.route_id = st.route_id AND st.is_active = TRUE
-      LEFT JOIN bus_stop sp ON r.route_id = sp.route_id
-      GROUP BY r.route_id
-      ORDER BY r.route_code
+      SELECT * FROM route
+      ORDER BY route_id
     `);
     
     connection.release();
@@ -107,21 +100,40 @@ router.get('/:id', async (req, res) => {
 // Create new route
 router.post('/', async (req, res) => {
   try {
-    const { route_code, route_name, planned_start, planned_end, distance_km, description } = req.body;
+    const { route_name, planned_start, planned_end, start_point, end_point } = req.body;
     
-    if (!route_code || !route_name || !planned_start || !planned_end) {
+    if (!route_name || !planned_start || !planned_end) {
       return res.status(400).json({
         status: 'ERROR',
-        message: 'Missing required fields: route_code, route_name, planned_start, planned_end'
+        message: 'Missing required fields: route_name, planned_start, planned_end'
       });
     }
     
     const connection = await db.getConnection();
+    
+    // Generate random route_id like R10, R25, etc.
+    let route_id;
+    let isUnique = false;
+    
+    while (!isUnique) {
+      const randomNum = Math.floor(Math.random() * 900) + 10; // Random number from 10-909
+      route_id = `R${randomNum}`;
+      
+      // Check if route_id already exists
+      const [existing] = await connection.query(`
+        SELECT route_id FROM route WHERE route_id = ?
+      `, [route_id]);
+      
+      if (existing.length === 0) {
+        isUnique = true;
+      }
+    }
+    
     const [result] = await connection.query(`
       INSERT INTO route 
-      (route_code, route_name, planned_start, planned_end, distance_km, description, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())
-    `, [route_code, route_name, planned_start, planned_end, distance_km || null, description || null]);
+      (route_id, route_name, planned_start, planned_end, start_point, end_point)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `, [route_id, route_name, planned_start, planned_end, start_point || null, end_point || null]);
     
     connection.release();
     
@@ -129,8 +141,7 @@ router.post('/', async (req, res) => {
       status: 'OK',
       message: 'Route created successfully',
       data: {
-        route_id: result.insertId,
-        route_code,
+        route_id: route_id,
         route_name
       }
     });

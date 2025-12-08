@@ -26,10 +26,15 @@ function AddRoute({onclose=()=>{}}) {
     start: null,
     end: null
   })
+  const [showRoute, setShowRoute] = useState(false);
   const handleStartLocation = (geometry)=>{
     
     if(geometry){
       setPosition(pos=>({...pos,start:geometry}))
+      // Set start address from geometry
+      if (geometry.address) {
+        setStartAddress(geometry.address);
+      }
     }
     
   }
@@ -37,6 +42,10 @@ function AddRoute({onclose=()=>{}}) {
     
     if(geometry){
       setPosition(pos=>({...pos,end:geometry}))
+      // Set end address from geometry
+      if (geometry.address) {
+        setEndAddress(geometry.address);
+      }
     }
   }
   const [startAddress, setStartAddress] = useState('');
@@ -56,17 +65,50 @@ function AddRoute({onclose=()=>{}}) {
     });
   };
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
+    
+    if (!routeName) {
+      alert('Vui lòng nhập tên tuyến!');
+      return;
+    }
+    
+    if (!startAddress || !endAddress) {
+      alert('Vui lòng nhập địa chỉ bắt đầu và kết thúc!');
+      return;
+    }
+    
+    if (selectedStations.size === 0) {
+      alert('Vui lòng chọn ít nhất 1 trạm!');
+      return;
+    }
+    
     const payload = {
-      routeName: routeName || `${startAddress} → ${endAddress}`,
-      startAddress, endAddress,
-      stations: Array.from(selectedStations),
-      startTime, endTime
+      route_name: routeName,
+      planned_start: startTime || '06:00:00',
+      planned_end: endTime || '18:00:00',
+      start_point: startAddress,
+      end_point: endAddress
     };
-    // TODO: gọi API lưu tuyến ở đây
-    console.log('Save route', payload);
-    alert('Đã lưu tuyến (console.log)');
+    
+    try {
+      const response = await fetch('http://localhost:5000/api/routes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      
+      const data = await response.json();
+      if (data.status === 'OK') {
+        alert('Đã lưu tuyến thành công!');
+        onclose();
+      } else {
+        alert('Lỗi: ' + data.message);
+      }
+    } catch (error) {
+      console.error('Error saving route:', error);
+      alert('Không thể lưu tuyến');
+    }
   };
 
   const selectedList = Array.from(selectedStations)
@@ -102,7 +144,13 @@ function AddRoute({onclose=()=>{}}) {
         <form className="search-row" onSubmit={(e) => e.preventDefault()}>
           <SearchSuggestAddress placeholderinput="nhập địa chỉ bắt đầu" className="search-input"  onAddressSelect={handleStartLocation}/>
           <SearchSuggestAddress placeholderinput="nhập địa chỉ kết thúc" className="search-input" onAddressSelect={handleEndLocation}/>
-          <button className="search-address-btn" type="button" onClick={() => console.log(positions)}>
+          <button className="search-address-btn" type="button" onClick={() => {
+            if (positions.start && positions.end) {
+              setShowRoute(true);
+            } else {
+              alert('Vui lòng nhập cả địa chỉ bắt đầu và kết thúc!');
+            }
+          }}>
             Tìm tuyến
           </button>
         </form>
@@ -112,8 +160,7 @@ function AddRoute({onclose=()=>{}}) {
         <section className="left-card">
           <form className="form-card" onSubmit={handleSave} style={{width:"auto"}}>
             <h2 className="section-title">Tạo Tuyến xe mới</h2>
-            <button>+Thêm trạm</button>
-            <button>🗑️Xóa trạm</button>
+            
               <input
                 className="text-input"
                 type="text"
@@ -184,7 +231,7 @@ function AddRoute({onclose=()=>{}}) {
         <aside className="right-card" style={{height:"auto"}}>
           <div className="map-card" style={{height:"100%" ,width:"100%"}} >
             {/* Nếu có component map sẵn thì thay placeholder bằng MapComponent */}
-            <MapComponent positionCurrent={positions} stops={[...selectedStations]}/>
+            <MapComponent positionCurrent={positions} stops={[...selectedStations]} showRoute={showRoute}/>
           </div>
         </aside>
       </div>

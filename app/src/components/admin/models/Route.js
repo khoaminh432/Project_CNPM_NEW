@@ -4,17 +4,14 @@ export class Route extends BaseModel {
     constructor(input = {}) {
     super(input, { allowedDates: [] });
     this.route_id = input.route_id ?? null;
-    this.route_code = input.route_code ?? '';
     this.route_name = input.route_name ?? '';
-    this.start_location = input.start_location ?? '';
-    this.end_location = input.end_location ?? '';
+    this.start_point = input.start_point ?? '';
+    this.end_point = input.end_point ?? '';
     // planned_start/planned_end are TIME strings in DB, keep as string (HH:MM[:SS])
     this.planned_start = input.planned_start ?? input.plannedStart ?? '';
     this.planned_end = input.planned_end ?? input.plannedEnd ?? '';
     this.total_students = input.total_students ?? 0;
-    this.distance_km = (input.distance_km != null) ? Number(input.distance_km) : null;
-    this.estimated_duration_minutes = input.estimated_duration_minutes ?? null;
-    this.status = input.status ?? 'active';
+    this.status = input.status ?? 'Đang hoạt động';
   }
 
   getPlannedStart() { return this.planned_start; }
@@ -31,37 +28,32 @@ export class Route extends BaseModel {
   toPlainObject() {
     return {
       route_id: this.route_id,
-      route_code: this.route_code,
       route_name: this.route_name,
-      start_location: this.start_location,
-      end_location: this.end_location,
+      start_point: this.start_point,
+      end_point: this.end_point,
       planned_start: this.planned_start,
       planned_end: this.planned_end,
       total_students: this.total_students,
-      distance_km: this.distance_km,
-      estimated_duration_minutes: this.estimated_duration_minutes,
       status: this.status,
-      created_at: this.created_at instanceof Date ? this.created_at.toISOString() : this.created_at,
-      updated_at: this.updated_at instanceof Date ? this.updated_at.toISOString() : this.updated_at,
     };
   }
 toTableRow(handledetailroute=()=>{}) {
     const statusIcon = this.getStatusIcon();
     const statusText = this.getStatusText();
-    const statusClass = this.status==="active" ? `status status-${"stable"}`: `status status-${"danger"}`;
+    const statusClass = this.status==="Đang hoạt động" ? `status status-${"stable"}`: `status status-${"danger"}`;
   return (
     <tr>
-        <td><strong>{this.route_code}</strong>
+        <td><strong>{this.route_id}</strong>
             </td>
         <td>
             <div>{this.route_name}</div>
         </td>
-        <td>{this.start_location}</td>
-        <td>{this.distance_km}km </td>
-        <td>{this.total_students}</td>
+        <td>{this.start_point}</td>
+        <td>{this.end_point}</td>
         <td>Từ {this.planned_start} Đến {this.planned_end}</td>
+        <td>{this.total_students}</td>
         <td><span class={statusClass}>{statusIcon} {statusText}</span></td>
-        <td><button class="btn-detail" data-id={this.route_code} onClick={()=>handledetailroute(this)} ><i class="fas fa-eye"></i> Xem chi tiết</button></td>
+        <td><button class="btn-detail" data-id={this.route_id} onClick={()=>handledetailroute(this)} ><i class="fas fa-eye"></i> Xem chi tiết</button></td>
     </tr>
   );
             } 
@@ -72,7 +64,9 @@ toTableRow(handledetailroute=()=>{}) {
                     'warning': <i class="fas fa-exclamation-triangle"></i>,
                     'danger': <i class="fas fa-times-circle"></i>,
                     'active': <i class="fas fa-check-circle"></i>,
-                    'inactive': <i class="fas fa-times-circle"></i>
+                    'inactive': <i class="fas fa-times-circle"></i>,
+                    'Đang hoạt động': <i class="fas fa-check-circle"></i>,
+                    'Ngưng hoạt động': <i class="fas fa-times-circle"></i>
                 };
                 return iconMap[this.status] || <i class="fas fa-question-circle"></i>;
             }
@@ -83,9 +77,11 @@ toTableRow(handledetailroute=()=>{}) {
                     'warning': 'Có vấn đề',
                     'danger': 'Nguy hiểm',
                     "active": 'Hoạt động',
-                    "inactive": 'Không hoạt động'
+                    "inactive": 'Không hoạt động',
+                    'Đang hoạt động': 'Đang hoạt động',
+                    'Ngưng hoạt động': 'Ngưng hoạt động'
                 };
-                return statusMap[this.status] || 'Không xác định';
+                return statusMap[this.status] || this.status || 'Không xác định';
             }
     addthis(){
 

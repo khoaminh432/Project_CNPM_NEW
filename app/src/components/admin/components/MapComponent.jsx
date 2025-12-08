@@ -4,7 +4,7 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import PointLocation from './MapHandle/PointLocation';
 import DrawRoute from './MapHandle/DrawRoute';
 
-const GOONG_MAPTILES_KEY = process.env.REACT_APP_GOONG_API_MAPTILE_KEY;
+const GOONG_MAPTILES_KEY = process.env.REACT_APP_GOONG_MAPTILES_KEY;
 
 const symbolLocation = <i className="fa-solid fa-location-dot"></i>;
 const styleLocation = {
